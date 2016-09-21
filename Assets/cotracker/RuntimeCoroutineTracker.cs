@@ -62,7 +62,7 @@ public class CoroutineStatistics
         }
 
         _history.Clear();
-        Debug.LogFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
+        Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
     }
 
     static List<CoStatsEntry> _history = new List<CoStatsEntry>();
