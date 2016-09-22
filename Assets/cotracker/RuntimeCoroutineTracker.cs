@@ -68,6 +68,27 @@ public class CoroutineStatistics
     static List<CoStatsEntry> _history = new List<CoStatsEntry>();
 }
 
+public class CoroutineNameCache
+{
+    public static string Mangle(string rawName)
+    {
+        string mangled;
+        if (_mangledNames.TryGetValue(rawName, out mangled))
+            return mangled;
+
+        // (manual-mangling) which provides better readability
+        mangled = rawName.Replace('<', '{').Replace('>', '}');
+
+        // (auto-mangling) Url Escaping 
+        //mangled = System.Uri.EscapeDataString(rawName);
+
+        _mangledNames[rawName] = mangled;
+        return mangled;
+    }
+
+    private static Dictionary<string, string> _mangledNames = new Dictionary<string,string>();
+}
+
 public class TrackedCoroutine : IEnumerator
 {
     IEnumerator _routine;
@@ -77,7 +98,7 @@ public class TrackedCoroutine : IEnumerator
         _routine = routine;
 
         if (CoroutineRuntimeTrackingConfig.EnableCounting)
-            CoroutineStatistics.MarkEvent(_routine.GetType().ToString(), CoStatsEvent.Creation);
+            CoroutineStatistics.MarkEvent(CoroutineNameCache.Mangle(_routine.GetType().ToString()), CoStatsEvent.Creation);
     }
 
     object IEnumerator.Current
