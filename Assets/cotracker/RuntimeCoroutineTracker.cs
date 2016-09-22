@@ -128,7 +128,7 @@ public class RuntimeCoroutineTracker
         }
     }
 
-    public static Coroutine InvokeStart(MonoBehaviour initiator, string methodName)
+    public static Coroutine InvokeStart(MonoBehaviour initiator, string methodName, object arg = null)
     {
         if (!CoroutineRuntimeTrackingConfig.EnableTracking)
             return initiator.StartCoroutine(methodName);
@@ -143,7 +143,12 @@ public class RuntimeCoroutineTracker
             if (coroutineMethod == null)
                 throw new ArgumentNullException("methodName", string.Format("Invalid method {0} (method not found)", methodName));
 
-            IEnumerator coroutineEnumerator = coroutineMethod.Invoke(initiator, null) as IEnumerator;
+            object[] args = null;
+            if (arg != null)
+            {
+                args = new object[1] { arg };
+            }
+            IEnumerator coroutineEnumerator = coroutineMethod.Invoke(initiator, args) as IEnumerator;
             if (coroutineEnumerator == null)
                 throw new ArgumentNullException("methodName", string.Format("Invalid method {0} (not an IEnumerator)", methodName));
 

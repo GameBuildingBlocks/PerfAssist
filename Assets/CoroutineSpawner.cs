@@ -28,4 +28,12 @@ public class CoroutineSpawner : MonoBehaviour
             yield return new WaitForEndOfFrame();
         }
     }
+    public IEnumerator Co04_PerFrame_ARG(float argFloat)
+    {
+        while (true)
+        {
+            Debug.LogFormat("Co04_PerFrame_ARG.tick: {0} - {1}", Time.time, argFloat);
+            yield return new WaitForEndOfFrame();
+        }
+    }
 }
