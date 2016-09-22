@@ -10,8 +10,8 @@ public class SampleRunner : MonoBehaviour {
         StartCoroutine(RuntimeCoroutineTracker.DefaultStatsReportCoroutine());
 
         TestPluginRunner pluginRunner = gameObject.AddComponent<TestPluginRunner>();
-        PluginName.CoroutineForwarder.InvokeStart_IEnumerator = RuntimeCoroutineTracker.InvokeStart;
-        PluginName.CoroutineForwarder.InvokeStart_String = RuntimeCoroutineTracker.InvokeStart;
+        CoroutinePluginForwarder.InvokeStart_IEnumerator = RuntimeCoroutineTracker.InvokeStart;
+        CoroutinePluginForwarder.InvokeStart_String = RuntimeCoroutineTracker.InvokeStart;
 
         CoroutineSpawner spawner = gameObject.AddComponent<CoroutineSpawner>();
         RuntimeCoroutineTracker.InvokeStart(spawner, "Co01_WaitForSeconds");

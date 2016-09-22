@@ -5,9 +5,9 @@ public class TestPluginRunner : MonoBehaviour
 {
 	// Use this for initialization
 	void Start () {
-        PluginName.CoroutineForwarder.InvokeStart(this, Co01_Plugin_NULL());
-        PluginName.CoroutineForwarder.InvokeStart(this, "Co02_Plugin_EOF_ByName");
-        PluginName.CoroutineForwarder.InvokeStart(this, "Co03_Plugin_EOF_ByNameWithArg", 0.369f);
+        CoroutinePluginForwarder.InvokeStart(this, Co01_Plugin_NULL());
+        CoroutinePluginForwarder.InvokeStart(this, "Co02_Plugin_EOF_ByName");
+        CoroutinePluginForwarder.InvokeStart(this, "Co03_Plugin_EOF_ByNameWithArg", 0.369f);
 	}
 	
 	// Update is called once per frame
