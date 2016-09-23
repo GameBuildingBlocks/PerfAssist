@@ -6,6 +6,11 @@
 
 ## Journals
 
+[2016-09-22] 功能改进
+
+- 支持插件内 (Plugins) 的协程追踪 (新增类 CoroutinePluginForwarder)
+- 处理 Profiler 输出时的乱码问题
+
 [2016-09-20] 增加 `RuntimeCoroutineTracker` 类，对协程的行为进行追踪和记录
 
 - **性能分析** 目前支持对每一个协程的每一次 yield 过程执行 `BeginSample()`/ `EndSample()` 
