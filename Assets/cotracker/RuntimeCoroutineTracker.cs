@@ -92,13 +92,15 @@ public class CoroutineNameCache
 public class TrackedCoroutine : IEnumerator
 {
     IEnumerator _routine;
+    string _mangledName;
 
     public TrackedCoroutine(IEnumerator routine)
     {
         _routine = routine;
+        _mangledName = CoroutineNameCache.Mangle(_routine.GetType().ToString());
 
         if (CoroutineRuntimeTrackingConfig.EnableCounting)
-            CoroutineStatistics.MarkEvent(CoroutineNameCache.Mangle(_routine.GetType().ToString()), CoStatsEvent.Creation);
+            CoroutineStatistics.MarkEvent(_mangledName, CoStatsEvent.Creation);
     }
 
     object IEnumerator.Current
@@ -112,10 +114,10 @@ public class TrackedCoroutine : IEnumerator
     public bool MoveNext()
     {
         if (CoroutineRuntimeTrackingConfig.EnableCounting)
-            CoroutineStatistics.MarkEvent(_routine.GetType().ToString(), CoStatsEvent.Enumeration);
+            CoroutineStatistics.MarkEvent(_mangledName, CoStatsEvent.Enumeration);
 
         if (CoroutineRuntimeTrackingConfig.EnableProfiling)
-            Profiler.BeginSample(_routine.GetType().ToString());
+            Profiler.BeginSample(_mangledName);
 
         bool succ = _routine.MoveNext();
 
@@ -160,7 +162,7 @@ public class RuntimeCoroutineTracker
             if (type == null)
                 throw new ArgumentNullException("initiator", "invalid initiator (null type)");
 
-            MethodInfo coroutineMethod = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            MethodInfo coroutineMethod = type.GetMethod(methodName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod);
             if (coroutineMethod == null)
                 throw new ArgumentNullException("methodName", string.Format("Invalid method {0} (method not found)", methodName));
 
