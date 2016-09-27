@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEditor;
+using System.Collections.Generic;
 
 public class CoroutineTrackerWindow : EditorWindow
 {
@@ -28,6 +29,8 @@ public class CoroutineTrackerWindow : EditorWindow
                 w.position = rect;
             }
         }
+
+        GraphIt.GraphStepManually();
     }
 
     void OnEnable()
@@ -42,6 +45,11 @@ public class CoroutineTrackerWindow : EditorWindow
 
     void OnGUI()
     {
+        if (Event.current.commandName == "AppStarted")
+        {
+            CoroutineStatisticsV2.Instance.OnBroadcast += CoroutineEditorReceived.Instance.Receive;
+        }
+
         GUILayout.BeginHorizontal();
         _enableTracking = GUILayout.Toggle(_enableTracking, "EnableTracking", GUILayout.Height(GuiConstants.ToobarHeight));
         GUILayout.EndHorizontal();

@@ -1,15 +1,24 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class SampleRunner : MonoBehaviour {
 
     void Start()
     {
         // bootstrapping
-        RuntimeCoroutineTracker.EnableTrackingSystemProgrammatically();
-
-        GraphIt.GraphStepManually();
-        StartCoroutine(RuntimeCoroutineTracker.DefaultStatsReportCoroutine());
+        CoroutineRuntimeTrackingConfig.EnableTracking = true;
+        StartCoroutine(CoroutineStatisticsV2.Instance.BroadcastCoroutine());
+#if UNITY_EDITOR
+        EditorWindow w = EditorWindow.GetWindow<EditorWindow>("CoroutineTrackerWindow");
+        if (w != null)
+        {
+            w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
+        }
+#endif
 
         TestPluginRunner pluginRunner = gameObject.AddComponent<TestPluginRunner>();
         CoroutinePluginForwarder.InvokeStart_IEnumerator = RuntimeCoroutineTracker.InvokeStart;

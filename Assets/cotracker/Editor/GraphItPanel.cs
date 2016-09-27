@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GraphItPanel : EditorWindow
+public class GraphItPanel 
 {
     static Vector2 mScrollPos;
     static float mWidth;

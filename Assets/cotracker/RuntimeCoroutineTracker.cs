@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,69 +12,63 @@ public class CoroutineRuntimeTrackingConfig
     // enable the whole tracking system
     public static bool EnableTracking = false;
 
-    // enables Profiler.BeginSample()/EndSample() for each enumeration of coroutines
-    public static bool EnableProfiling = false;
-
-    // enables counting of coroutines creation and enumeration
-    public static bool EnableCounting = false;
-
     // last n seconds are kept
-    public static float KeptSeconds = 3.0f;
+    public static float BroadcastInterval = 1.0f;
 }
 
-public enum CoStatsEvent
-{
-    Creation,
-    Enumeration,
-}
+//public enum CoStatsEvent
+//{
+//    Creation,
+//    Enumeration,
+//}
 
-public struct CoStatsEntry
-{
-    public float timestamp;
-    public string coId;
-    public CoStatsEvent coEvt;
-}
+//public struct CoStatsEntry
+//{
+//    public float timestamp;
+//    public string coId;
+//    public CoStatsEvent coEvt;
+//}
 
-public class CoroutineStatistics
-{
-    public static void MarkEvent(string coIdentifier, CoStatsEvent coEvent)
-    {
-        _history.Add(new CoStatsEntry() { timestamp = Time.time, coId = coIdentifier, coEvt = coEvent });
-    }
+//public class CoroutineStatistics
+//{
+//    public static void MarkEvent(string coIdentifier, CoStatsEvent coEvent)
+//    {
+//        _history.Add(new CoStatsEntry() { timestamp = Time.time, coId = coIdentifier, coEvt = coEvent });
+//    }
 
-    public static void ReportAndCleanup()
-    {
-        int _lastnSecCreationCount = 0;
-        int _lastnSecEnumerationCount = 0;
+//    public static void ReportAndCleanup()
+//    {
+//        int _lastnSecCreationCount = 0;
+//        int _lastnSecEnumerationCount = 0;
 
-        for (int i = 0; i < _history.Count; i++)
-        {
-            switch (_history[i].coEvt)
-            {
-                case CoStatsEvent.Creation:
-                    _lastnSecCreationCount++;
-                    break;
-                case CoStatsEvent.Enumeration:
-                    _lastnSecEnumerationCount++;
-                    break;
-                default:
-                    break;
-            }
-        }
+//        for (int i = 0; i < _history.Count; i++)
+//        {
+//            switch (_history[i].coEvt)
+//            {
+//                case CoStatsEvent.Creation:
+//                    _lastnSecCreationCount++;
+//                    break;
+//                case CoStatsEvent.Enumeration:
+//                    _lastnSecEnumerationCount++;
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
 
-        _history.Clear();
+//        _history.Clear();
 
-        GraphIt.Log("co_creation", _lastnSecCreationCount);
-        GraphIt.Log("co_movenext", _lastnSecEnumerationCount);
-        GraphIt.Log("co_time", UnityEngine.Random.value * 2.0f + 5.0f);
-        GraphIt.StepGraph("co_creation");
-        GraphIt.StepGraph("co_movenext");
-        GraphIt.StepGraph("co_time");
-        //Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
-    }
+//        GraphIt.Log("co_creation", _lastnSecCreationCount);
+//        GraphIt.Log("co_movenext", _lastnSecEnumerationCount);
+//        GraphIt.Log("co_time", UnityEngine.Random.value * 2.0f + 5.0f);
+//        GraphIt.StepGraph("co_creation");
+//        GraphIt.StepGraph("co_movenext");
+//        GraphIt.StepGraph("co_time");
+//        //Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
+//    }
 
-    static List<CoStatsEntry> _history = new List<CoStatsEntry>();
-}
+//    static List<CoStatsEntry> _history = new List<CoStatsEntry>();
+//}
 
 public class CoroutineNameCache
 {
@@ -98,6 +93,7 @@ public class CoroutineNameCache
 
 public class TrackedCoroutine : IEnumerator
 {
+    int _seqID;
     IEnumerator _routine;
     string _mangledName;
 
@@ -105,9 +101,9 @@ public class TrackedCoroutine : IEnumerator
     {
         _routine = routine;
         _mangledName = CoroutineNameCache.Mangle(_routine.GetType().ToString());
+        _seqID = _seqNext++;
 
-        if (CoroutineRuntimeTrackingConfig.EnableCounting)
-            CoroutineStatistics.MarkEvent(_mangledName, CoStatsEvent.Creation);
+        CoroutineStatisticsV2.Instance.MarkCreation(_seqID, _mangledName);
     }
 
     object IEnumerator.Current
@@ -120,24 +116,32 @@ public class TrackedCoroutine : IEnumerator
 
     public bool MoveNext()
     {
-        if (CoroutineRuntimeTrackingConfig.EnableCounting)
-            CoroutineStatistics.MarkEvent(_mangledName, CoStatsEvent.Enumeration);
+        Profiler.BeginSample(_mangledName);
 
-        if (CoroutineRuntimeTrackingConfig.EnableProfiling)
-            Profiler.BeginSample(_mangledName);
+        var _stopWatch = Stopwatch.StartNew();
 
-        bool succ = _routine.MoveNext();
+        bool next = _routine.MoveNext();
 
-        if (CoroutineRuntimeTrackingConfig.EnableProfiling)
-            Profiler.EndSample();
+        _stopWatch.Stop();
 
-        return succ;
+        float timeConsumed = (float)((double)_stopWatch.ElapsedTicks / (double)Stopwatch.Frequency); 
+
+        Profiler.EndSample();
+
+        CoroutineStatisticsV2.Instance.MarkMoveNext(_seqID, timeConsumed);
+
+        if (!next)
+            CoroutineStatisticsV2.Instance.MarkTermination(_seqID);
+
+        return next;
     }
 
     public void Reset()
     {
         _routine.Reset();
     }
+
+    static int _seqNext = 0;
 }
 
 public class RuntimeCoroutineTracker
@@ -153,7 +157,7 @@ public class RuntimeCoroutineTracker
         }
         catch (Exception ex)
         {
-            Debug.LogException(ex);
+            UnityEngine.Debug.LogException(ex);
             return null;
         }
     }
@@ -186,25 +190,8 @@ public class RuntimeCoroutineTracker
         }
         catch (Exception ex)
         {
-            Debug.LogException(ex);
+            UnityEngine.Debug.LogException(ex);
             return null;
-        }
-    }
-
-    public static void EnableTrackingSystemProgrammatically()
-    {
-        CoroutineRuntimeTrackingConfig.EnableTracking = true;
-        CoroutineRuntimeTrackingConfig.EnableProfiling = true;
-        CoroutineRuntimeTrackingConfig.EnableCounting = true;
-    }
-
-    public static IEnumerator DefaultStatsReportCoroutine()
-    {
-        while (true)
-        {
-            CoroutineStatistics.ReportAndCleanup();
-
-            yield return new WaitForSeconds((float)CoroutineRuntimeTrackingConfig.KeptSeconds);
         }
     }
 }
