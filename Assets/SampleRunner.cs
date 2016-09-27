@@ -22,6 +22,7 @@ public class SampleRunner : MonoBehaviour {
 
     void Update()
     {
-
+        GraphIt.Log("Master", "sub1", Random.value * 5.0f);
+        GraphIt.Log("Master", "sub2", Random.value * 15.0f);
     }
 }
