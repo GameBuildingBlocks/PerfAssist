@@ -38,7 +38,7 @@ public class GraphItPanel : EditorWindow
             SmallLabel.normal.textColor = Color.white;
 
             HoverText = new GUIStyle(EditorStyles.whiteLabel);
-            HoverText.alignment = TextAnchor.UpperRight;
+            HoverText.alignment = TextAnchor.MiddleCenter;
             HoverText.normal.background = GuiUtil.getColorTexture(LabelBackground);
             HoverText.normal.textColor = Color.white;
 
@@ -362,7 +362,7 @@ public class GraphItPanel : EditorWindow
                                             //found this mouse positions step
                                             string text = value.ToString(num_format);
 
-                                            Rect tooltip_r = new Rect(Event.current.mousePosition - new Vector2(250, 2 - hover_y_offset), new Vector2(250, 20));
+                                            Rect tooltip_r = new Rect(Event.current.mousePosition + new Vector2(10, 2 - hover_y_offset), new Vector2(50, 20));
                                             HoverText.normal.textColor = g.mColor;
                                             GUI.Label(tooltip_r, text, HoverText);
 
@@ -374,6 +374,11 @@ public class GraphItPanel : EditorWindow
                                 }
                             }
                         }
+                    }
+
+                    if (Event.current.type == EventType.MouseDown && Event.current.button == 1)
+                    {
+                        kv.Value.SetHidden(true);
                     }
                 }
 

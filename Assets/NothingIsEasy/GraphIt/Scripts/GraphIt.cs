@@ -45,7 +45,8 @@ public class GraphItDataInternal
 
 public class GraphItData
 {
-    public const int DEFAULT_SAMPLES = 2048;
+    public const int DEFAULT_SAMPLES = 128;
+    //public const int DEFAULT_SAMPLES = 2048;
     public const int RECENT_WINDOW_SIZE = 120;
     
     public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();
@@ -201,6 +202,9 @@ public class GraphIt : MonoBehaviour
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
 
+    //gulu: step is done manually (not on a per-frame basis)
+    private bool _stepManually = false;
+
     static GraphIt mInstance = null;
 #endif
 
@@ -318,7 +322,11 @@ public class GraphIt : MonoBehaviour
         }
 #endif
     }
-    
+
+    public static void GraphStepManually(bool stepManually = true)
+    {
+        Instance._stepManually = stepManually;
+    }
 
     /// <summary>
     /// Optional setup function that allows you to specify both the inclusion of Y-axis 0, and how many samples to track.
@@ -484,7 +492,10 @@ public class GraphIt : MonoBehaviour
         }
         g.mData[subgraph].mCounter += f;
 
-        g.mReadyForUpdate = true;
+        if (!Instance._stepManually)
+        {
+            g.mReadyForUpdate = true;
+        }
 #endif
     }
 

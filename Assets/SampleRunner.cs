@@ -7,6 +7,8 @@ public class SampleRunner : MonoBehaviour {
     {
         // bootstrapping
         RuntimeCoroutineTracker.EnableTrackingSystemProgrammatically();
+
+        GraphIt.GraphStepManually();
         StartCoroutine(RuntimeCoroutineTracker.DefaultStatsReportCoroutine());
 
         TestPluginRunner pluginRunner = gameObject.AddComponent<TestPluginRunner>();
@@ -22,7 +24,5 @@ public class SampleRunner : MonoBehaviour {
 
     void Update()
     {
-        GraphIt.Log("Master", "sub1", Random.value * 5.0f);
-        GraphIt.Log("Master", "sub2", Random.value * 15.0f);
     }
 }

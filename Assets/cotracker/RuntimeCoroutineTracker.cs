@@ -62,7 +62,14 @@ public class CoroutineStatistics
         }
 
         _history.Clear();
-        Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
+
+        GraphIt.Log("co_creation", _lastnSecCreationCount);
+        GraphIt.Log("co_movenext", _lastnSecEnumerationCount);
+        GraphIt.Log("co_time", UnityEngine.Random.value * 2.0f + 5.0f);
+        GraphIt.StepGraph("co_creation");
+        GraphIt.StepGraph("co_movenext");
+        GraphIt.StepGraph("co_time");
+        //Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
     }
 
     static List<CoStatsEntry> _history = new List<CoStatsEntry>();

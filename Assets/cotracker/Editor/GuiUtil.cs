@@ -8,7 +8,7 @@ using UnityEngine;
 public static class GuiConstants
 {
     public static float ToobarHeight = 30.0f;
-    public static float DataTableWidth = 150.0f;
+    public static float DataTableWidth = 400.0f;
 }
 
 public static class GuiUtil
