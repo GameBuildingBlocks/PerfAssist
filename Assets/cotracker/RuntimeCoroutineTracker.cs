@@ -13,7 +13,7 @@ public class CoroutineRuntimeTrackingConfig
     public static bool EnableTracking = false;
 
     // last n seconds are kept
-    public static float BroadcastInterval = 1.0f;
+    public static float BroadcastInterval = 0.5f;
 }
 
 //public enum CoStatsEvent

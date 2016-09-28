@@ -54,6 +54,7 @@ public class GraphItData
     public string mName;
 
     public int mCurrentIndex;
+    public int mSelectedIndex;
     public bool mInclude0;
 
     public bool mReadyForUpdate;
@@ -75,6 +76,7 @@ public class GraphItData
         mData = new Dictionary<string, GraphItDataInternal>();
 
         mCurrentIndex = 0;
+        mSelectedIndex = 0;
         mInclude0 = true;
 
         mReadyForUpdate = false;

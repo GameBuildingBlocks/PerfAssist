@@ -15,7 +15,10 @@ public static class GuiUtil
 {
     public static void DrawLabel(string content, GUIStyle style)
     {
-        EditorGUILayout.LabelField(content, style, GUILayout.Width(style.CalcSize(new GUIContent(content)).x + 5));
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.LabelField(content, style, GUILayout.Width(style.CalcSize(new GUIContent(content)).x + 3));
+        EditorGUILayout.EndHorizontal();
     }
 
     private static Dictionary<Color, Texture2D> s_colorTextures = new Dictionary<Color,Texture2D>();

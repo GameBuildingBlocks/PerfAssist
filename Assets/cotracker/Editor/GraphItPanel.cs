@@ -10,16 +10,15 @@ public class GraphItPanel
 
     static int mMouseOverGraphIndex = -1;
     static float mMouseX = 0;
+    static float mSelectedX = -1.0f;
 
     static float x_offset = 2.0f;
     static float y_gap = 5.0f;
     static float y_offset = 2;
-    static int precision_slider = 3;
 
     static GUIStyle NameLabel;
     static GUIStyle SmallLabel;
     static GUIStyle HoverText;
-    static GUIStyle FracGS;
 
     static Material mLineMaterial;
 
@@ -41,16 +40,12 @@ public class GraphItPanel
             HoverText.alignment = TextAnchor.MiddleCenter;
             HoverText.normal.background = GuiUtil.getColorTexture(LabelBackground);
             HoverText.normal.textColor = Color.white;
-
-            FracGS = new GUIStyle(EditorStyles.whiteLabel);
-            FracGS.alignment = TextAnchor.LowerLeft;
         }
     }
 
-    static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)
+    static void DrawGraphGrid(float y_pos, float width, float height, float steps, Color c)
     {
-        GL.Color(new Color(0.3f, 0.3f, 0.3f));
-        float steps = 8;
+        GL.Color(c);
         float x_step = width / steps;
         float y_step = height / steps;
         for (int i = 0; i < steps + 1; ++i)
@@ -58,21 +53,33 @@ public class GraphItPanel
             Plot(x_offset + x_step * i, y_pos, x_offset + x_step * i, y_pos + height);
             Plot(x_offset, y_pos + y_step * i, x_offset + width, y_pos + y_step * i);
         }
+    }
 
-        GL.Color(new Color(0.4f, 0.4f, 0.4f));
-        steps = 4;
-        x_step = width / steps;
-        y_step = height / steps;
-        for (int i = 0; i < steps + 1; ++i)
+    static void DrawGraphGridLines(float y_pos, float width, float height, bool draw_mouse_line)
+    {
+        if (height >= 200)
         {
-            Plot(x_offset + x_step * i, y_pos, x_offset + x_step * i, y_pos + height);
-            Plot(x_offset, y_pos + y_step * i, x_offset + width, y_pos + y_step * i);
+            DrawGraphGrid(y_pos, width, height, 8, new Color(0.25f, 0.25f, 0.25f));
+        }
+        if (height >= 100)
+        {
+            DrawGraphGrid(y_pos, width, height, 4, new Color(0.25f, 0.25f, 0.25f));
+        }
+        {
+            DrawGraphGrid(y_pos, width, height, 2, new Color(0.3f, 0.3f, 0.3f));
+            DrawGraphGrid(y_pos, width, height, 1, new Color(0.4f, 0.4f, 0.4f));
         }
 
         if (draw_mouse_line)
         {
             GL.Color(new Color(0.8f, 0.8f, 0.8f));
             Plot(mMouseX, y_pos, mMouseX, y_pos + height);
+        }
+
+        if (mSelectedX >= 0)
+        {
+            GL.Color(new Color(0.8f, 0.2f, 0.5f));
+            Plot(mSelectedX, y_pos, mSelectedX, y_pos + height);
         }
     }
 
@@ -98,28 +105,6 @@ public class GraphItPanel
         {
             InitializeStyles();
             CreateLineMaterial();
-
-            EditorGUILayout.BeginHorizontal(GUIStyle.none);
-            EditorGUILayout.BeginVertical(FracGS, GUILayout.Height(18));
-            precision_slider = EditorGUILayout.IntSlider("Fractional Digits", precision_slider, 0, 15);
-            EditorGUILayout.EndVertical();
-            if (GUILayout.Button("Show All Graphs"))
-            {
-                foreach (KeyValuePair<string, GraphItData> kv in GraphIt.Instance.Graphs)
-                {
-                    kv.Value.SetHidden(false);
-                }
-            }
-            /*
-            if (GUILayout.Button("?"))
-            {
-                foreach (KeyValuePair<string, GraphItData> kv in GraphIt.Instance.Graphs)
-                {
-                    kv.Value.SetHidden(false);
-                }
-            }*/
-            //EditorGUILayout.LabelField("Left click+drag on graph to resize. Right click to hide graph.", EditorStyles.helpBox );
-            EditorGUILayout.EndHorizontal();
 
             mLineMaterial.SetPass(0);
 
@@ -175,7 +160,7 @@ public class GraphItPanel
                     float x_step = mWidth / kv.Value.GraphFullLength();
 
                     float height = kv.Value.GetHeight();
-                    DrawGraphGridLines(scrolled_y_pos, mWidth, height, graph_index == mMouseOverGraphIndex);
+                    DrawGraphGridLines(scrolled_y_pos, mWidth, height, mMouseOverGraphIndex != -1);
 
                     if (kv.Value.GraphLength() > 0)
                     {
@@ -254,73 +239,26 @@ public class GraphItPanel
                     mWidth = r.width - 2 * x_offset;
                 }
 
-                //Determine if we can fit all of the text
-                float row_size = 18;
-                float text_block_size = row_size * 4;
-                if (kv.Value.mData.Count == 1)
-                {
-                    text_block_size = row_size * 3;
-                }
-                bool show_full_text = (kv.Value.mData.Count * text_block_size + row_size) < height;
-
-                string num_format = "###,###,###,##0.";
-                for( int i = 0; i < precision_slider; i++ )
-                {
-                    num_format += "#";
-                }
-
+                string fmt = "###,###,###,##0.###";
                 string fu_str = " " + (kv.Value.mFixedUpdate ? "(FixedUpdate)" : "");
 
-                //skip subgraph title if only one, and it's the same.
-                if (show_full_text)
-                {
-                    NameLabel.normal.textColor = Color.white;
-                    GuiUtil.DrawLabel(kv.Key + fu_str, NameLabel);
-                }
+                NameLabel.normal.textColor = Color.white;
+                GuiUtil.DrawLabel(kv.Key + fu_str, NameLabel);
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
                     GraphItDataInternal g = entry.Value;
-                    if (show_full_text)
+                    if (kv.Value.mData.Count > 1 || entry.Key != GraphIt.BASE_GRAPH)
                     {
-                        if (kv.Value.mData.Count > 1 || entry.Key != GraphIt.BASE_GRAPH)
-                        {
-                            NameLabel.normal.textColor = g.mColor;
-                            GuiUtil.DrawLabel(entry.Key, NameLabel);
-                        }
-                        GuiUtil.DrawLabel("Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) + ")", SmallLabel);
-                        GuiUtil.DrawLabel("Min: " + g.mMin.ToString(num_format), SmallLabel);
-                        GuiUtil.DrawLabel("Max: " + g.mMax.ToString(num_format), SmallLabel);
+                        NameLabel.normal.textColor = g.mColor;
+                        GuiUtil.DrawLabel(entry.Key, NameLabel);
                     }
-                    else
+
+                    if (g.mDataPoints.Length > 0)
                     {
-                        //fit each line manually or drop it
-                        height -= row_size;
-                        if (height >= 0)
-                        {
-                            if (kv.Value.mData.Count > 1)
-                            {
-                                NameLabel.normal.textColor = g.mColor;
-                            }
-                            else
-                            {
-                                NameLabel.normal.textColor = Color.white;
-                            }
-                            string text = entry.Key;
-                            if( text == GraphIt.BASE_GRAPH )
-                            {
-                                text = kv.Key;
-                            }
-                            GuiUtil.DrawLabel(text + fu_str, NameLabel);
-                        }
-                        height -= row_size;
-                        if (height >= 0)
-                        {
-                            GuiUtil.DrawLabel("Avg: " + g.mAvg.ToString(num_format) + " (" + g.mFastAvg.ToString(num_format) +
-                            ")  Min: " + g.mMin.ToString(num_format) +
-                            "  Max: " + g.mMax.ToString(num_format)
-                            , SmallLabel);
-                        }
+                        GuiUtil.DrawLabel(string.Format("Last/Min/Max: {0}/{1}/{2}",
+                            g.mDataPoints[(kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length].ToString(fmt),
+                            g.mMin.ToString(fmt), g.mMax.ToString(fmt)), SmallLabel);
                     }
                 }
                 
@@ -334,7 +272,7 @@ public class GraphItPanel
                 }
                 else if (Event.current.type != EventType.Layout && r.Contains(Event.current.mousePosition))
                 {
-                    if (Event.current.type == EventType.Repaint)
+                    if (Event.current.type == EventType.Repaint || Event.current.type == EventType.MouseDown)
                     {
                         mMouseOverGraphIndex = graph_index;
                         mMouseX = Event.current.mousePosition.x;
@@ -360,7 +298,14 @@ public class GraphItPanel
                                         if (x0 < mMouseX && mMouseX <= x1)
                                         {
                                             //found this mouse positions step
-                                            string text = value.ToString(num_format);
+
+                                            if (Event.current.type == EventType.MouseDown)
+                                            {
+                                                kv.Value.mSelectedIndex = i;
+                                                mSelectedX = x1;
+                                            }
+
+                                            string text = value.ToString(fmt);
 
                                             Rect tooltip_r = new Rect(Event.current.mousePosition + new Vector2(10, 2 - hover_y_offset), new Vector2(50, 20));
                                             HoverText.normal.textColor = g.mColor;
@@ -374,11 +319,6 @@ public class GraphItPanel
                                 }
                             }
                         }
-                    }
-
-                    if (Event.current.type == EventType.MouseDown && Event.current.button == 1)
-                    {
-                        kv.Value.SetHidden(true);
                     }
                 }
 

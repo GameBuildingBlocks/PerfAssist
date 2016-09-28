@@ -4,21 +4,20 @@ using System.Collections.Generic;
 
 public class CoroutineEditorReceived 
 {
-    public static float SnapshotInterval = 3.0f;
+    public static float SnapshotInterval = 1.0f;
 
     public static CoroutineEditorReceived Instance = new CoroutineEditorReceived();
-    //List<string> dbgtimes = new List<string>();
+
+    public CoroutineEditorReceived()
+    {
+        CoroutineGraphUtil.SetHeight("creation", 50);
+        CoroutineGraphUtil.SetHeight("termination", 50);
+        CoroutineGraphUtil.SetHeight("exec_count", 100);
+        CoroutineGraphUtil.SetHeight("exec_time", 200);
+    }
 
     public void Receive(List<CoroutineActivity> activities)
     {
-        //foreach (var item in _activities)
-        //{
-        //    dbgtimes.Add(item.timestamp.ToString("0.000"));
-        //}
-
-        //Debug.LogWarning(string.Join(",", dbgtimes.ToArray()));
-        //dbgtimes.Clear();
-
         foreach (var item in activities)
         {
             _activities.Enqueue(item);
@@ -72,9 +71,9 @@ public class CoroutineEditorReceived
         }
 
         CoroutineGraphUtil.LogData("creation", creationCount);
-        CoroutineGraphUtil.LogData("execution", executionCount);
         CoroutineGraphUtil.LogData("termination", terminationCount);
-        CoroutineGraphUtil.LogData("exe_time", executionTime);
+        CoroutineGraphUtil.LogData("exec_count", executionCount);
+        CoroutineGraphUtil.LogData("exec_time", executionTime);
     }
 
     Queue<CoroutineActivity> _activities = new Queue<CoroutineActivity>();
