@@ -93,6 +93,7 @@ public class CoroutineStatisticsV2
         _activeCoroutines.Remove(seq);
     }
 
+
     public IEnumerator BroadcastCoroutine()
     {
         _broadcastStarted = true;
@@ -100,7 +101,7 @@ public class CoroutineStatisticsV2
         while (true)
         {
             if (hasBroadcastReceivers())
-                OnBroadcast(_activities);
+                _onBroadcast(_activities);
 
             _activities.Clear();
 
@@ -108,11 +109,23 @@ public class CoroutineStatisticsV2
         }
     }
 
-    public event OnCoStatsBroadcast OnBroadcast;
+    private OnCoStatsBroadcast _onBroadcast;
+    public event OnCoStatsBroadcast OnBroadcast
+    {
+        add
+        {
+            _onBroadcast -= value;
+            _onBroadcast += value;
+        }
+        remove
+        {
+            _onBroadcast -= value;
+        }
+    }
 
     List<CoroutineActivity> _activities = new List<CoroutineActivity>();
     HashSet<int> _activeCoroutines = new HashSet<int>();
 
     bool _broadcastStarted = false;
-    bool hasBroadcastReceivers() { return OnBroadcast != null && OnBroadcast.GetInvocationList().Length > 0; }
+    bool hasBroadcastReceivers() { return _onBroadcast != null && _onBroadcast.GetInvocationList().Length > 0; }
 }

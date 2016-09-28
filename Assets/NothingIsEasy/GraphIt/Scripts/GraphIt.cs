@@ -202,8 +202,8 @@ public class GraphIt : MonoBehaviour
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
 
-    //gulu: step is done manually (not on a per-frame basis)
-    private bool _stepManually = false;
+    //gulu: step is done manually (no longer on a per-frame basis)
+    private bool _stepManually = true;
 
     static GraphIt mInstance = null;
 #endif

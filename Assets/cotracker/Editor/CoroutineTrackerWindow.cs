@@ -29,8 +29,6 @@ public class CoroutineTrackerWindow : EditorWindow
                 w.position = rect;
             }
         }
-
-        GraphIt.GraphStepManually();
     }
 
     void OnEnable()

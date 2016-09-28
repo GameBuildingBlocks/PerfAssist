@@ -19,8 +19,10 @@ public class SampleRunner : MonoBehaviour {
             w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
         }
 #endif
+        GraphIt.GraphStepManually();
 
-        TestPluginRunner pluginRunner = gameObject.AddComponent<TestPluginRunner>();
+        gameObject.AddComponent<TestPluginRunner>();
+
         CoroutinePluginForwarder.InvokeStart_IEnumerator = RuntimeCoroutineTracker.InvokeStart;
         CoroutinePluginForwarder.InvokeStart_String = RuntimeCoroutineTracker.InvokeStart;
 
