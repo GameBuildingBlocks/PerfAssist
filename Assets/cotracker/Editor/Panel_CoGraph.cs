@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
-public class GraphItPanel 
+public class Panel_CoGraph 
 {
     static Vector2 mScrollPos;
     static float mWidth;

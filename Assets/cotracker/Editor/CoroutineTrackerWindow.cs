@@ -10,7 +10,7 @@ public class CoroutineTrackerWindow : EditorWindow
     Vector2 _scrollPositionLeft;
     Vector2 _scrollPositionRight;
 
-    GraphItPanel _graphPanel = new GraphItPanel();
+    Panel_CoGraph _graphPanel = new Panel_CoGraph();
 
     [MenuItem("Window/CoroutineTracker")]
     static void Create()
