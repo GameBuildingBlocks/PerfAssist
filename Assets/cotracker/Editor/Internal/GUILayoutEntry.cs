@@ -3,6 +3,36 @@ using UnityEngine;
 
 namespace CoInternal
 {
+    public sealed class GUILayoutOption
+    {
+        public enum Type
+        {
+            fixedWidth,
+            fixedHeight,
+            minWidth,
+            maxWidth,
+            minHeight,
+            maxHeight,
+            stretchWidth,
+            stretchHeight,
+            alignStart,
+            alignMiddle,
+            alignEnd,
+            alignJustify,
+            equalSize,
+            spacing
+        }
+
+        public GUILayoutOption.Type type;
+
+        public object value;
+
+        public GUILayoutOption(GUILayoutOption.Type type, object value)
+        {
+            this.type = type;
+            this.value = value;
+        }
+    }
     class GUILayoutEntry
     {
         public float minWidth;

@@ -190,29 +190,29 @@ namespace CoInternal
             this.m_ChildMinWidth = 0f;
             this.m_ChildMaxWidth = 0f;
             this.m_StretchableCountX = 0;
-            bool flag = true;
+            //bool flag = true;
             if (this.isVertical)
             {
                 foreach (GUILayoutEntry current in this.entries)
                 {
                     current.CalcWidth();
                     RectOffset margin = current.margin;
-                    if (current.style != GUILayoutUtility.spaceStyle)
-                    {
-                        if (!flag)
-                        {
-                            num = Mathf.Min(margin.left, num);
-                            num2 = Mathf.Min(margin.right, num2);
-                        }
-                        else
-                        {
-                            num = margin.left;
-                            num2 = margin.right;
-                            flag = false;
-                        }
-                        this.m_ChildMinWidth = Mathf.Max(current.minWidth + (float)margin.horizontal, this.m_ChildMinWidth);
-                        this.m_ChildMaxWidth = Mathf.Max(current.maxWidth + (float)margin.horizontal, this.m_ChildMaxWidth);
-                    }
+                    //if (current.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    if (!flag)
+                    //    {
+                    //        num = Mathf.Min(margin.left, num);
+                    //        num2 = Mathf.Min(margin.right, num2);
+                    //    }
+                    //    else
+                    //    {
+                    //        num = margin.left;
+                    //        num2 = margin.right;
+                    //        flag = false;
+                    //    }
+                    //    this.m_ChildMinWidth = Mathf.Max(current.minWidth + (float)margin.horizontal, this.m_ChildMinWidth);
+                    //    this.m_ChildMaxWidth = Mathf.Max(current.maxWidth + (float)margin.horizontal, this.m_ChildMaxWidth);
+                    //}
                     this.m_StretchableCountX += current.stretchWidth;
                 }
                 this.m_ChildMinWidth -= (float)(num + num2);
@@ -225,24 +225,24 @@ namespace CoInternal
                 {
                     current2.CalcWidth();
                     RectOffset margin2 = current2.margin;
-                    if (current2.style != GUILayoutUtility.spaceStyle)
-                    {
-                        int num4;
-                        if (!flag)
-                        {
-                            num4 = ((num3 <= margin2.left) ? margin2.left : num3);
-                        }
-                        else
-                        {
-                            num4 = 0;
-                            flag = false;
-                        }
-                        this.m_ChildMinWidth += current2.minWidth + this.spacing + (float)num4;
-                        this.m_ChildMaxWidth += current2.maxWidth + this.spacing + (float)num4;
-                        num3 = margin2.right;
-                        this.m_StretchableCountX += current2.stretchWidth;
-                    }
-                    else
+                    //if (current2.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    int num4;
+                    //    if (!flag)
+                    //    {
+                    //        num4 = ((num3 <= margin2.left) ? margin2.left : num3);
+                    //    }
+                    //    else
+                    //    {
+                    //        num4 = 0;
+                    //        flag = false;
+                    //    }
+                    //    this.m_ChildMinWidth += current2.minWidth + this.spacing + (float)num4;
+                    //    this.m_ChildMaxWidth += current2.maxWidth + this.spacing + (float)num4;
+                    //    num3 = margin2.right;
+                    //    this.m_StretchableCountX += current2.stretchWidth;
+                    //}
+                    //else
                     {
                         this.m_ChildMinWidth += current2.minWidth;
                         this.m_ChildMaxWidth += current2.maxWidth;
@@ -367,18 +367,18 @@ namespace CoInternal
                 {
                     float num10 = Mathf.Lerp(current3.minWidth, current3.maxWidth, t);
                     num10 += num8 * (float)current3.stretchWidth;
-                    if (current3.style != GUILayoutUtility.spaceStyle)
-                    {
-                        int num11 = current3.margin.left;
-                        if (flag)
-                        {
-                            num11 = 0;
-                            flag = false;
-                        }
-                        int num12 = (num9 <= num11) ? num11 : num9;
-                        x += (float)num12;
-                        num9 = current3.margin.right;
-                    }
+                    //if (current3.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    int num11 = current3.margin.left;
+                    //    if (flag)
+                    //    {
+                    //        num11 = 0;
+                    //        flag = false;
+                    //    }
+                    //    int num12 = (num9 <= num11) ? num11 : num9;
+                    //    x += (float)num12;
+                    //    num9 = current3.margin.right;
+                    //}
                     current3.SetHorizontal(Mathf.Round(x), Mathf.Round(num10));
                     x += num10 + this.spacing;
                 }
@@ -405,29 +405,29 @@ namespace CoInternal
                 {
                     current.CalcHeight();
                     RectOffset margin = current.margin;
-                    if (current.style != GUILayoutUtility.spaceStyle)
-                    {
-                        int num4;
-                        if (!flag)
-                        {
-                            num4 = Mathf.Max(num3, margin.top);
-                        }
-                        else
-                        {
-                            num4 = 0;
-                            flag = false;
-                        }
-                        this.m_ChildMinHeight += current.minHeight + this.spacing + (float)num4;
-                        this.m_ChildMaxHeight += current.maxHeight + this.spacing + (float)num4;
-                        num3 = margin.bottom;
-                        this.m_StretchableCountY += current.stretchHeight;
-                    }
-                    else
-                    {
-                        this.m_ChildMinHeight += current.minHeight;
-                        this.m_ChildMaxHeight += current.maxHeight;
-                        this.m_StretchableCountY += current.stretchHeight;
-                    }
+                    //if (current.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    int num4;
+                    //    if (!flag)
+                    //    {
+                    //        num4 = Mathf.Max(num3, margin.top);
+                    //    }
+                    //    else
+                    //    {
+                    //        num4 = 0;
+                    //        flag = false;
+                    //    }
+                    //    this.m_ChildMinHeight += current.minHeight + this.spacing + (float)num4;
+                    //    this.m_ChildMaxHeight += current.maxHeight + this.spacing + (float)num4;
+                    //    num3 = margin.bottom;
+                    //    this.m_StretchableCountY += current.stretchHeight;
+                    //}
+                    //else
+                    //{
+                    //    this.m_ChildMinHeight += current.minHeight;
+                    //    this.m_ChildMaxHeight += current.maxHeight;
+                    //    this.m_StretchableCountY += current.stretchHeight;
+                    //}
                 }
                 this.m_ChildMinHeight -= this.spacing;
                 this.m_ChildMaxHeight -= this.spacing;
@@ -448,22 +448,22 @@ namespace CoInternal
                 {
                     current2.CalcHeight();
                     RectOffset margin2 = current2.margin;
-                    if (current2.style != GUILayoutUtility.spaceStyle)
-                    {
-                        if (!flag2)
-                        {
-                            num = Mathf.Min(margin2.top, num);
-                            num2 = Mathf.Min(margin2.bottom, num2);
-                        }
-                        else
-                        {
-                            num = margin2.top;
-                            num2 = margin2.bottom;
-                            flag2 = false;
-                        }
-                        this.m_ChildMinHeight = Mathf.Max(current2.minHeight, this.m_ChildMinHeight);
-                        this.m_ChildMaxHeight = Mathf.Max(current2.maxHeight, this.m_ChildMaxHeight);
-                    }
+                    //if (current2.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    if (!flag2)
+                    //    {
+                    //        num = Mathf.Min(margin2.top, num);
+                    //        num2 = Mathf.Min(margin2.bottom, num2);
+                    //    }
+                    //    else
+                    //    {
+                    //        num = margin2.top;
+                    //        num2 = margin2.bottom;
+                    //        flag2 = false;
+                    //    }
+                    //    this.m_ChildMinHeight = Mathf.Max(current2.minHeight, this.m_ChildMinHeight);
+                    //    this.m_ChildMaxHeight = Mathf.Max(current2.maxHeight, this.m_ChildMaxHeight);
+                    //}
                     this.m_StretchableCountY += current2.stretchHeight;
                 }
             }
@@ -541,18 +541,18 @@ namespace CoInternal
                 {
                     float num6 = Mathf.Lerp(current.minHeight, current.maxHeight, t);
                     num6 += num4 * (float)current.stretchHeight;
-                    if (current.style != GUILayoutUtility.spaceStyle)
-                    {
-                        int num7 = current.margin.top;
-                        if (flag)
-                        {
-                            num7 = 0;
-                            flag = false;
-                        }
-                        int num8 = (num5 <= num7) ? num7 : num5;
-                        y += (float)num8;
-                        num5 = current.margin.bottom;
-                    }
+                    //if (current.style != GUILayoutUtility.spaceStyle)
+                    //{
+                    //    int num7 = current.margin.top;
+                    //    if (flag)
+                    //    {
+                    //        num7 = 0;
+                    //        flag = false;
+                    //    }
+                    //    int num8 = (num5 <= num7) ? num7 : num5;
+                    //    y += (float)num8;
+                    //    num5 = current.margin.bottom;
+                    //}
                     current.SetVertical(Mathf.Round(y), Mathf.Round(num6));
                     y += num6 + this.spacing;
                 }

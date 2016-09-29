@@ -118,69 +118,69 @@ namespace CoInternal
 
         public static void BeginSplit(SplitterState state, GUIStyle style, bool vertical, params GUILayoutOption[] options)
         {
-            SplitterGUILayout.GUISplitterGroup gUISplitterGroup = (SplitterGUILayout.GUISplitterGroup)GUILayoutUtility.BeginLayoutGroup(style, null, typeof(SplitterGUILayout.GUISplitterGroup));
-            state.ID = GUIUtility.GetControlID(SplitterGUILayout.splitterHash, FocusType.Native);
-            switch (Event.current.GetTypeForControl(state.ID))
-            {
-                case EventType.MouseDown:
-                    if (Event.current.button == 0 && Event.current.clickCount == 1)
-                    {
-                        int num = (!gUISplitterGroup.isVertical) ? ((int)gUISplitterGroup.rect.x) : ((int)gUISplitterGroup.rect.y);
-                        int num2 = (!gUISplitterGroup.isVertical) ? ((int)Event.current.mousePosition.x) : ((int)Event.current.mousePosition.y);
-                        for (int i = 0; i < state.relativeSizes.Length - 1; i++)
-                        {
-                            if (((!gUISplitterGroup.isVertical) ? new Rect(state.xOffset + (float)num + (float)state.realSizes[i] - (float)(state.splitSize / 2), gUISplitterGroup.rect.y, (float)state.splitSize, gUISplitterGroup.rect.height) : new Rect(state.xOffset + gUISplitterGroup.rect.x, (float)(num + state.realSizes[i] - state.splitSize / 2), gUISplitterGroup.rect.width, (float)state.splitSize)).Contains(Event.current.mousePosition))
-                            {
-                                state.splitterInitialOffset = num2;
-                                state.currentActiveSplitter = i;
-                                GUIUtility.hotControl = state.ID;
-                                Event.current.Use();
-                                break;
-                            }
-                            num += state.realSizes[i];
-                        }
-                    }
-                    break;
-                case EventType.MouseUp:
-                    if (GUIUtility.hotControl == state.ID)
-                    {
-                        GUIUtility.hotControl = 0;
-                        state.currentActiveSplitter = -1;
-                        state.RealToRelativeSizes();
-                        Event.current.Use();
-                    }
-                    break;
-                case EventType.MouseDrag:
-                    if (GUIUtility.hotControl == state.ID && state.currentActiveSplitter >= 0)
-                    {
-                        int num2 = (!gUISplitterGroup.isVertical) ? ((int)Event.current.mousePosition.x) : ((int)Event.current.mousePosition.y);
-                        int num3 = num2 - state.splitterInitialOffset;
-                        if (num3 != 0)
-                        {
-                            state.splitterInitialOffset = num2;
-                            state.DoSplitter(state.currentActiveSplitter, state.currentActiveSplitter + 1, num3);
-                        }
-                        Event.current.Use();
-                    }
-                    break;
-                case EventType.Repaint:
-                    {
-                        int num4 = (!gUISplitterGroup.isVertical) ? ((int)gUISplitterGroup.rect.x) : ((int)gUISplitterGroup.rect.y);
-                        for (int j = 0; j < state.relativeSizes.Length - 1; j++)
-                        {
-                            Rect position = (!gUISplitterGroup.isVertical) ? new Rect(state.xOffset + (float)num4 + (float)state.realSizes[j] - (float)(state.splitSize / 2), gUISplitterGroup.rect.y, (float)state.splitSize, gUISplitterGroup.rect.height) : new Rect(state.xOffset + gUISplitterGroup.rect.x, (float)(num4 + state.realSizes[j] - state.splitSize / 2), gUISplitterGroup.rect.width, (float)state.splitSize);
-                            EditorGUIUtility.AddCursorRect(position, (!gUISplitterGroup.isVertical) ? MouseCursor.SplitResizeLeftRight : MouseCursor.ResizeVertical, state.ID);
-                            num4 += state.realSizes[j];
-                        }
-                        break;
-                    }
-                case EventType.Layout:
-                    gUISplitterGroup.state = state;
-                    gUISplitterGroup.resetCoords = false;
-                    gUISplitterGroup.isVertical = vertical;
-                    gUISplitterGroup.ApplyOptions(options);
-                    break;
-            }
+            //SplitterGUILayout.GUISplitterGroup gUISplitterGroup = (SplitterGUILayout.GUISplitterGroup)GUILayoutUtility.BeginLayoutGroup(style, null, typeof(SplitterGUILayout.GUISplitterGroup));
+            //state.ID = GUIUtility.GetControlID(SplitterGUILayout.splitterHash, FocusType.Native);
+            //switch (Event.current.GetTypeForControl(state.ID))
+            //{
+            //    case EventType.MouseDown:
+            //        if (Event.current.button == 0 && Event.current.clickCount == 1)
+            //        {
+            //            int num = (!gUISplitterGroup.isVertical) ? ((int)gUISplitterGroup.rect.x) : ((int)gUISplitterGroup.rect.y);
+            //            int num2 = (!gUISplitterGroup.isVertical) ? ((int)Event.current.mousePosition.x) : ((int)Event.current.mousePosition.y);
+            //            for (int i = 0; i < state.relativeSizes.Length - 1; i++)
+            //            {
+            //                if (((!gUISplitterGroup.isVertical) ? new Rect(state.xOffset + (float)num + (float)state.realSizes[i] - (float)(state.splitSize / 2), gUISplitterGroup.rect.y, (float)state.splitSize, gUISplitterGroup.rect.height) : new Rect(state.xOffset + gUISplitterGroup.rect.x, (float)(num + state.realSizes[i] - state.splitSize / 2), gUISplitterGroup.rect.width, (float)state.splitSize)).Contains(Event.current.mousePosition))
+            //                {
+            //                    state.splitterInitialOffset = num2;
+            //                    state.currentActiveSplitter = i;
+            //                    GUIUtility.hotControl = state.ID;
+            //                    Event.current.Use();
+            //                    break;
+            //                }
+            //                num += state.realSizes[i];
+            //            }
+            //        }
+            //        break;
+            //    case EventType.MouseUp:
+            //        if (GUIUtility.hotControl == state.ID)
+            //        {
+            //            GUIUtility.hotControl = 0;
+            //            state.currentActiveSplitter = -1;
+            //            state.RealToRelativeSizes();
+            //            Event.current.Use();
+            //        }
+            //        break;
+            //    case EventType.MouseDrag:
+            //        if (GUIUtility.hotControl == state.ID && state.currentActiveSplitter >= 0)
+            //        {
+            //            int num2 = (!gUISplitterGroup.isVertical) ? ((int)Event.current.mousePosition.x) : ((int)Event.current.mousePosition.y);
+            //            int num3 = num2 - state.splitterInitialOffset;
+            //            if (num3 != 0)
+            //            {
+            //                state.splitterInitialOffset = num2;
+            //                state.DoSplitter(state.currentActiveSplitter, state.currentActiveSplitter + 1, num3);
+            //            }
+            //            Event.current.Use();
+            //        }
+            //        break;
+            //    case EventType.Repaint:
+            //        {
+            //            int num4 = (!gUISplitterGroup.isVertical) ? ((int)gUISplitterGroup.rect.x) : ((int)gUISplitterGroup.rect.y);
+            //            for (int j = 0; j < state.relativeSizes.Length - 1; j++)
+            //            {
+            //                Rect position = (!gUISplitterGroup.isVertical) ? new Rect(state.xOffset + (float)num4 + (float)state.realSizes[j] - (float)(state.splitSize / 2), gUISplitterGroup.rect.y, (float)state.splitSize, gUISplitterGroup.rect.height) : new Rect(state.xOffset + gUISplitterGroup.rect.x, (float)(num4 + state.realSizes[j] - state.splitSize / 2), gUISplitterGroup.rect.width, (float)state.splitSize);
+            //                EditorGUIUtility.AddCursorRect(position, (!gUISplitterGroup.isVertical) ? MouseCursor.SplitResizeLeftRight : MouseCursor.ResizeVertical, state.ID);
+            //                num4 += state.realSizes[j];
+            //            }
+            //            break;
+            //        }
+            //    case EventType.Layout:
+            //        gUISplitterGroup.state = state;
+            //        gUISplitterGroup.resetCoords = false;
+            //        gUISplitterGroup.isVertical = vertical;
+            //        gUISplitterGroup.ApplyOptions(options);
+            //        break;
+            //}
         }
 
         public static void BeginHorizontalSplit(SplitterState state, params GUILayoutOption[] options)
@@ -205,12 +205,12 @@ namespace CoInternal
 
         public static void EndVerticalSplit()
         {
-            GUILayoutUtility.EndLayoutGroup();
+            //GUILayoutUtility.EndLayoutGroup();
         }
 
         public static void EndHorizontalSplit()
         {
-            GUILayoutUtility.EndLayoutGroup();
+            //GUILayoutUtility.EndLayoutGroup();
         }
     }
 }

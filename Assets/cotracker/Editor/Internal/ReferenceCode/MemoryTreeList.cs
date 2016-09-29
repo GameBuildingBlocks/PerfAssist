@@ -47,8 +47,6 @@ namespace CoInternal
 
         protected MemoryTreeList m_DetailView;
 
-        protected int m_ControlID;
-
         protected Vector2 m_ScrollPosition;
 
         protected float m_SelectionOffset;
@@ -73,7 +71,6 @@ namespace CoInternal
             this.m_MemorySelection = new MemoryElementSelection();
             this.m_EditorWindow = editorWindow;
             this.m_DetailView = detailview;
-            this.m_ControlID = GUIUtility.GetPermanentControlID();
             this.SetupSplitter();
         }
 
@@ -88,10 +85,10 @@ namespace CoInternal
 
         public void OnGUI()
         {
-            GUILayout.BeginVertical(new GUILayoutOption[0]);
-            SplitterGUILayout.BeginHorizontalSplit(this.m_Splitter, EditorStyles.toolbar, new GUILayoutOption[0]);
+            GUILayout.BeginVertical();
+            //SplitterGUILayout.BeginHorizontalSplit(this.m_Splitter, EditorStyles.toolbar, new GUILayoutOption[0]);
             this.DrawHeader();
-            SplitterGUILayout.EndHorizontalSplit();
+            //SplitterGUILayout.EndHorizontalSplit();
             if (this.m_Root == null)
             {
                 GUILayout.EndVertical();
@@ -105,10 +102,7 @@ namespace CoInternal
                 this.DrawItem(current, ref num, 1);
                 num++;
             }
-            GUILayoutUtility.GetRect(0f, (float)num * 16f, new GUILayoutOption[]
-			{
-				GUILayout.ExpandWidth(true)
-			});
+            GUILayoutUtility.GetRect(0f, (float)num * 16f, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
                 this.m_VisibleHeight = this.m_EditorWindow.position.height;
@@ -152,7 +146,7 @@ namespace CoInternal
 
         protected virtual void DrawHeader()
         {
-            GUILayout.Label("Referenced By:", MemoryTreeList.styles.header, new GUILayoutOption[0]);
+            GUILayout.Label("Referenced By:", MemoryTreeList.styles.header);
         }
 
         protected Rect GenerateRect(int row)
@@ -216,7 +210,6 @@ namespace CoInternal
         protected void RowClicked(Event evt, MemoryElement memoryElement)
         {
             this.m_MemorySelection.SetSelection(memoryElement);
-            GUIUtility.keyboardControl = this.m_ControlID;
             if (evt.clickCount == 2 && memoryElement.memoryInfo != null && memoryElement.memoryInfo.instanceId != 0)
             {
                 Selection.instanceIDs = new int[0];
@@ -237,10 +230,6 @@ namespace CoInternal
         protected void HandleKeyboard()
         {
             Event current = Event.current;
-            if (current.GetTypeForControl(this.m_ControlID) != EventType.KeyDown || this.m_ControlID != GUIUtility.keyboardControl)
-            {
-                return;
-            }
             if (this.m_MemorySelection.Selected == null)
             {
                 return;
