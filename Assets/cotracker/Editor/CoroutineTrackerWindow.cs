@@ -58,18 +58,19 @@ public class CoroutineTrackerWindow : EditorWindow
             GUILayout.BeginArea(r);
             {
                 _scrollPositionLeft = GUILayout.BeginScrollView(_scrollPositionLeft, GUIStyle.none, GUI.skin.verticalScrollbar);
-
                 _graphPanel.DrawGraphs(r);
-
                 GUILayout.EndScrollView();
             }
             GUILayout.EndArea();
         }
         {
-            GUILayout.BeginArea(new Rect(position.width - GuiConstants.DataTableWidth, GuiConstants.ToobarHeight, GuiConstants.DataTableWidth, position.height - GuiConstants.ToobarHeight));
-            _scrollPositionRight = GUILayout.BeginScrollView(_scrollPositionRight, GUIStyle.none, GUI.skin.verticalScrollbar);
-            GUILayout.Label("<to be added>");
-            GUILayout.EndScrollView();
+            Rect r1 = new Rect(position.width - GuiConstants.DataTableWidth, GuiConstants.ToobarHeight, GuiConstants.DataTableWidth, position.height - GuiConstants.ToobarHeight);
+            GUILayout.BeginArea(r1);
+            {
+                _scrollPositionRight = GUILayout.BeginScrollView(_scrollPositionRight, GUIStyle.none, GUI.skin.verticalScrollbar);
+                Panel_CoTable.Instance.DrawTable();
+                GUILayout.EndScrollView();
+            }
             GUILayout.EndArea();
         }
         GUILayout.EndHorizontal();
