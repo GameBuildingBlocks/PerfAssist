@@ -5,12 +5,6 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-public static class GuiConstants
-{
-    public static float ToobarHeight = 30.0f;
-    public static float DataTableWidth = 400.0f;
-}
-
 public static class GuiUtil
 {
     public static void DrawLabel(string content, GUIStyle style)
