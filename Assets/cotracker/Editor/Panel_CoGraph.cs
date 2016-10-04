@@ -3,6 +3,8 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
+public delegate void CoGraphSelectionHandler(int selectionIndex);
+
 public class Panel_CoGraph 
 {
     static Vector2 mScrollPos;
@@ -10,6 +12,7 @@ public class Panel_CoGraph
 
     static int mMouseOverGraphIndex = -1;
     static float mMouseX = 0;
+    static float mSelectedXLeft = -1.0f;
     static float mSelectedX = -1.0f;
 
     static float x_offset = 2.0f;
@@ -23,7 +26,23 @@ public class Panel_CoGraph
     static Material mLineMaterial;
 
     static Color LabelBackground = new Color(0.1f, 0.1f, 0.1f, 0.9f);
-    
+
+    private CoGraphSelectionHandler _selectionChanged;
+    public event CoGraphSelectionHandler SelectionChanged
+    {
+        add
+        {
+            _selectionChanged -= value;
+            _selectionChanged += value;
+        }
+        remove
+        {
+            _selectionChanged -= value;
+        }
+    }
+
+    public static Panel_CoGraph Instance = new Panel_CoGraph();
+
     static void InitializeStyles()
     {
         if (NameLabel == null)
@@ -76,9 +95,10 @@ public class Panel_CoGraph
             Plot(mMouseX, y_pos, mMouseX, y_pos + height);
         }
 
-        if (mSelectedX >= 0)
+        if (mSelectedXLeft >= 0)
         {
             GL.Color(new Color(0.8f, 0.2f, 0.5f));
+            Plot(mSelectedXLeft, y_pos, mSelectedXLeft, y_pos + height);
             Plot(mSelectedX, y_pos, mSelectedX, y_pos + height);
         }
     }
@@ -256,13 +276,10 @@ public class Panel_CoGraph
 
                     if (g.mDataPoints.Length > 0)
                     {
-                        GuiUtil.DrawLabel(string.Format("Last/Min/Max: {0}/{1}/{2}",
-                            g.mDataPoints[(kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length].ToString(fmt),
-                            g.mMin.ToString(fmt), g.mMax.ToString(fmt)), SmallLabel);
+                        GuiUtil.DrawLabel(g.mDataPoints[(kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length].ToString(fmt), SmallLabel);
                     }
                 }
                 
-                //Respond to mouse input!
                 if (Event.current.type == EventType.MouseDrag && r.Contains(Event.current.mousePosition - Event.current.delta))
                 {
                     if (Event.current.type == EventType.MouseDrag && Event.current.button == 0)
@@ -270,9 +287,10 @@ public class Panel_CoGraph
                         kv.Value.DoHeightDelta(Event.current.delta.y);
                     }
                 }
-                else if (Event.current.type != EventType.Layout && r.Contains(Event.current.mousePosition))
+                
+                if (Event.current.type != EventType.Layout && r.Contains(Event.current.mousePosition))
                 {
-                    if (Event.current.type == EventType.Repaint || Event.current.type == EventType.MouseDown)
+                    if (Event.current.type == EventType.Repaint || Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
                     {
                         mMouseOverGraphIndex = graph_index;
                         mMouseX = Event.current.mousePosition.x;
@@ -299,10 +317,15 @@ public class Panel_CoGraph
                                         {
                                             //found this mouse positions step
 
-                                            if (Event.current.type == EventType.MouseDown)
+                                            if (Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
                                             {
                                                 kv.Value.mSelectedIndex = i;
+
+                                                mSelectedXLeft = x0;
                                                 mSelectedX = x1;
+
+                                                if (_selectionChanged != null)
+                                                    _selectionChanged(i);
                                             }
 
                                             string text = value.ToString(fmt);

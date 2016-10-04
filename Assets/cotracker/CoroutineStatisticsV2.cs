@@ -9,8 +9,9 @@ public class CoroutineActivity
     public int seqID;
     public float timestamp;
 
-    public CoroutineActivity()
+    public CoroutineActivity(int id)
     {
+        seqID = id;
         timestamp = Time.realtimeSinceStartup;
     }
 }
@@ -20,19 +21,19 @@ public class CoroutineCreation : CoroutineActivity
     public string mangledName;
     public string stacktrace;
 
-    public CoroutineCreation(int seq) : base() { }
+    public CoroutineCreation(int seq) : base(seq) { }
 }
 
 public class CoroutineExecution : CoroutineActivity
 {
     public float timeConsumed;
 
-    public CoroutineExecution(int seq) : base() { }
+    public CoroutineExecution(int seq) : base(seq) { }
 }
 
 public class CoroutineTermination : CoroutineActivity
 {
-    public CoroutineTermination(int seq) : base () {}
+    public CoroutineTermination(int seq) : base(seq) { }
 }
 
 public delegate void OnCoStatsBroadcast(List<CoroutineActivity> activities);

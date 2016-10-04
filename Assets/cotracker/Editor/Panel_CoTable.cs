@@ -6,14 +6,15 @@ using System.Collections.Generic;
 public class CoTableEntry
 {
     public string Name = "Foo";
-    public float TimeTotal = 0.0f;
-    public float TimeAvg = 0.0f;
-    public float TimeMax = 0.0f;
-    public float TimePicked = 0.0f;
+    public int ExecSelectedCount = 0;
+    public float ExecSelectedTime = 0.0f;
+    public int ExecAccumCount = 0;
+    public float ExecAccumTime = 0.0f;
 }
 
 public class Panel_CoTable 
 {
+    GUIStyle NameTitle;
     GUIStyle NameLabel;
     GUIStyle NameLabelDark;
     GUIStyle Selected;
@@ -22,33 +23,66 @@ public class Panel_CoTable
 
     public Panel_CoTable()
     {
-        for (int i = 0; i < 200; i++)
-        {
-            m_items.Add(new CoTableEntry());
-        }
+        NameTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
+        NameTitle.alignment = TextAnchor.MiddleCenter;
+        NameTitle.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.3f, 0.8f));
+        NameTitle.normal.textColor = Color.white;
 
         NameLabel = new GUIStyle(EditorStyles.whiteLabel);
-        NameLabel.alignment = TextAnchor.MiddleLeft;
         NameLabel.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
         NameLabel.normal.textColor = Color.white;
 
         NameLabelDark = new GUIStyle(EditorStyles.whiteLabel);
-        NameLabelDark.alignment = TextAnchor.MiddleLeft;
         NameLabelDark.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
         NameLabelDark.normal.textColor = Color.white;
 
         Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Selected.alignment = TextAnchor.MiddleLeft;
-        Selected.normal.background = GuiUtil.getColorTexture(new Color(0.2f, 0.2f, 0.6f, 0.3f));
+        Selected.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.6f, 0.4f));
         Selected.normal.textColor = Color.white;
     }
 
     private CoTableEntry m_selected = null;
     private List<CoTableEntry> m_items = new List<CoTableEntry>();
 
-    static float _nameWidth = 190.0f;
-    static float _numWidth = 50;
     static float _lineHeight = 25;
+
+    static float[] _starts = new float[5] { 0.0f, 0.58f, 0.64f, 0.74f, 0.86f };
+    static float[] _ratios = new float[5] { 0.58f, 0.06f, 0.1f, 0.12f, 0.14f };
+
+    private Rect LabelRect(float width, int slot, int pos)
+    {
+        return new Rect(width * _starts[slot], pos * _lineHeight, width * _ratios[slot], _lineHeight);
+    }
+
+    Dictionary<string, int> TitleSlots = new Dictionary<string, int>()
+    {
+        { "Name", 0 },
+        { "Cnt", 1 },
+        { "Time", 2 },
+        { "Cnt_Sum", 3 },
+        { "Time_Sum", 4 },
+    };
+
+    int _sortSlot = 0;
+
+    private void DrawTitle(float width)
+    {
+        foreach (var item in TitleSlots)
+        {
+            Rect r = LabelRect(width, item.Value, 0);
+            GUI.Label(r, item.Key + (_sortSlot == item.Value ? " ▼" : ""), NameTitle);
+            if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
+            {
+                _sortSlot = item.Value;
+                EditorWindow w = EditorWindow.GetWindow<EditorWindow>("CoroutineTrackerWindow");
+                if (w != null)
+                {
+                    PerformResort();
+                    w.Repaint();
+                }
+            }
+        }
+    }
 
     private void DrawLine(int pos, CoTableEntry entry, float width)
     {
@@ -58,17 +92,20 @@ public class Panel_CoTable
             m_selected = entry;
         }
 
-        GUIStyle style = (pos % 2 != 0) ? NameLabel : NameLabelDark;
+        GUIStyle style = new GUIStyle((pos % 2 != 0) ? NameLabel : NameLabelDark);
         if (m_selected == entry)
         {
             style = Selected;
         }
 
-        GUI.Label(new Rect(0, pos * _lineHeight, _nameWidth, _lineHeight), entry.Name + ((m_selected == entry) ? "*" : ""), style);
-        GUI.Label(new Rect(_nameWidth, pos * _lineHeight, _numWidth, _lineHeight), entry.TimeTotal.ToString("0.000"), style);
-        GUI.Label(new Rect(_nameWidth + _numWidth, pos * _lineHeight, _numWidth, _lineHeight), entry.TimeAvg.ToString("0.000"), style);
-        GUI.Label(new Rect(_nameWidth + _numWidth * 2, pos * _lineHeight, _numWidth, _lineHeight), entry.TimeMax.ToString("0.000"), style);
-        GUI.Label(new Rect(_nameWidth + _numWidth * 3, pos * _lineHeight, width - (_nameWidth + _numWidth * 3), _lineHeight), entry.TimePicked.ToString("0.000"), style);
+        style.alignment = TextAnchor.MiddleLeft;
+        GUI.Label(LabelRect(width, 0, pos), entry.Name + ((m_selected == entry) ? "*" : ""), style);
+
+        style.alignment = TextAnchor.MiddleCenter;
+        GUI.Label(LabelRect(width, 1, pos), entry.ExecSelectedCount.ToString(), style);
+        GUI.Label(LabelRect(width, 2, pos), entry.ExecSelectedTime.ToString("0.000"), style);
+        GUI.Label(LabelRect(width, 3, pos), entry.ExecAccumCount.ToString(), style);
+        GUI.Label(LabelRect(width, 4, pos), entry.ExecAccumTime.ToString("0.000"), style);
     }
 
     public void DrawTable()
@@ -81,10 +118,45 @@ public class Panel_CoTable
         // !!! this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
         GuiUtil.DrawLabel("", NameLabel);
 
+        DrawTitle(r.width);
         for (int i = 0; i < m_items.Count; i++)
         {
-            DrawLine(i, m_items[i], r.width);
+            DrawLine(i + 1, m_items[i], r.width);
         }
         EditorGUILayout.EndVertical();
+    }
+
+    public void RefreshEntries(List<CoTableEntry> entries)
+    {
+        if (entries == null)
+            return;
+
+        m_items.Clear();
+        m_items.AddRange(entries);
+
+        PerformResort();
+    }
+
+    private void PerformResort()
+    {
+        m_items.Sort((s1, s2) =>
+        {
+            switch (_sortSlot)
+            {
+                case 1:
+                    return -1 * s1.ExecSelectedCount.CompareTo(s2.ExecSelectedCount);
+                case 2:
+                    return -1 * s1.ExecSelectedTime.CompareTo(s2.ExecSelectedTime);
+                case 3:
+                    return -1 * s1.ExecAccumCount.CompareTo(s2.ExecAccumCount);
+                case 4:
+                    return -1 * s1.ExecAccumTime.CompareTo(s2.ExecAccumTime);
+
+                case 0:
+                default:
+                    break;
+            }
+            return s1.Name.CompareTo(s2.Name);
+        });
     }
 }

@@ -6,14 +6,14 @@ using System.Collections.Generic;
 public class CoroutineTrackerWindow : EditorWindow
 {
     public static float ToolbarHeight = 30.0f;
-    public static float DataTableWidth = 400.0f;
+    public static float DataTableWidth = 500.0f;
 
     // bound variables
     bool _enableTracking = true;
     Vector2 _scrollPositionLeft;
     Vector2 _scrollPositionRight;
 
-    Panel_CoGraph _graphPanel = new Panel_CoGraph();
+    Rect _lastPos;
 
     [MenuItem("Window/CoroutineTracker")]
     static void Create()
@@ -30,8 +30,18 @@ public class CoroutineTrackerWindow : EditorWindow
                 !Mathf.Approximately(rect.height, w.position.height))
             {
                 w.position = rect;
+                w._lastPos = rect;
+
+                DataTableWidth = rect.width * 0.5f;
             }
         }
+    }
+
+    void GraphPanel_SelectionChanged(int selectionIndex)
+    {
+        float time = CoGraphUtil.GetSnapshotTime(selectionIndex);
+        List<CoTableEntry> entries = CoroutineEditorDatabase.Instance.PopulateEntries(time);
+        Panel_CoTable.Instance.RefreshEntries(entries);
     }
 
     void OnEnable()
@@ -46,9 +56,21 @@ public class CoroutineTrackerWindow : EditorWindow
 
     void OnGUI()
     {
+        if (!Mathf.Approximately(position.width, _lastPos.width) || !Mathf.Approximately(position.height, _lastPos.height))
+        {
+            // resized.
+
+            DataTableWidth = position.width * 0.5f;
+            _lastPos = position;
+        }
+
         if (Event.current.commandName == "AppStarted")
         {
-            CoroutineStatisticsV2.Instance.OnBroadcast += CoroutineEditorReceived.Instance.Receive;
+            CoroutineStatisticsV2.Instance.OnBroadcast += CoroutineEditorDatabase.Instance.Receive;
+            Panel_CoGraph.Instance.SelectionChanged += GraphPanel_SelectionChanged;
+
+            DataTableWidth = position.width * 0.5f;
+            _lastPos = position;
         }
 
         GUILayout.BeginHorizontal();
@@ -61,7 +83,7 @@ public class CoroutineTrackerWindow : EditorWindow
             GUILayout.BeginArea(r);
             {
                 _scrollPositionLeft = GUILayout.BeginScrollView(_scrollPositionLeft, GUIStyle.none, GUI.skin.verticalScrollbar);
-                _graphPanel.DrawGraphs(r);
+                Panel_CoGraph.Instance.DrawGraphs(r);
                 GUILayout.EndScrollView();
             }
             GUILayout.EndArea();
