@@ -18,10 +18,10 @@ public class CoroutineEditorDatabase
 
     public CoroutineEditorDatabase()
     {
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_Creation, 50);
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_Termination, 50);
+        CoGraphUtil.SetHeight(CoGraphUtil.GName_Creation, 80);
+        CoGraphUtil.SetHeight(CoGraphUtil.GName_Termination, 80);
         CoGraphUtil.SetHeight(CoGraphUtil.GName_ExecCount, 100);
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_ExecTime, 200);
+        CoGraphUtil.SetHeight(CoGraphUtil.GName_ExecTime, 250);
     }
 
     public void Receive(List<CoroutineActivity> activities)
@@ -144,6 +144,7 @@ public class CoroutineEditorDatabase
             if (_coroutines.TryGetValue(id, out info))
             {
                 CoTableEntry entry = new CoTableEntry();
+                entry.SeqID = info.creation.seqID;
                 entry.Name = info.creation.mangledName;
                 if (info.executions.Count > 0)
                 {
@@ -184,6 +185,15 @@ public class CoroutineEditorDatabase
                 accumCnt++;
             }
         }
+    }
+
+    public CoroutineInfo GetCoroutineInfo(int seqID)
+    {
+        CoroutineInfo info;
+        if (!_coroutines.TryGetValue(seqID, out info))
+            return null;
+
+        return info;
     }
 
     Queue<CoroutineActivity> _activityQueue = new Queue<CoroutineActivity>();

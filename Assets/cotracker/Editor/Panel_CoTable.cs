@@ -5,12 +5,15 @@ using System.Collections.Generic;
 
 public class CoTableEntry
 {
+    public int SeqID = -1;
     public string Name = "Foo";
     public int ExecSelectedCount = 0;
     public float ExecSelectedTime = 0.0f;
     public int ExecAccumCount = 0;
     public float ExecAccumTime = 0.0f;
 }
+
+public delegate void CoroutineSelectionHandler(int coSeqID);
 
 public class Panel_CoTable 
 {
@@ -21,11 +24,25 @@ public class Panel_CoTable
 
     public static Panel_CoTable Instance = new Panel_CoTable();
 
+    private CoroutineSelectionHandler _onCoroutineSelected;
+    public event CoroutineSelectionHandler OnCoroutineSelected
+    {
+        add
+        {
+            _onCoroutineSelected -= value;
+            _onCoroutineSelected += value;
+        }
+        remove
+        {
+            _onCoroutineSelected -= value;
+        }
+    }
+
     public Panel_CoTable()
     {
         NameTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
         NameTitle.alignment = TextAnchor.MiddleCenter;
-        NameTitle.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.3f, 0.8f));
+        NameTitle.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.7f, 0.2f, 0.5f));
         NameTitle.normal.textColor = Color.white;
 
         NameLabel = new GUIStyle(EditorStyles.whiteLabel);
@@ -37,7 +54,7 @@ public class Panel_CoTable
         NameLabelDark.normal.textColor = Color.white;
 
         Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Selected.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.6f, 0.4f));
+        Selected.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.8f, 0.6f));
         Selected.normal.textColor = Color.white;
     }
 
@@ -90,6 +107,9 @@ public class Panel_CoTable
         if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
         {
             m_selected = entry;
+
+            if (_onCoroutineSelected != null)
+                _onCoroutineSelected(m_selected.SeqID);
         }
 
         GUIStyle style = new GUIStyle((pos % 2 != 0) ? NameLabel : NameLabelDark);

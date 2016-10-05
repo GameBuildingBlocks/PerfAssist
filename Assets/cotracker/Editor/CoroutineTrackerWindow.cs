@@ -2,18 +2,26 @@
 using System.Collections;
 using UnityEditor;
 using System.Collections.Generic;
+using System.Text;
 
 public class CoroutineTrackerWindow : EditorWindow
 {
     public static float ToolbarHeight = 30.0f;
-    public static float DataTableWidth = 500.0f;
+    public static float DataTableWidth = 600.0f;
+    public static float CoroutineInfoAreaHeight = 300.0f;
 
     // bound variables
     bool _enableTracking = true;
     Vector2 _scrollPositionLeft;
-    Vector2 _scrollPositionRight;
+    Vector2 _scrollRightUpper;
+    Vector2 _scrollRightLower;
 
-    Rect _lastPos;
+    string _coroutineName = "<coroutine name>";
+    string _coroutineInfo = "<coroutine info>";
+    string _coroutineStacktrace = "<coroutine creation stacktrace>";
+    string _coroutineExecutions = "<coroutine executions>";
+
+    float _selectedSnapshotTime = 0.0f;
 
     [MenuItem("Window/CoroutineTracker")]
     static void Create()
@@ -30,17 +38,14 @@ public class CoroutineTrackerWindow : EditorWindow
                 !Mathf.Approximately(rect.height, w.position.height))
             {
                 w.position = rect;
-                w._lastPos = rect;
-
-                DataTableWidth = rect.width * 0.5f;
             }
         }
     }
 
     void GraphPanel_SelectionChanged(int selectionIndex)
     {
-        float time = CoGraphUtil.GetSnapshotTime(selectionIndex);
-        List<CoTableEntry> entries = CoroutineEditorDatabase.Instance.PopulateEntries(time);
+        _selectedSnapshotTime = CoGraphUtil.GetSnapshotTime(selectionIndex);
+        List<CoTableEntry> entries = CoroutineEditorDatabase.Instance.PopulateEntries(_selectedSnapshotTime);
         Panel_CoTable.Instance.RefreshEntries(entries);
     }
 
@@ -56,21 +61,11 @@ public class CoroutineTrackerWindow : EditorWindow
 
     void OnGUI()
     {
-        if (!Mathf.Approximately(position.width, _lastPos.width) || !Mathf.Approximately(position.height, _lastPos.height))
-        {
-            // resized.
-
-            DataTableWidth = position.width * 0.5f;
-            _lastPos = position;
-        }
-
         if (Event.current.commandName == "AppStarted")
         {
             CoroutineStatisticsV2.Instance.OnBroadcast += CoroutineEditorDatabase.Instance.Receive;
             Panel_CoGraph.Instance.SelectionChanged += GraphPanel_SelectionChanged;
-
-            DataTableWidth = position.width * 0.5f;
-            _lastPos = position;
+            Panel_CoTable.Instance.OnCoroutineSelected += TablePanel_CoroutineSelected;
         }
 
         GUILayout.BeginHorizontal();
@@ -89,15 +84,64 @@ public class CoroutineTrackerWindow : EditorWindow
             GUILayout.EndArea();
         }
         {
-            Rect r1 = new Rect(position.width - DataTableWidth, ToolbarHeight, DataTableWidth, position.height - ToolbarHeight);
-            GUILayout.BeginArea(r1);
+            GUILayout.BeginVertical();
+            Rect r_upper = new Rect(position.width - DataTableWidth, ToolbarHeight, DataTableWidth, position.height - ToolbarHeight - CoroutineInfoAreaHeight);
+            Rect r_lower = new Rect(position.width - DataTableWidth, position.height - CoroutineInfoAreaHeight, DataTableWidth, CoroutineInfoAreaHeight);
+
+            GUILayout.BeginArea(r_upper);
             {
-                _scrollPositionRight = GUILayout.BeginScrollView(_scrollPositionRight, GUIStyle.none, GUI.skin.verticalScrollbar);
+                _scrollRightUpper = GUILayout.BeginScrollView(_scrollRightUpper, GUIStyle.none, GUI.skin.verticalScrollbar);
                 Panel_CoTable.Instance.DrawTable();
                 GUILayout.EndScrollView();
             }
             GUILayout.EndArea();
+            GUILayout.BeginArea(r_lower);
+            {
+                _scrollRightLower = GUILayout.BeginScrollView(_scrollRightLower, GUIStyle.none, GUI.skin.verticalScrollbar);
+                GUILayout.Label(_coroutineName);
+                GUILayout.Label(_coroutineInfo);
+                GUILayout.TextArea(_coroutineStacktrace);
+                GUILayout.TextArea(_coroutineExecutions);
+                GUILayout.EndScrollView();
+            }
+            GUILayout.EndArea();
+
+            GUILayout.EndVertical();
         }
         GUILayout.EndHorizontal();
+    }
+
+    void TablePanel_CoroutineSelected(int coSeqID)
+    {
+        CoroutineInfo info = CoroutineEditorDatabase.Instance.GetCoroutineInfo(coSeqID);
+        if (info == null)
+            return;
+
+        string termTime = info.termination != null ? info.termination.timestamp.ToString("0.000") : "(not yet)";
+
+        _coroutineName = string.Format("{0}", info.creation.mangledName);
+        _coroutineInfo = string.Format("SeqID: {0}, Created: {1:0.00}, Terminated: {2}", info.creation.seqID, info.creation.timestamp, termTime);
+        _coroutineStacktrace = "Stacktrace:\n\n" + info.creation.stacktrace;
+
+        StringBuilder sb = new StringBuilder(1024);
+        sb.AppendFormat("Executions: ({0})\n\n", info.executions.Count);
+        for (int i = 0; i < info.executions.Count; i++)
+        {
+            string sel = "";
+            var item = info.executions[i];
+            if (item.Key <= _selectedSnapshotTime && item.Key > _selectedSnapshotTime - CoroutineEditorDatabase.SnapshotInterval)
+            {
+                sel = "(in selected snapshot)";
+            }
+
+            sb.AppendFormat("  ({0}) timestamp: {1:0.000} duration: {2:0.000} {3}\n", i, item.Key, item.Value, sel);
+
+            if (sb.Length > 10000)
+            {
+                sb.Append("(cutting the rest off since it's too long...)");
+                break;
+            }
+        }
+        _coroutineExecutions = sb.ToString();
     }
 }

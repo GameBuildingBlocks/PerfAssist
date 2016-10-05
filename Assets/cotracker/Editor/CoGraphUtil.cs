@@ -3,10 +3,10 @@ using System.Collections;
 
 public class CoGraphUtil 
 {
-    public static string GName_Creation = "creation";
-    public static string GName_Termination = "termination";
-    public static string GName_ExecCount = "exec_count";
-    public static string GName_ExecTime = "exec_time";
+    public static string GName_Creation = "creation_count";
+    public static string GName_Termination = "termination_count";
+    public static string GName_ExecCount = "execution_count";
+    public static string GName_ExecTime = "exection_time";
 
     static public float[] mSnapshotTimestamps = new float[GraphItData.DEFAULT_SAMPLES];
 
