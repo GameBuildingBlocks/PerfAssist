@@ -10,9 +10,10 @@ public class CoGraphUtil
 
     static public float[] mSnapshotTimestamps = new float[GraphItData.DEFAULT_SAMPLES];
 
-    public static void SetHeight(string name, float height)
+    public static void InitParams(string name, float height, Color color)
     {
         GraphIt.GraphSetupHeight(name, height);
+        GraphIt.GraphSetupColour(name, color);
     }
     public static void LogData(string name, float value)
     {

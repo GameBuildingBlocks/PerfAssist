@@ -18,10 +18,10 @@ public class CoroutineEditorDatabase
 
     public CoroutineEditorDatabase()
     {
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_Creation, 80);
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_Termination, 80);
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_ExecCount, 100);
-        CoGraphUtil.SetHeight(CoGraphUtil.GName_ExecTime, 250);
+        CoGraphUtil.InitParams(CoGraphUtil.GName_Creation, 80, new Color(0.4f, 0.7f, 0.9f, 0.9f));
+        CoGraphUtil.InitParams(CoGraphUtil.GName_Termination, 80, new Color(0.4f, 0.7f, 0.9f, 0.9f));
+        CoGraphUtil.InitParams(CoGraphUtil.GName_ExecCount, 100, new Color(0.8f, 0.6f, 0.1f, 0.8f));
+        CoGraphUtil.InitParams(CoGraphUtil.GName_ExecTime, 250, new Color(0.8f, 0.2f, 0.5f, 0.8f));
     }
 
     public void Receive(List<CoroutineActivity> activities)
@@ -59,11 +59,13 @@ public class CoroutineEditorDatabase
 
         while (_activityQueue.Count > 0)
         {
-            CoroutineActivity activity = _activityQueue.Dequeue();
+            CoroutineActivity activity = _activityQueue.Peek();
             if (activity.timestamp < _lastSnapshotTime)
             {
                 Debug.LogErrorFormat("[CoEd] error: {0} is earlier than last snapshot, discarded. (activity_time: {1:0.000}, last_snapshot: {2:0.000})",
                     activity.GetType().ToString(), activity.timestamp, _lastSnapshotTime);
+                
+                activity = _activityQueue.Dequeue();
                 continue;
             }
             else if (activity.timestamp >= snapshotTime)
@@ -71,6 +73,8 @@ public class CoroutineEditorDatabase
                 // stop current activity
                 break;
             }
+
+            activity = _activityQueue.Dequeue();
 
             curSnapshot.Add(activity.seqID);
 

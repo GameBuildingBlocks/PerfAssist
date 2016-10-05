@@ -11,7 +11,7 @@ public class CoroutineTrackerWindow : EditorWindow
     public static float CoroutineInfoAreaHeight = 300.0f;
 
     // bound variables
-    bool _enableTracking = true;
+    //bool _enableTracking = true;
     Vector2 _scrollPositionLeft;
     Vector2 _scrollRightUpper;
     Vector2 _scrollRightLower;
@@ -68,9 +68,9 @@ public class CoroutineTrackerWindow : EditorWindow
             Panel_CoTable.Instance.OnCoroutineSelected += TablePanel_CoroutineSelected;
         }
 
-        GUILayout.BeginHorizontal();
-        _enableTracking = GUILayout.Toggle(_enableTracking, "EnableTracking", GUILayout.Height(ToolbarHeight));
-        GUILayout.EndHorizontal();
+        //GUILayout.BeginHorizontal();
+        //_enableTracking = GUILayout.Toggle(_enableTracking, "EnableTracking", GUILayout.Height(ToolbarHeight));
+        //GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         {

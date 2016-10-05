@@ -97,7 +97,7 @@ public class Panel_CoGraph
 
         if (mSelectedXLeft >= 0)
         {
-            GL.Color(new Color(0.8f, 0.2f, 0.5f));
+            GL.Color(new Color(0.5f, 0.9f, 0.6f));
             Plot(mSelectedXLeft, y_pos, mSelectedXLeft, y_pos + height);
             Plot(mSelectedX, y_pos, mSelectedX, y_pos + height);
         }
@@ -276,7 +276,15 @@ public class Panel_CoGraph
 
                     if (g.mDataPoints.Length > 0)
                     {
-                        GuiUtil.DrawLabel(g.mDataPoints[(kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length].ToString(fmt), SmallLabel);
+                        int index = kv.Value.mCurrentIndex == 0 ? g.mDataPoints.Length - 1 : (kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length;
+                        try
+                        {
+                            GuiUtil.DrawLabel(g.mDataPoints[index].ToString(fmt), SmallLabel);
+                        }
+                        catch (System.Exception)
+                        {
+                            Debug.LogWarningFormat("[CoGraph] invalid index (mCurrentIndex: {0}, modulized {1})", kv.Value.mCurrentIndex, index);
+                        }
                     }
                 }
                 

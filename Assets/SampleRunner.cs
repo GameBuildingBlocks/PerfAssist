@@ -18,8 +18,8 @@ public class SampleRunner : MonoBehaviour {
         {
             w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
         }
-#endif
         GraphIt.GraphStepManually();
+#endif
 
         gameObject.AddComponent<TestPluginRunner>();
 

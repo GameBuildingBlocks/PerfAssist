@@ -46,7 +46,6 @@ public class GraphItDataInternal
 public class GraphItData
 {
     public const int DEFAULT_SAMPLES = 128;
-    //public const int DEFAULT_SAMPLES = 2048;
     public const int RECENT_WINDOW_SIZE = 120;
     
     public Dictionary<string, GraphItDataInternal> mData = new Dictionary<string, GraphItDataInternal>();

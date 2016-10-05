@@ -80,7 +80,7 @@ public class Panel_CoTable
         { "Time_Sum", 4 },
     };
 
-    int _sortSlot = 0;
+    int _sortSlot = 4;
 
     private void DrawTitle(float width)
     {
