@@ -195,38 +195,19 @@ public class GraphItData
 
 }
 
-public class GraphIt : MonoBehaviour
+public class GraphIt 
 {
-
 #if UNITY_EDITOR
     public const string BASE_GRAPH = "base";
     public const string VERSION = "1.2.0";
     public Dictionary<string, GraphItData> Graphs = new Dictionary<string, GraphItData>();
 
     //gulu: step is done manually (no longer on a per-frame basis)
-    private bool _stepManually = true;
+    static private bool _stepManually = true;
 
-    static GraphIt mInstance = null;
+    public static GraphIt Instance = null;
 #endif
 
-    public static GraphIt Instance
-    {
-        get
-        {
-#if UNITY_EDITOR
-            if( mInstance == null )
-            {
-                GameObject go = new GameObject("GraphIt");
-                go.hideFlags = HideFlags.HideAndDontSave;
-                mInstance = go.AddComponent<GraphIt>();
-            }
-            return mInstance;
-#else
-            return null;
-#endif
-        }
-    }
-        
     void StepGraphInternal(GraphItData graph)
     {
 #if UNITY_EDITOR
@@ -294,40 +275,10 @@ public class GraphIt : MonoBehaviour
 #endif
     }
 
-    // Update is called once per frame
-    void LateUpdate()
-    {
-#if UNITY_EDITOR
-        foreach (KeyValuePair<string, GraphItData> kv in Graphs)
-        {
-            GraphItData g = kv.Value;
-            if (g.mReadyForUpdate && !g.mFixedUpdate)
-            {
-                StepGraphInternal(g);
-            }
-        }
-#endif
-    }
-
-    // Update is called once per fixed frame
-    void FixedUpdate()
-    {
-#if UNITY_EDITOR
-        foreach (KeyValuePair<string, GraphItData> kv in Graphs)
-        {
-            GraphItData g = kv.Value;
-            if (g.mReadyForUpdate && g.mFixedUpdate )
-            {
-                StepGraphInternal(g);
-            }
-        }
-#endif
-    }
-
     public static void GraphStepManually(bool stepManually = true)
     {
 #if UNITY_EDITOR
-        Instance._stepManually = stepManually;
+        _stepManually = stepManually;
 #endif
     }
 
@@ -495,7 +446,7 @@ public class GraphIt : MonoBehaviour
         }
         g.mData[subgraph].mCounter += f;
 
-        if (!Instance._stepManually)
+        if (!_stepManually)
         {
             g.mReadyForUpdate = true;
         }

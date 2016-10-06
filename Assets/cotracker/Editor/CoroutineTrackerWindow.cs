@@ -65,6 +65,8 @@ public class CoroutineTrackerWindow : EditorWindow
     {
         if (Event.current.commandName == "AppStarted")
         {
+            GraphIt.Instance = new GraphIt();
+
             _database = new CoroutineEditorDatabase();
             RuntimeCoroutineStats.Instance.OnBroadcast += _database.Receive;
             Panel_CoGraph.Instance.SelectionChanged += GraphPanel_SelectionChanged;

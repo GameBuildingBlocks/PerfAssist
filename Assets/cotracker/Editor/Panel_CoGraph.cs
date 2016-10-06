@@ -121,7 +121,7 @@ public class Panel_CoGraph
 
     public void DrawGraphs(Rect rect)
     {
-        if (GraphIt.Instance)
+        if (GraphIt.Instance != null)
         {
             InitializeStyles();
             CreateLineMaterial();
