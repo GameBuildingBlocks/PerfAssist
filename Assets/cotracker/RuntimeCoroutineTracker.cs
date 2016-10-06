@@ -97,6 +97,8 @@ public class TrackedCoroutine : IEnumerator
     IEnumerator _routine;
     string _mangledName;
 
+    static Stopwatch _stopWatch;
+
     public TrackedCoroutine(IEnumerator routine)
     {
         _routine = routine;
@@ -118,16 +120,18 @@ public class TrackedCoroutine : IEnumerator
     {
         Profiler.BeginSample(_mangledName);
 
-        var _stopWatch = Stopwatch.StartNew();
+        if (_stopWatch == null)
+            _stopWatch = Stopwatch.StartNew();
+
+        _stopWatch.Reset();
+        _stopWatch.Start();
 
         bool next = _routine.MoveNext();
 
         _stopWatch.Stop();
-
-        float timeConsumed = (float)((double)_stopWatch.ElapsedTicks / (double)Stopwatch.Frequency); 
-
         Profiler.EndSample();
 
+        float timeConsumed = (float)((double)_stopWatch.ElapsedTicks / (double)Stopwatch.Frequency); 
         CoroutineStatisticsV2.Instance.MarkMoveNext(_seqID, timeConsumed);
 
         if (!next)

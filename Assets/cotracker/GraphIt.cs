@@ -326,7 +326,9 @@ public class GraphIt : MonoBehaviour
 
     public static void GraphStepManually(bool stepManually = true)
     {
+#if UNITY_EDITOR
         Instance._stepManually = stepManually;
+#endif
     }
 
     /// <summary>
