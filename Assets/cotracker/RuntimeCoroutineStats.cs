@@ -38,9 +38,9 @@ public class CoroutineTermination : CoroutineActivity
 
 public delegate void OnCoStatsBroadcast(List<CoroutineActivity> activities);
 
-public class CoroutineStatisticsV2 
+public class RuntimeCoroutineStats 
 {
-    public static CoroutineStatisticsV2 Instance = new CoroutineStatisticsV2();
+    public static RuntimeCoroutineStats Instance = new RuntimeCoroutineStats();
 
     public void MarkCreation(int seq, string mangledName)
     {

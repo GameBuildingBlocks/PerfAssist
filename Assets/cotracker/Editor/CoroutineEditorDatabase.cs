@@ -14,10 +14,9 @@ public class CoroutineEditorDatabase
 {
     public static float SnapshotInterval = 1.0f;
 
-    public static CoroutineEditorDatabase Instance = new CoroutineEditorDatabase();
-
     public CoroutineEditorDatabase()
     {
+        GraphIt.GraphStepManually();
         CoGraphUtil.InitParams(CoGraphUtil.GName_Creation, 80, new Color(0.4f, 0.7f, 0.9f, 0.9f));
         CoGraphUtil.InitParams(CoGraphUtil.GName_Termination, 80, new Color(0.4f, 0.7f, 0.9f, 0.9f));
         CoGraphUtil.InitParams(CoGraphUtil.GName_ExecCount, 100, new Color(0.8f, 0.6f, 0.1f, 0.8f));

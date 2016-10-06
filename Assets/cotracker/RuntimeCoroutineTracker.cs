@@ -16,60 +16,6 @@ public class CoroutineRuntimeTrackingConfig
     public static float BroadcastInterval = 0.5f;
 }
 
-//public enum CoStatsEvent
-//{
-//    Creation,
-//    Enumeration,
-//}
-
-//public struct CoStatsEntry
-//{
-//    public float timestamp;
-//    public string coId;
-//    public CoStatsEvent coEvt;
-//}
-
-//public class CoroutineStatistics
-//{
-//    public static void MarkEvent(string coIdentifier, CoStatsEvent coEvent)
-//    {
-//        _history.Add(new CoStatsEntry() { timestamp = Time.time, coId = coIdentifier, coEvt = coEvent });
-//    }
-
-//    public static void ReportAndCleanup()
-//    {
-//        int _lastnSecCreationCount = 0;
-//        int _lastnSecEnumerationCount = 0;
-
-//        for (int i = 0; i < _history.Count; i++)
-//        {
-//            switch (_history[i].coEvt)
-//            {
-//                case CoStatsEvent.Creation:
-//                    _lastnSecCreationCount++;
-//                    break;
-//                case CoStatsEvent.Enumeration:
-//                    _lastnSecEnumerationCount++;
-//                    break;
-//                default:
-//                    break;
-//            }
-//        }
-
-//        _history.Clear();
-
-//        GraphIt.Log("co_creation", _lastnSecCreationCount);
-//        GraphIt.Log("co_movenext", _lastnSecEnumerationCount);
-//        GraphIt.Log("co_time", UnityEngine.Random.value * 2.0f + 5.0f);
-//        GraphIt.StepGraph("co_creation");
-//        GraphIt.StepGraph("co_movenext");
-//        GraphIt.StepGraph("co_time");
-//        //Debug.LogWarningFormat("[CoStats] {0} created, {1} enumerated.", _lastnSecCreationCount, _lastnSecEnumerationCount);
-//    }
-
-//    static List<CoStatsEntry> _history = new List<CoStatsEntry>();
-//}
-
 public class CoroutineNameCache
 {
     public static string Mangle(string rawName)
@@ -105,7 +51,7 @@ public class TrackedCoroutine : IEnumerator
         _mangledName = CoroutineNameCache.Mangle(_routine.GetType().ToString());
         _seqID = _seqNext++;
 
-        CoroutineStatisticsV2.Instance.MarkCreation(_seqID, _mangledName);
+        RuntimeCoroutineStats.Instance.MarkCreation(_seqID, _mangledName);
     }
 
     object IEnumerator.Current
@@ -132,10 +78,10 @@ public class TrackedCoroutine : IEnumerator
         Profiler.EndSample();
 
         float timeConsumed = (float)((double)_stopWatch.ElapsedTicks / (double)Stopwatch.Frequency); 
-        CoroutineStatisticsV2.Instance.MarkMoveNext(_seqID, timeConsumed);
+        RuntimeCoroutineStats.Instance.MarkMoveNext(_seqID, timeConsumed);
 
         if (!next)
-            CoroutineStatisticsV2.Instance.MarkTermination(_seqID);
+            RuntimeCoroutineStats.Instance.MarkTermination(_seqID);
 
         return next;
     }

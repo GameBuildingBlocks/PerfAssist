@@ -11,14 +11,13 @@ public class SampleRunner : MonoBehaviour {
     {
         // bootstrapping
         CoroutineRuntimeTrackingConfig.EnableTracking = true;
-        StartCoroutine(CoroutineStatisticsV2.Instance.BroadcastCoroutine());
+        StartCoroutine(RuntimeCoroutineStats.Instance.BroadcastCoroutine());
 #if UNITY_EDITOR
         EditorWindow w = EditorWindow.GetWindow<EditorWindow>("CoroutineTrackerWindow");
         if (w != null)
         {
             w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
         }
-        GraphIt.GraphStepManually();
 #endif
 
         gameObject.AddComponent<TestPluginRunner>();

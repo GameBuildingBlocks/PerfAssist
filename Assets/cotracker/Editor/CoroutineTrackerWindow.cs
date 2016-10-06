@@ -23,6 +23,8 @@ public class CoroutineTrackerWindow : EditorWindow
 
     float _selectedSnapshotTime = 0.0f;
 
+    CoroutineEditorDatabase _database;
+
     [MenuItem("Window/CoroutineTracker")]
     static void Create()
     {
@@ -45,7 +47,7 @@ public class CoroutineTrackerWindow : EditorWindow
     void GraphPanel_SelectionChanged(int selectionIndex)
     {
         _selectedSnapshotTime = CoGraphUtil.GetSnapshotTime(selectionIndex);
-        List<CoTableEntry> entries = CoroutineEditorDatabase.Instance.PopulateEntries(_selectedSnapshotTime);
+        List<CoTableEntry> entries = _database.PopulateEntries(_selectedSnapshotTime);
         Panel_CoTable.Instance.RefreshEntries(entries);
     }
 
@@ -63,7 +65,8 @@ public class CoroutineTrackerWindow : EditorWindow
     {
         if (Event.current.commandName == "AppStarted")
         {
-            CoroutineStatisticsV2.Instance.OnBroadcast += CoroutineEditorDatabase.Instance.Receive;
+            _database = new CoroutineEditorDatabase();
+            RuntimeCoroutineStats.Instance.OnBroadcast += _database.Receive;
             Panel_CoGraph.Instance.SelectionChanged += GraphPanel_SelectionChanged;
             Panel_CoTable.Instance.OnCoroutineSelected += TablePanel_CoroutineSelected;
         }
@@ -113,7 +116,7 @@ public class CoroutineTrackerWindow : EditorWindow
 
     void TablePanel_CoroutineSelected(int coSeqID)
     {
-        CoroutineInfo info = CoroutineEditorDatabase.Instance.GetCoroutineInfo(coSeqID);
+        CoroutineInfo info = _database.GetCoroutineInfo(coSeqID);
         if (info == null)
             return;
 
