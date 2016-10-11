@@ -327,13 +327,11 @@ public class Panel_CoGraph
 
                                             if (Event.current.type == EventType.MouseDown || Event.current.type == EventType.MouseDrag)
                                             {
-                                                kv.Value.mSelectedIndex = i;
-
                                                 mSelectedXLeft = x0;
                                                 mSelectedX = x1;
 
                                                 if (_selectionChanged != null)
-                                                    _selectionChanged(i);
+                                                    _selectionChanged(start_index);
                                             }
 
                                             string text = value.ToString(fmt);
