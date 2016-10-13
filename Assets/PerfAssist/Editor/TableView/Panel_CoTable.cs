@@ -3,6 +3,11 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 
+public class PAConst
+{
+    public readonly static Color SelectionColor = (Color)new Color32(62, 95, 150, 255);
+}
+
 public class CoTableEntry
 {
     public int SeqID = -1;
@@ -54,7 +59,7 @@ public class Panel_CoTable
         NameLabelDark.normal.textColor = Color.white;
 
         Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Selected.normal.background = GuiUtil.getColorTexture(new Color(0.3f, 0.3f, 0.8f, 0.6f));
+        Selected.normal.background = GuiUtil.getColorTexture(PAConst.SelectionColor);
         Selected.normal.textColor = Color.white;
     }
 
