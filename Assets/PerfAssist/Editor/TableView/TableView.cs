@@ -2,11 +2,8 @@
 using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
-public class PAConst
-{
-    public readonly static Color SelectionColor = (Color)new Color32(62, 95, 150, 255);
-}
 
 public class CoTableEntry
 {
@@ -18,62 +15,70 @@ public class CoTableEntry
     public float ExecAccumTime = 0.0f;
 }
 
-public delegate void CoroutineSelectionHandler(int coSeqID);
+public delegate void LineSelectionHandler(int coSeqID);
 
-public class Panel_CoTable 
+public class TableView : IDisposable 
 {
-    GUIStyle NameTitle;
-    GUIStyle NameLabel;
-    GUIStyle NameLabelDark;
-    GUIStyle Selected;
-
-    public static Panel_CoTable Instance = new Panel_CoTable();
-
-    private CoroutineSelectionHandler _onCoroutineSelected;
-    public event CoroutineSelectionHandler OnCoroutineSelected
+    private LineSelectionHandler _onLineSelected;
+    public event LineSelectionHandler OnLineSelected
     {
         add
         {
-            _onCoroutineSelected -= value;
-            _onCoroutineSelected += value;
+            _onLineSelected -= value;
+            _onLineSelected += value;
         }
         remove
         {
-            _onCoroutineSelected -= value;
+            _onLineSelected -= value;
         }
     }
 
-    public Panel_CoTable()
+    public TableView(EditorWindow hostWindow)
     {
-        NameTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
-        NameTitle.alignment = TextAnchor.MiddleCenter;
-        NameTitle.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.7f, 0.2f, 0.5f));
-        NameTitle.normal.textColor = Color.white;
-
-        NameLabel = new GUIStyle(EditorStyles.whiteLabel);
-        NameLabel.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
-        NameLabel.normal.textColor = Color.white;
-
-        NameLabelDark = new GUIStyle(EditorStyles.whiteLabel);
-        NameLabelDark.normal.background = GuiUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
-        NameLabelDark.normal.textColor = Color.white;
-
-        Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Selected.normal.background = GuiUtil.getColorTexture(PAConst.SelectionColor);
-        Selected.normal.textColor = Color.white;
+        m_hostWindow = hostWindow;
     }
 
-    private CoTableEntry m_selected = null;
-    private List<CoTableEntry> m_items = new List<CoTableEntry>();
+    public void Dispose()
+    {
 
-    static float _lineHeight = 25;
+    }
+
+    public void ClearColumns()
+    {
+        m_descArray.Clear();
+    }
+
+    public void AddColumn(string colDataPropertyName, string colTitleText, float widthByPercent, string fmt = "")
+    {
+        TableViewColDesc desc = new TableViewColDesc();
+        desc.PropertyName = colDataPropertyName;
+        desc.TitleText = colTitleText;
+        desc.WidthInPercent = widthByPercent;
+        desc.Format = string.IsNullOrEmpty(fmt) ? null : fmt;
+        AddColumn(desc);
+    }
+
+    public void AddColumn(TableViewColDesc desc)
+    {
+        m_descArray.Add(desc);
+    }
+
+    private EditorWindow m_hostWindow = null;
+    private CoTableEntry m_selected = null;
+    private List<CoTableEntry> m_lines = new List<CoTableEntry>();
+
+    public List<TableViewColDesc> DescArray { get { return m_descArray; } }
+    List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
+
+    public TableViewAppr Appearance { get { return m_appr; } }
+    private TableViewAppr m_appr = new TableViewAppr();
 
     static float[] _starts = new float[5] { 0.0f, 0.58f, 0.64f, 0.74f, 0.86f };
     static float[] _ratios = new float[5] { 0.58f, 0.06f, 0.1f, 0.12f, 0.14f };
 
     private Rect LabelRect(float width, int slot, int pos)
     {
-        return new Rect(width * _starts[slot], pos * _lineHeight, width * _ratios[slot], _lineHeight);
+        return new Rect(width * _starts[slot], pos * m_appr.LineHeight, width * _ratios[slot], m_appr.LineHeight);
     }
 
     Dictionary<string, int> TitleSlots = new Dictionary<string, int>()
@@ -92,35 +97,32 @@ public class Panel_CoTable
         foreach (var item in TitleSlots)
         {
             Rect r = LabelRect(width, item.Value, 0);
-            GUI.Label(r, item.Key + (_sortSlot == item.Value ? " ▼" : ""), NameTitle);
+            GUI.Label(r, item.Key + (_sortSlot == item.Value ? " ▼" : ""), m_appr.Style_Title);
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
             {
                 _sortSlot = item.Value;
-                EditorWindow w = EditorWindow.GetWindow<EditorWindow>("CoroutineTrackerWindow");
-                if (w != null)
-                {
-                    PerformResort();
-                    w.Repaint();
-                }
+
+                Sort();
+                m_hostWindow.Repaint();
             }
         }
     }
 
     private void DrawLine(int pos, CoTableEntry entry, float width)
     {
-        Rect r = new Rect(0, pos * _lineHeight, width, _lineHeight);
+        Rect r = new Rect(0, pos * m_appr.LineHeight, width, m_appr.LineHeight);
         if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
         {
             m_selected = entry;
 
-            if (_onCoroutineSelected != null)
-                _onCoroutineSelected(m_selected.SeqID);
+            if (_onLineSelected != null)
+                _onLineSelected(m_selected.SeqID);
         }
 
-        GUIStyle style = new GUIStyle((pos % 2 != 0) ? NameLabel : NameLabelDark);
+        GUIStyle style = new GUIStyle((pos % 2 != 0) ? m_appr.Style_Line : m_appr.Style_LineAlt);
         if (m_selected == entry)
         {
-            style = Selected;
+            style = m_appr.Style_Selected;
         }
 
         style.alignment = TextAnchor.MiddleLeft;
@@ -136,18 +138,20 @@ public class Panel_CoTable
     public void DrawTable()
     {
         GUIStyle s = new GUIStyle();
-        s.fixedHeight = _lineHeight * m_items.Count;
+        s.fixedHeight = m_appr.LineHeight * m_lines.Count;
         s.stretchWidth = true;
         Rect r = EditorGUILayout.BeginVertical(s);
 
         // !!! this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
-        GuiUtil.DrawLabel("", NameLabel);
+        GuiUtil.DrawLabel("", m_appr.Style_Line);
 
         DrawTitle(r.width);
-        for (int i = 0; i < m_items.Count; i++)
+
+        for (int i = 0; i < m_lines.Count; i++)
         {
-            DrawLine(i + 1, m_items[i], r.width);
+            DrawLine(i + 1, m_lines[i], r.width);
         }
+
         EditorGUILayout.EndVertical();
     }
 
@@ -156,15 +160,15 @@ public class Panel_CoTable
         if (entries == null)
             return;
 
-        m_items.Clear();
-        m_items.AddRange(entries);
+        m_lines.Clear();
+        m_lines.AddRange(entries);
 
-        PerformResort();
+        Sort();
     }
 
-    private void PerformResort()
+    private void Sort()
     {
-        m_items.Sort((s1, s2) =>
+        m_lines.Sort((s1, s2) =>
         {
             switch (_sortSlot)
             {
