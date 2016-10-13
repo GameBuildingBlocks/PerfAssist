@@ -14,7 +14,7 @@ public class SampleRunner : MonoBehaviour {
         StartCoroutine(RuntimeCoroutineStats.Instance.BroadcastCoroutine());
 #if UNITY_EDITOR
         EditorWindow w = EditorWindow.GetWindow<EditorWindow>("CoroutineTrackerWindow");
-        if (w != null)
+        if (w.GetType().Name == "CoroutineTrackerWindow")
         {
             w.SendEvent(EditorGUIUtility.CommandEvent("AppStarted"));
         }
