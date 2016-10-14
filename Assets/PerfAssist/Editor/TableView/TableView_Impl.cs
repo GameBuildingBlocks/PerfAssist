@@ -36,29 +36,49 @@ public partial class TableView
         }
     }
 
-    private void DrawLine(int pos, object entry, float width)
+    private void DrawLine(int pos, object obj, float width)
     {
-        GUIStyle style = (pos % 2 != 0) ? m_appr.Style_Line : m_appr.Style_LineAlt;
-
         Rect r = new Rect(0, pos * m_appr.LineHeight, width, m_appr.LineHeight);
-        if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
-        {
-            m_selected = entry;
-            style = m_appr.Style_Selected;
+        bool selectionHappens = Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition);
 
-            if (OnLineSelected != null)
-                OnLineSelected(m_selected);
+        GUIStyle style = new GUIStyle((pos % 2 != 0) ? m_appr.Style_Line : m_appr.Style_LineAlt);
+        if (selectionHappens)
+        {
+            m_selected = obj;
+        }
+
+        // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
+        // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
+        if (m_selected == obj)
+        {
+            style = m_appr.Style_Selected;
         }
 
         for (int i = 0; i < m_descArray.Count; i++)
-            DrawCell(pos, i, width, entry, style);
+            DrawLineCol(pos, i, width, obj, style, selectionHappens);
     }
 
-    private void DrawCell(int pos, int slot, float width, object obj, GUIStyle style)
+    private void DrawLineCol(int pos, int col, float width, object obj, GUIStyle style, bool selectionHappens = false)
     {
-        var desc = m_descArray[slot];
+        var rect = LabelRect(width, col, pos);
+
+        if (selectionHappens && rect.Contains(Event.current.mousePosition))
+        {
+            m_selectedCol = col;
+            if (OnSelected != null)
+                OnSelected(obj, col);
+        }
+
+        // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
+        // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
+        if (m_selectedCol == col && m_selected == obj)
+        {
+            style = m_appr.Style_SelectedCell;
+        }
+
+        var desc = m_descArray[col];
         style.alignment = desc.Alignment;
-        GUI.Label(LabelRect(width, slot, pos), desc.FormatObject(obj), style);
+        GUI.Label(rect, desc.FormatObject(obj), style);
     }
 
     private void SortData()
@@ -83,15 +103,17 @@ public partial class TableView
         return new Rect(width * accumPercent, pos * m_appr.LineHeight, width * m_descArray[slot].WidthInPercent, m_appr.LineHeight);
     }
 
+    List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
+    TableViewAppr m_appr = new TableViewAppr();
+
+    Vector2 _scrollPos = Vector2.zero;
+
+    int _sortSlot = 0;
+    bool _descending = true;
+
     Type m_itemType = null;
     EditorWindow m_hostWindow = null;
     List<object> m_lines = new List<object>();
     object m_selected = null;
-    Vector2 _scrollPos = Vector2.zero;
-
-    List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
-    TableViewAppr m_appr = new TableViewAppr();
-
-    int _sortSlot = 0;
-    bool _descending = true;
+    int m_selectedCol = -1;
 }

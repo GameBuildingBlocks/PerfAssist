@@ -69,7 +69,7 @@ public class TableViewTestWindow : EditorWindow
             entries.Add(CoTableEntry.MakeRandom());
         _table.RefreshData(entries);
 
-        _table.OnLineSelected += TableView_LineSelected;
+        _table.OnSelected += TableView_Selected;
     }
 
     void OnDestroy()
@@ -104,8 +104,8 @@ public class TableViewTestWindow : EditorWindow
         GUILayout.EndVertical();
     }
 
-    void TableView_LineSelected(object selected)
+    void TableView_Selected(object selected, int col)
     {
-        Debug.LogFormat("line selected: {0}", ((CoTableEntry)(selected)).SeqID);
+        Debug.LogFormat("line selected: {0}, {1}", ((CoTableEntry)(selected)).SeqID, col);
     }
 }

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System;
 using System.Reflection;
 
-public delegate void LineSelectionHandler(object selected);
+public delegate void SelectionHandler(object selected, int col);
 
 public partial class TableView : IDisposable 
 {
-    public event LineSelectionHandler OnLineSelected;
+    public event SelectionHandler OnSelected;
 
     public TableViewAppr Appearance { get { return m_appr; } }
 

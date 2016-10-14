@@ -29,10 +29,15 @@ public class TableViewAppr
         Style_Selected = new GUIStyle(EditorStyles.whiteLabel);
         Style_Selected.normal.background = GuiUtil.getColorTexture(PAConst.SelectionColor);
         Style_Selected.normal.textColor = Color.white;
+
+        Style_SelectedCell = new GUIStyle(EditorStyles.whiteLabel);
+        Style_SelectedCell.normal.background = GuiUtil.getColorTexture(PAConst.SelectionColorDark);
+        Style_SelectedCell.normal.textColor = Color.yellow;
     }
 
     public GUIStyle Style_Title;
     public GUIStyle Style_Line;
     public GUIStyle Style_LineAlt;
     public GUIStyle Style_Selected;
+    public GUIStyle Style_SelectedCell;
 }

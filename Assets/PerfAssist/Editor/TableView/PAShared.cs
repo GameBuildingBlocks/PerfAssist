@@ -5,6 +5,7 @@ using System.Reflection;
 public class PAConst
 {
     public readonly static Color SelectionColor = (Color)new Color32(62, 95, 150, 255);
+    public readonly static Color SelectionColorDark = (Color)new Color32(62, 95, 150, 128);
 }
 
 public class PAUtil
