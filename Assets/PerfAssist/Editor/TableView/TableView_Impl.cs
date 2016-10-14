@@ -6,6 +6,11 @@ using UnityEditor;
 
 public partial class TableView 
 {
+    private string GetSortMark()
+    {
+        return _descending ? " ▼" : " ▲";
+    }
+
     private void DrawTitle(float width)
     {
         for (int i = 0; i < m_descArray.Count; i++)
@@ -13,10 +18,17 @@ public partial class TableView
             var desc = m_descArray[i];
 
             Rect r = LabelRect(width, i, 0);
-            GUI.Label(r, desc.TitleText + (_sortSlot == i ? " ▼" : ""), m_appr.Style_Title);
+            GUI.Label(r, desc.TitleText + (_sortSlot == i ? GetSortMark() : ""), m_appr.Style_Title);
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
             {
-                _sortSlot = i;
+                if (_sortSlot == i)
+                {
+                    _descending = !_descending;
+                }
+                else
+                {
+                    _sortSlot = i;
+                }
 
                 SortData();
                 m_hostWindow.Repaint();
@@ -56,7 +68,7 @@ public partial class TableView
             if (_sortSlot >= m_descArray.Count)
                 return 0;
 
-            return m_descArray[_sortSlot].Compare(s1, s2);
+            return m_descArray[_sortSlot].Compare(s1, s2) * (_descending ? -1 : 1);
         });
     }
 
@@ -75,9 +87,11 @@ public partial class TableView
     EditorWindow m_hostWindow = null;
     List<object> m_lines = new List<object>();
     object m_selected = null;
-    int _sortSlot = 0;
     Vector2 _scrollPos = Vector2.zero;
 
     List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
     TableViewAppr m_appr = new TableViewAppr();
+
+    int _sortSlot = 0;
+    bool _descending = true;
 }
