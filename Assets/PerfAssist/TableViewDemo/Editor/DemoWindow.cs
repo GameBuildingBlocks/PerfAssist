@@ -27,13 +27,13 @@ public class FooItem
     }
 }
 
-public class TableViewTestWindow : EditorWindow
+public class DemoWindow : EditorWindow
 {
-    [MenuItem("Window/TableViewTest")]
+    [MenuItem("Window/TableView Demo")]
     static void Create()
     {
-        TableViewTestWindow w = EditorWindow.GetWindow<TableViewTestWindow>();
-        if (w.GetType().Name == "TableViewTestWindow")
+        DemoWindow w = EditorWindow.GetWindow<DemoWindow>();
+        if (w.GetType().Name == "DemoWindow")
         {
             w.minSize = new Vector2(800, 600);
             w.Show();
