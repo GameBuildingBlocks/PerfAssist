@@ -34,7 +34,6 @@ public class TableViewTestWindow : EditorWindow
     public static float DataTableWidth = 600.0f;
 
     TableView _table;
-    Vector2 _scrollPos = Vector2.zero;
 
     [MenuItem("Window/TableViewTest")]
     static void Create()
@@ -99,14 +98,8 @@ public class TableViewTestWindow : EditorWindow
 
         GUILayout.BeginVertical();
 
-        GUILayout.BeginArea(new Rect(0, ToolbarHeight, DataTableWidth, position.height - ToolbarHeight));
-        {
-            _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
-            if (_table != null)
-                _table.Draw();
-            GUILayout.EndScrollView();
-        }
-        GUILayout.EndArea();
+        if (_table != null)
+            _table.Draw(new Rect(0, ToolbarHeight, position.width * 0.6f, position.height - ToolbarHeight));
 
         GUILayout.EndVertical();
     }

@@ -76,6 +76,7 @@ public partial class TableView
     List<object> m_lines = new List<object>();
     object m_selected = null;
     int _sortSlot = 0;
+    Vector2 _scrollPos = Vector2.zero;
 
     List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
     TableViewAppr m_appr = new TableViewAppr();

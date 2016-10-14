@@ -56,23 +56,35 @@ public partial class TableView : IDisposable
         SortData();
     }
 
-    public void Draw()
+    public void Draw(Rect area)
     {
-        GUIStyle s = new GUIStyle();
-        s.fixedHeight = m_appr.LineHeight * m_lines.Count;
-        s.stretchWidth = true;
-        Rect r = EditorGUILayout.BeginVertical(s);
-
-        // !!! this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
-        GuiUtil.DrawLabel("", m_appr.Style_Line);
-
-        DrawTitle(r.width);
-
-        for (int i = 0; i < m_lines.Count; i++)
+        GUILayout.BeginArea(area);
+        _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
+        //Debug.LogFormat("scroll pos: {0:0.00}, {1:0.00}", _scrollPos.x, _scrollPos.y);
         {
-            DrawLine(i + 1, m_lines[i], r.width);
-        }
+            GUIStyle s = new GUIStyle();
+            s.fixedHeight = m_appr.LineHeight * m_lines.Count;
+            s.stretchWidth = true;
+            Rect r = EditorGUILayout.BeginVertical(s);
+            {
+                // this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
+                GuiUtil.DrawLabel("", m_appr.Style_Line);
 
-        EditorGUILayout.EndVertical();
+                DrawTitle(r.width);
+
+                // these first/last calculatings are for smart clipping 
+                int firstLine = Mathf.Max((int)(_scrollPos.y / m_appr.LineHeight) - 1, 0);
+                int shownLineCount = (int)(area.height / m_appr.LineHeight) + 2;
+                int lastLine = Mathf.Min(firstLine + shownLineCount, m_lines.Count);
+
+                for (int i = firstLine; i < lastLine; i++)
+                {
+                    DrawLine(i + 1, m_lines[i], r.width);
+                }
+            }
+            EditorGUILayout.EndVertical();
+        }
+        GUILayout.EndScrollView();
+        GUILayout.EndArea();
     }
 }
