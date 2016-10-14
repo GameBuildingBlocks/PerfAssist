@@ -6,7 +6,7 @@
 
 ## Features
 
-Show data set in a neat table view in Unity Editor.  
+`TableView` browses data set in a neat table view in Unity Editor.  
 
 - easy-to-use interface for minimal learning time
     + less than 10 lines of code to get it working 
