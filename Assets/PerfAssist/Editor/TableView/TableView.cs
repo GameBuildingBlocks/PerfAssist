@@ -11,7 +11,7 @@ public partial class TableView : IDisposable
 {
     public event SelectionHandler OnSelected;
 
-    public TableViewAppr Appearance { get { return m_appr; } }
+    public TableViewAppr Appearance { get { return _appearance; } }
 
     public TableView(EditorWindow hostWindow, Type itemType)
     {
@@ -37,8 +37,8 @@ public partial class TableView : IDisposable
         desc.Alignment = alignment;
         desc.WidthInPercent = widthByPercent;
         desc.Format = string.IsNullOrEmpty(fmt) ? null : fmt;
-        desc.fieldInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
-        if (desc.fieldInfo == null)
+        desc.FieldInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
+        if (desc.FieldInfo == null)
             return false;
 
         m_descArray.Add(desc);
@@ -63,18 +63,18 @@ public partial class TableView : IDisposable
         //Debug.LogFormat("scroll pos: {0:0.00}, {1:0.00}", _scrollPos.x, _scrollPos.y);
         {
             GUIStyle s = new GUIStyle();
-            s.fixedHeight = m_appr.LineHeight * m_lines.Count;
+            s.fixedHeight = _appearance.LineHeight * m_lines.Count;
             s.stretchWidth = true;
             Rect r = EditorGUILayout.BeginVertical(s);
             {
                 // this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
-                GuiUtil.DrawLabel("", m_appr.Style_Line);
+                DrawLabel("", _appearance.Style_Line);
 
                 DrawTitle(r.width);
 
                 // these first/last calculatings are for smart clipping 
-                int firstLine = Mathf.Max((int)(_scrollPos.y / m_appr.LineHeight) - 1, 0);
-                int shownLineCount = (int)(area.height / m_appr.LineHeight) + 2;
+                int firstLine = Mathf.Max((int)(_scrollPos.y / _appearance.LineHeight) - 1, 0);
+                int shownLineCount = (int)(area.height / _appearance.LineHeight) + 2;
                 int lastLine = Mathf.Min(firstLine + shownLineCount, m_lines.Count);
 
                 for (int i = firstLine; i < lastLine; i++)

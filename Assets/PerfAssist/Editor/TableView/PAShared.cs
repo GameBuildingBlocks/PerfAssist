@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Reflection;
+using System.Linq;
+using System.IO;
+using System.Collections.Generic;
 
 public class PAConst
 {
@@ -29,5 +32,27 @@ public class PAUtil
         if (val is double)
             return ((double)val).ToString(fmt);
         return val.ToString();
+    }
+
+    public static string GetRandomString()
+    {
+        string path = Path.GetRandomFileName();
+        path = path.Replace(".", ""); // Remove period.
+        return path;
+    }
+
+    private static Dictionary<Color, Texture2D> s_colorTextures = new Dictionary<Color, Texture2D>();
+    public static Texture2D getColorTexture(Color c)
+    {
+        Texture2D tex = null;
+        if (s_colorTextures.TryGetValue(c, out tex))
+            return tex;
+
+        tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+        tex.SetPixel(0, 0, c);
+        tex.Apply();
+
+        s_colorTextures[c] = tex;
+        return tex;
     }
 }

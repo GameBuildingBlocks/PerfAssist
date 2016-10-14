@@ -6,10 +6,6 @@ using UnityEditor;
 
 public partial class TableView 
 {
-    private string GetSortMark()
-    {
-        return _descending ? " ▼" : " ▲";
-    }
 
     private void DrawTitle(float width)
     {
@@ -18,7 +14,7 @@ public partial class TableView
             var desc = m_descArray[i];
 
             Rect r = LabelRect(width, i, 0);
-            GUI.Label(r, desc.TitleText + (_sortSlot == i ? GetSortMark() : ""), m_appr.Style_Title);
+            GUI.Label(r, desc.TitleText + (_sortSlot == i ? _appearance.GetSortMark(_descending) : ""), _appearance.Style_Title);
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
             {
                 if (_sortSlot == i)
@@ -38,10 +34,10 @@ public partial class TableView
 
     private void DrawLine(int pos, object obj, float width)
     {
-        Rect r = new Rect(0, pos * m_appr.LineHeight, width, m_appr.LineHeight);
+        Rect r = new Rect(0, pos * _appearance.LineHeight, width, _appearance.LineHeight);
         bool selectionHappens = Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition);
 
-        GUIStyle style = new GUIStyle((pos % 2 != 0) ? m_appr.Style_Line : m_appr.Style_LineAlt);
+        GUIStyle style = new GUIStyle((pos % 2 != 0) ? _appearance.Style_Line : _appearance.Style_LineAlt);
         if (selectionHappens)
         {
             m_selected = obj;
@@ -51,7 +47,7 @@ public partial class TableView
         // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
         if (m_selected == obj)
         {
-            style = m_appr.Style_Selected;
+            style = _appearance.Style_Selected;
         }
 
         for (int i = 0; i < m_descArray.Count; i++)
@@ -67,18 +63,27 @@ public partial class TableView
             m_selectedCol = col;
             if (OnSelected != null)
                 OnSelected(obj, col);
+            m_hostWindow.Repaint();
         }
 
         // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
         // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
         if (m_selectedCol == col && m_selected == obj)
         {
-            style = m_appr.Style_SelectedCell;
+            style = _appearance.Style_SelectedCell;
         }
 
         var desc = m_descArray[col];
         style.alignment = desc.Alignment;
         GUI.Label(rect, desc.FormatObject(obj), style);
+    }
+
+    static void DrawLabel(string content, GUIStyle style)
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        EditorGUILayout.LabelField(content, style, GUILayout.Width(style.CalcSize(new GUIContent(content)).x + 3));
+        EditorGUILayout.EndHorizontal();
     }
 
     private void SortData()
@@ -100,11 +105,11 @@ public partial class TableView
         {
             accumPercent += m_descArray[i].WidthInPercent;
         }
-        return new Rect(width * accumPercent, pos * m_appr.LineHeight, width * m_descArray[slot].WidthInPercent, m_appr.LineHeight);
+        return new Rect(width * accumPercent, pos * _appearance.LineHeight, width * m_descArray[slot].WidthInPercent, _appearance.LineHeight);
     }
 
     List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
-    TableViewAppr m_appr = new TableViewAppr();
+    TableViewAppr _appearance = new TableViewAppr();
 
     Vector2 _scrollPos = Vector2.zero;
 

@@ -4,13 +4,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using System;
 
-//public enum FieldSizeType
-//{
-//    None,
-//    ByPixels,
-//    ByPercents,
-//}
-
 public class TableViewColDesc
 {
     public string PropertyName;
@@ -20,17 +13,17 @@ public class TableViewColDesc
     public string Format;
     public float WidthInPercent;
 
-    public FieldInfo fieldInfo;
+    public FieldInfo FieldInfo;
 
     public string FormatObject(object obj)
     {
-        return PAUtil.FieldToString(obj, fieldInfo, Format);
+        return PAUtil.FieldToString(obj, FieldInfo, Format);
     }
 
     public int Compare(object o1, object o2)
     {
-        object fv1 = PAUtil.FieldValue(o1, fieldInfo);
-        object fv2 = PAUtil.FieldValue(o2, fieldInfo);
+        object fv1 = PAUtil.FieldValue(o1, FieldInfo);
+        object fv2 = PAUtil.FieldValue(o2, FieldInfo);
 
         IComparable fc1 = fv1 as IComparable;
         IComparable fc2 = fv2 as IComparable;

@@ -4,72 +4,83 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
-public class CoTableEntry
+public class FooItem
 {
     public int SeqID = -1;
     public string Name = "Foo";
-    public int ExecSelectedCount = 0;
-    public float ExecSelectedTime = 0.0f;
-    public int ExecAccumCount = 0;
-    public float ExecAccumTime = 0.0f;
+    public int Count_A = 0;
+    public float Time_A = 0.0f;
+    public int Count_B = 0;
+    public float Time_B = 0.0f;
 
-    public static CoTableEntry MakeRandom()
+    public static FooItem MakeRandom()
     {
-        return new CoTableEntry()
+        return new FooItem()
         {
             SeqID = (int)(Random.value * 100.0f),
-            Name = "Foo " + (Random.value * 100.0f).ToString(),
-            ExecSelectedCount = (int)(Random.value * 100.0f),
-            ExecSelectedTime = (Random.value * 100.0f),
-            ExecAccumCount = (int)(Random.value * 100.0f),
-            ExecAccumTime = (Random.value * 100.0f),
+            Name = "Foo " + PAUtil.GetRandomString(),
+            Count_A = (int)(Random.value * 100.0f),
+            Time_A = (Random.value * 100.0f),
+            Count_B = (int)(Random.value * 100.0f),
+            Time_B = (Random.value * 100.0f),
         };
     }
 }
 
-
 public class TableViewTestWindow : EditorWindow
 {
-    public static float ToolbarHeight = 30.0f;
-    public static float DataTableWidth = 600.0f;
-
-    TableView _table;
-
     [MenuItem("Window/TableViewTest")]
     static void Create()
     {
         TableViewTestWindow w = EditorWindow.GetWindow<TableViewTestWindow>();
         if (w.GetType().Name == "TableViewTestWindow")
         {
+            w.minSize = new Vector2(800, 600);
             w.Show();
         }
     }
 
     void Awake()
     {
-        var rect = position;
-        rect.width = Mathf.Max(1280, rect.width);
-        rect.height = Mathf.Max(720, rect.height);
-        if (!Mathf.Approximately(rect.width, position.width) ||
-            !Mathf.Approximately(rect.height, position.height))
-        {
-            position = rect;
-        }
+        // create the table with a specified object type
+        _table = new TableView(this, typeof(FooItem));
+        
+        // setup the description for content
+        _table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
+        _table.AddColumn("Count_A", "Count_A", 0.1f);
+        _table.AddColumn("Time_A", "Time_A", 0.15f, TextAnchor.MiddleCenter, "0.000");
+        _table.AddColumn("Count_B", "Count_B", 0.1f);
+        _table.AddColumn("Time_B", "Time_B", 0.15f, TextAnchor.MiddleCenter, "0.0");
 
-        _table = new TableView(this, typeof(CoTableEntry));
-
-        _table.AddColumn("Name", "Name", 0.58f, TextAnchor.MiddleLeft);
-        _table.AddColumn("ExecSelectedCount", "Cnt", 0.06f);
-        _table.AddColumn("ExecSelectedTime", "Time", 0.1f, TextAnchor.MiddleCenter, "0.000");
-        _table.AddColumn("ExecAccumCount", "Cnt_Sum", 0.12f);
-        _table.AddColumn("ExecAccumTime", "Time_Sum", 0.14f, TextAnchor.MiddleCenter, "0.000");
-
+        // add test data
         List<object> entries = new List<object>();
         for (int i = 0; i < 100; i++)
-            entries.Add(CoTableEntry.MakeRandom());
+            entries.Add(FooItem.MakeRandom());
         _table.RefreshData(entries);
 
+        // register the event-handling function
         _table.OnSelected += TableView_Selected;
+    }
+
+    void OnGUI()
+    {
+        if (_table != null)
+            _table.Draw(new Rect(20, 20, position.width * 0.8f, position.height - 40));
+    }
+
+    void TableView_Selected(object selected, int col)
+    {
+        FooItem foo = selected as FooItem;
+        if (foo == null)
+        {
+            Debug.LogErrorFormat("the selected object is not a valid one. ({0} expected, {1} got)",
+                typeof(FooItem).ToString(), selected.GetType().ToString());
+            return;
+        }
+
+        string text = string.Format("object '{0}' selected. (col={1})", foo.Name, col);
+        Debug.Log(text);
+        ShowNotification(new GUIContent(text));
     }
 
     void OnDestroy()
@@ -80,32 +91,5 @@ public class TableViewTestWindow : EditorWindow
         _table = null;
     }
 
-    void OnEnable()
-    {
-        EditorApplication.update += Repaint;
-    }
-
-    void OnDisable()
-    {
-        EditorApplication.update -= Repaint;
-    }
-
-    void OnGUI()
-    {
-        //GUILayout.BeginHorizontal();
-        //_enableTracking = GUILayout.Toggle(_enableTracking, "EnableTracking", GUILayout.Height(ToolbarHeight));
-        //GUILayout.EndHorizontal();
-
-        GUILayout.BeginVertical();
-
-        if (_table != null)
-            _table.Draw(new Rect(0, ToolbarHeight, position.width * 0.6f, position.height - ToolbarHeight));
-
-        GUILayout.EndVertical();
-    }
-
-    void TableView_Selected(object selected, int col)
-    {
-        Debug.LogFormat("line selected: {0}, {1}", ((CoTableEntry)(selected)).SeqID, col);
-    }
+    TableView _table;
 }
