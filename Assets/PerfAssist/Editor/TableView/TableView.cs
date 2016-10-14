@@ -3,39 +3,20 @@ using UnityEditor;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.Reflection;
 
+public delegate void LineSelectionHandler(object selected);
 
-public class CoTableEntry
+public partial class TableView : IDisposable 
 {
-    public int SeqID = -1;
-    public string Name = "Foo";
-    public int ExecSelectedCount = 0;
-    public float ExecSelectedTime = 0.0f;
-    public int ExecAccumCount = 0;
-    public float ExecAccumTime = 0.0f;
-}
+    public event LineSelectionHandler OnLineSelected;
 
-public delegate void LineSelectionHandler(int coSeqID);
+    public TableViewAppr Appearance { get { return m_appr; } }
 
-public class TableView : IDisposable 
-{
-    private LineSelectionHandler _onLineSelected;
-    public event LineSelectionHandler OnLineSelected
-    {
-        add
-        {
-            _onLineSelected -= value;
-            _onLineSelected += value;
-        }
-        remove
-        {
-            _onLineSelected -= value;
-        }
-    }
-
-    public TableView(EditorWindow hostWindow)
+    public TableView(EditorWindow hostWindow, Type itemType)
     {
         m_hostWindow = hostWindow;
+        m_itemType = itemType;
     }
 
     public void Dispose()
@@ -48,94 +29,34 @@ public class TableView : IDisposable
         m_descArray.Clear();
     }
 
-    public void AddColumn(string colDataPropertyName, string colTitleText, float widthByPercent, string fmt = "")
+    public bool AddColumn(string colDataPropertyName, string colTitleText, float widthByPercent, TextAnchor alignment = TextAnchor.MiddleCenter, string fmt = "")
     {
         TableViewColDesc desc = new TableViewColDesc();
         desc.PropertyName = colDataPropertyName;
         desc.TitleText = colTitleText;
+        desc.Alignment = alignment;
         desc.WidthInPercent = widthByPercent;
         desc.Format = string.IsNullOrEmpty(fmt) ? null : fmt;
-        AddColumn(desc);
-    }
+        desc.fieldInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
+        if (desc.fieldInfo == null)
+            return false;
 
-    public void AddColumn(TableViewColDesc desc)
-    {
         m_descArray.Add(desc);
+        return true;
     }
 
-    private EditorWindow m_hostWindow = null;
-    private CoTableEntry m_selected = null;
-    private List<CoTableEntry> m_lines = new List<CoTableEntry>();
-
-    public List<TableViewColDesc> DescArray { get { return m_descArray; } }
-    List<TableViewColDesc> m_descArray = new List<TableViewColDesc>();
-
-    public TableViewAppr Appearance { get { return m_appr; } }
-    private TableViewAppr m_appr = new TableViewAppr();
-
-    static float[] _starts = new float[5] { 0.0f, 0.58f, 0.64f, 0.74f, 0.86f };
-    static float[] _ratios = new float[5] { 0.58f, 0.06f, 0.1f, 0.12f, 0.14f };
-
-    private Rect LabelRect(float width, int slot, int pos)
+    public void RefreshData(List<object> entries)
     {
-        return new Rect(width * _starts[slot], pos * m_appr.LineHeight, width * _ratios[slot], m_appr.LineHeight);
+        if (entries == null)
+            return;
+
+        m_lines.Clear();
+        m_lines.AddRange(entries);
+
+        SortData();
     }
 
-    Dictionary<string, int> TitleSlots = new Dictionary<string, int>()
-    {
-        { "Name", 0 },
-        { "Cnt", 1 },
-        { "Time", 2 },
-        { "Cnt_Sum", 3 },
-        { "Time_Sum", 4 },
-    };
-
-    int _sortSlot = 4;
-
-    private void DrawTitle(float width)
-    {
-        foreach (var item in TitleSlots)
-        {
-            Rect r = LabelRect(width, item.Value, 0);
-            GUI.Label(r, item.Key + (_sortSlot == item.Value ? " ▼" : ""), m_appr.Style_Title);
-            if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
-            {
-                _sortSlot = item.Value;
-
-                Sort();
-                m_hostWindow.Repaint();
-            }
-        }
-    }
-
-    private void DrawLine(int pos, CoTableEntry entry, float width)
-    {
-        Rect r = new Rect(0, pos * m_appr.LineHeight, width, m_appr.LineHeight);
-        if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
-        {
-            m_selected = entry;
-
-            if (_onLineSelected != null)
-                _onLineSelected(m_selected.SeqID);
-        }
-
-        GUIStyle style = new GUIStyle((pos % 2 != 0) ? m_appr.Style_Line : m_appr.Style_LineAlt);
-        if (m_selected == entry)
-        {
-            style = m_appr.Style_Selected;
-        }
-
-        style.alignment = TextAnchor.MiddleLeft;
-        GUI.Label(LabelRect(width, 0, pos), entry.Name + ((m_selected == entry) ? "*" : ""), style);
-
-        style.alignment = TextAnchor.MiddleCenter;
-        GUI.Label(LabelRect(width, 1, pos), entry.ExecSelectedCount.ToString(), style);
-        GUI.Label(LabelRect(width, 2, pos), entry.ExecSelectedTime.ToString("0.000"), style);
-        GUI.Label(LabelRect(width, 3, pos), entry.ExecAccumCount.ToString(), style);
-        GUI.Label(LabelRect(width, 4, pos), entry.ExecAccumTime.ToString("0.000"), style);
-    }
-
-    public void DrawTable()
+    public void Draw()
     {
         GUIStyle s = new GUIStyle();
         s.fixedHeight = m_appr.LineHeight * m_lines.Count;
@@ -153,39 +74,5 @@ public class TableView : IDisposable
         }
 
         EditorGUILayout.EndVertical();
-    }
-
-    public void RefreshEntries(List<CoTableEntry> entries)
-    {
-        if (entries == null)
-            return;
-
-        m_lines.Clear();
-        m_lines.AddRange(entries);
-
-        Sort();
-    }
-
-    private void Sort()
-    {
-        m_lines.Sort((s1, s2) =>
-        {
-            switch (_sortSlot)
-            {
-                case 1:
-                    return -1 * s1.ExecSelectedCount.CompareTo(s2.ExecSelectedCount);
-                case 2:
-                    return -1 * s1.ExecSelectedTime.CompareTo(s2.ExecSelectedTime);
-                case 3:
-                    return -1 * s1.ExecAccumCount.CompareTo(s2.ExecAccumCount);
-                case 4:
-                    return -1 * s1.ExecAccumTime.CompareTo(s2.ExecAccumTime);
-
-                case 0:
-                default:
-                    break;
-            }
-            return s1.Name.CompareTo(s2.Name);
-        });
     }
 }

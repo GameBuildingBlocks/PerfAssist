@@ -4,6 +4,30 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
+public class CoTableEntry
+{
+    public int SeqID = -1;
+    public string Name = "Foo";
+    public int ExecSelectedCount = 0;
+    public float ExecSelectedTime = 0.0f;
+    public int ExecAccumCount = 0;
+    public float ExecAccumTime = 0.0f;
+
+    public static CoTableEntry MakeRandom()
+    {
+        return new CoTableEntry()
+        {
+            SeqID = (int)(Random.value * 100.0f),
+            Name = "Foo " + (Random.value * 100.0f).ToString(),
+            ExecSelectedCount = (int)(Random.value * 100.0f),
+            ExecSelectedTime = (Random.value * 100.0f),
+            ExecAccumCount = (int)(Random.value * 100.0f),
+            ExecAccumTime = (Random.value * 100.0f),
+        };
+    }
+}
+
+
 public class TableViewTestWindow : EditorWindow
 {
     public static float ToolbarHeight = 30.0f;
@@ -33,18 +57,18 @@ public class TableViewTestWindow : EditorWindow
             position = rect;
         }
 
-        _table = new TableView(this);
+        _table = new TableView(this, typeof(CoTableEntry));
 
-        _table.AddColumn("Name", "Name", 0.58f);
+        _table.AddColumn("Name", "Name", 0.58f, TextAnchor.MiddleLeft);
         _table.AddColumn("ExecSelectedCount", "Cnt", 0.06f);
-        _table.AddColumn("ExecSelectedTime", "Time", 0.1f);
+        _table.AddColumn("ExecSelectedTime", "Time", 0.1f, TextAnchor.MiddleCenter, "0.000");
         _table.AddColumn("ExecAccumCount", "Cnt_Sum", 0.12f);
-        _table.AddColumn("ExecAccumTime", "Time_Sum", 0.14f);
+        _table.AddColumn("ExecAccumTime", "Time_Sum", 0.14f, TextAnchor.MiddleCenter, "0.000");
 
-        List<CoTableEntry> entries = new List<CoTableEntry>();
+        List<object> entries = new List<object>();
         for (int i = 0; i < 100; i++)
-            entries.Add(new CoTableEntry());
-        _table.RefreshEntries(entries);
+            entries.Add(CoTableEntry.MakeRandom());
+        _table.RefreshData(entries);
 
         _table.OnLineSelected += TableView_LineSelected;
     }
@@ -79,7 +103,7 @@ public class TableViewTestWindow : EditorWindow
         {
             _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
             if (_table != null)
-                _table.DrawTable();
+                _table.Draw();
             GUILayout.EndScrollView();
         }
         GUILayout.EndArea();
@@ -87,8 +111,8 @@ public class TableViewTestWindow : EditorWindow
         GUILayout.EndVertical();
     }
 
-    void TableView_LineSelected(int coSeqID)
+    void TableView_LineSelected(object selected)
     {
-        Debug.LogFormat("line selected: {0}", coSeqID);
+        Debug.LogFormat("line selected: {0}", ((CoTableEntry)(selected)).SeqID);
     }
 }
