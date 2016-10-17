@@ -28,19 +28,8 @@ public class CoTrackerWindow : EditorWindow
     static void Create()
     {
         CoTrackerWindow w = EditorWindow.GetWindow<CoTrackerWindow>();
+        w.minSize = new Vector2(1280, 720);
         w.Show();
-
-        if (w != null)
-        {
-            var rect = w.position;
-            rect.width = Mathf.Max(1280, rect.width);
-            rect.height = Mathf.Max(720, rect.height);
-            if (!Mathf.Approximately(rect.width, w.position.width) || 
-                !Mathf.Approximately(rect.height, w.position.height))
-            {
-                w.position = rect;
-            }
-        }
     }
 
     void GraphPanel_SelectionChanged(int selectionIndex)

@@ -8,11 +8,14 @@ public class CoroutineActivity
 {
     public int seqID;
     public float timestamp;
+    public int curFrame;
+    public string typeName; // 仅作为方便解析json使用
 
     public CoroutineActivity(int id)
     {
         seqID = id;
         timestamp = Time.realtimeSinceStartup;
+        typeName = GetType().Name.Substring("Coroutine".Length);
     }
 }
 
@@ -21,22 +24,29 @@ public class CoroutineCreation : CoroutineActivity
     public string mangledName;
     public string stacktrace;
 
-    public CoroutineCreation(int seq) : base(seq) { }
+    public CoroutineCreation(int seq) : base(seq)
+    {
+    }
 }
 
 public class CoroutineExecution : CoroutineActivity
 {
     public float timeConsumed;
 
-    public CoroutineExecution(int seq) : base(seq) { }
+    public CoroutineExecution(int seq) : base(seq)
+    {
+    }
 }
 
 public class CoroutineTermination : CoroutineActivity
 {
-    public CoroutineTermination(int seq) : base(seq) { }
+    public CoroutineTermination(int seq) : base(seq)
+    {
+    }
 }
 
 public delegate void OnCoStatsBroadcast(List<CoroutineActivity> activities);
+public delegate void OnCoStatsAnalyzer2File(List<CoroutineActivity> activities);
 
 public class RuntimeCoroutineStats 
 {
@@ -53,6 +63,8 @@ public class RuntimeCoroutineStats
         CoroutineCreation creation = new CoroutineCreation(seq);
         creation.mangledName = mangledName;
         creation.stacktrace = StackTraceUtility.ExtractStackTrace();
+        creation.curFrame = Time.frameCount;
+
         _activities.Add(creation);
         _activeCoroutines.Add(seq);
     }
@@ -73,6 +85,7 @@ public class RuntimeCoroutineStats
 
         CoroutineExecution exec = new CoroutineExecution(seq);
         exec.timeConsumed = timeConsumed;
+        exec.curFrame = Time.frameCount;
         _activities.Add(exec);
     }
 
@@ -90,10 +103,12 @@ public class RuntimeCoroutineStats
             return;
         }
 
-        _activities.Add(new CoroutineTermination(seq));
+        var termination = new CoroutineTermination(seq);
+        termination.curFrame = Time.frameCount;
+
+        _activities.Add(termination);
         _activeCoroutines.Remove(seq);
     }
-
 
     public IEnumerator BroadcastCoroutine()
     {
@@ -103,6 +118,11 @@ public class RuntimeCoroutineStats
         {
             if (hasBroadcastReceivers())
                 _onBroadcast(_activities);
+
+            //Debug.LogFormat("BroadcastCoroutine:{0}", hasCoStatsAnalyzer2File());
+
+            if (hasCoStatsAnalyzer2File())
+                _onAnalyzer2File(_activities);
 
             _activities.Clear();
 
@@ -124,9 +144,28 @@ public class RuntimeCoroutineStats
         }
     }
 
+    private OnCoStatsAnalyzer2File _onAnalyzer2File;
+    public event OnCoStatsAnalyzer2File OnAnalyzer2File
+    {
+        add
+        {
+            _onAnalyzer2File -= value;
+            _onAnalyzer2File += value;
+        }
+        remove
+        {
+            _onAnalyzer2File -= value;
+        }
+
+    }
+
     List<CoroutineActivity> _activities = new List<CoroutineActivity>();
     HashSet<int> _activeCoroutines = new HashSet<int>();
 
     bool _broadcastStarted = false;
     bool hasBroadcastReceivers() { return _onBroadcast != null && _onBroadcast.GetInvocationList().Length > 0; }
+    bool hasCoStatsAnalyzer2File()
+    {
+        return _onAnalyzer2File != null && _onAnalyzer2File.GetInvocationList().Length > 0;
+    }
 }
