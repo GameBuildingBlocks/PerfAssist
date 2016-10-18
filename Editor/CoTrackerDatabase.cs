@@ -132,13 +132,13 @@ public class CoTrackerDatabase
         return null;
     }
 
-    public List<CoTableEntry> PopulateEntries(float snapshotTime)
+    public List<object> PopulateEntries(float snapshotTime)
     {
         HashSet<int> coIDs = FindSnapshotCoroutines(snapshotTime);
         if (coIDs == null || coIDs.Count == 0)
             return null;
 
-        List<CoTableEntry> ret = new List<CoTableEntry>();
+        List<object> ret = new List<object>();
 
         foreach (var id in coIDs)
         {
