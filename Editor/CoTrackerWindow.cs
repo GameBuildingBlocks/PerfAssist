@@ -22,7 +22,6 @@ public class CoTrackerWindow : EditorWindow
     // bound variables
     //bool _enableTracking = true;
     Vector2 _scrollPositionLeft;
-    Vector2 _scrollRightUpper;
     Vector2 _scrollRightLower;
 
     string _coroutineName = "<coroutine name>";

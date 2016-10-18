@@ -48,16 +48,16 @@ public class CoTrackerPanel_Graph
         if (NameLabel == null)
         {
             NameLabel = new GUIStyle(EditorStyles.whiteBoldLabel);
-            NameLabel.normal.background = GuiUtil.getColorTexture(LabelBackground);
+            NameLabel.normal.background = PAUtil.getColorTexture(LabelBackground);
             NameLabel.normal.textColor = Color.white;
 
             SmallLabel = new GUIStyle(EditorStyles.whiteLabel);
-            SmallLabel.normal.background = GuiUtil.getColorTexture(LabelBackground);
+            SmallLabel.normal.background = PAUtil.getColorTexture(LabelBackground);
             SmallLabel.normal.textColor = Color.white;
 
             HoverText = new GUIStyle(EditorStyles.whiteLabel);
             HoverText.alignment = TextAnchor.MiddleCenter;
-            HoverText.normal.background = GuiUtil.getColorTexture(LabelBackground);
+            HoverText.normal.background = PAUtil.getColorTexture(LabelBackground);
             HoverText.normal.textColor = Color.white;
         }
     }
@@ -263,7 +263,7 @@ public class CoTrackerPanel_Graph
                 string fu_str = " " + (kv.Value.mFixedUpdate ? "(FixedUpdate)" : "");
 
                 NameLabel.normal.textColor = Color.white;
-                GuiUtil.DrawLabel(kv.Key + fu_str, NameLabel);
+                PAEditorUtil.DrawLabel(kv.Key + fu_str, NameLabel);
 
                 foreach (KeyValuePair<string, GraphItDataInternal> entry in kv.Value.mData)
                 {
@@ -271,7 +271,7 @@ public class CoTrackerPanel_Graph
                     if (kv.Value.mData.Count > 1 || entry.Key != GraphIt.BASE_GRAPH)
                     {
                         NameLabel.normal.textColor = g.mColor;
-                        GuiUtil.DrawLabel(entry.Key, NameLabel);
+                        PAEditorUtil.DrawLabel(entry.Key, NameLabel);
                     }
 
                     if (g.mDataPoints.Length > 0)
@@ -279,7 +279,7 @@ public class CoTrackerPanel_Graph
                         int index = kv.Value.mCurrentIndex == 0 ? g.mDataPoints.Length - 1 : (kv.Value.mCurrentIndex - 1) % g.mDataPoints.Length;
                         try
                         {
-                            GuiUtil.DrawLabel(g.mDataPoints[index].ToString(fmt), SmallLabel);
+                            PAEditorUtil.DrawLabel(g.mDataPoints[index].ToString(fmt), SmallLabel);
                         }
                         catch (System.Exception)
                         {
