@@ -26,7 +26,7 @@ public class PASharedWindow : EditorWindow
 
     void Test_PAChartDataSet()
     {
-        PAChartDataSet ds = new PAChartDataSet();
+        PAChartDataSet ds = new PAChartDataSet(100);
         for (int i = 0; i < 100; i++)
         {
             ds.Append(new PAChartPlotPoint(i, Random.value * 100.0f));

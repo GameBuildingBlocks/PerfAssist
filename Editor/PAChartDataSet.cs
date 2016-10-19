@@ -16,6 +16,12 @@ public class PAChartPlotPoint
 
 public class PAChartDataSet : IEnumerable
 {
+    public PAChartDataSet(int capacity)
+    {
+        m_dataSet = new Queue<PAChartPlotPoint>(capacity);
+        m_autoShrinkMaxSize = capacity;
+    }
+
     public void Append(PAChartPlotPoint pt)
     {
         m_dataSet.Enqueue(pt);
@@ -35,21 +41,26 @@ public class PAChartDataSet : IEnumerable
         }
     }
 
-    public int Count { get { return m_dataSet.Count; } }
-
-    public float MaxValue
+    public void GetStatistics(out float maxVal, out float minVal, out float avgVal)
     {
-        get 
-        {
-            if (m_dataSet.Count == 0)
-                return 0.0f;
+        maxVal = 0.0f;
+        minVal = 0.0f;
+        avgVal = 0.0f;
 
-            float maxVal = 0.0f;
-            foreach (var item in m_dataSet)
-                maxVal = Mathf.Max(maxVal, item.m_value);
-            return maxVal;
+        if (m_dataSet.Count == 0)
+            return;
+
+        float sum = 0.0f;
+        foreach (var item in m_dataSet)
+        {
+            maxVal = Mathf.Max(maxVal, item.m_value);
+            minVal = Mathf.Min(minVal, item.m_value);
+            sum += item.m_value;
         }
+        avgVal = sum / m_dataSet.Count;
     }
+
+    public int Count { get { return m_dataSet.Count; } }
 
     public int AutoShrinkMaxSize
     {
@@ -63,5 +74,5 @@ public class PAChartDataSet : IEnumerable
     }
 
     private int m_autoShrinkMaxSize = -1;
-    private Queue<PAChartPlotPoint> m_dataSet = new Queue<PAChartPlotPoint>();
+    private Queue<PAChartPlotPoint> m_dataSet;
 }
