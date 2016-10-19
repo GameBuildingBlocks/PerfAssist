@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class GraphItDataInternal
 {
-    public GraphItDataInternal( int subgraph_index )
+    public GraphItDataInternal()
     {
         mDataPoints = new float[GraphItData.DEFAULT_SAMPLES];
         mCounter = 0.0f;
@@ -13,25 +13,7 @@ public class GraphItDataInternal
         mMax = 0.0f;
         mAvg = 0.0f;
         mFastAvg = 0.0f;
-
-        switch(subgraph_index)
-        {
-            case 0:
-                mColor = new Color( 0, 0.85f, 1, 1);
-                break;
-            case 1:
-                mColor = Color.yellow;
-                break;
-            case 2:
-                mColor = Color.green;
-                break;
-            case 3:
-                mColor = Color.red;
-                break;
-            default:
-                mColor = Color.green;
-                break;
-        }
+        mColor = new Color(0, 0.85f, 1, 1);
     }
     public float[] mDataPoints;
     public float mCounter;
@@ -61,8 +43,6 @@ public class GraphItData
     public int mWindowSize;
     public bool mFullArray;
 
-    public bool mSharedYAxis;
-
     protected bool mHidden;
     protected float mHeight;
 
@@ -82,10 +62,8 @@ public class GraphItData
         mWindowSize = DEFAULT_SAMPLES;
         mFullArray = false;
 
-        mSharedYAxis = false;
         mHidden = false;
         mHeight = 175;
-
 
         if (PlayerPrefs.HasKey(mName + "_height"))
         {
@@ -113,58 +91,28 @@ public class GraphItData
 
     public float GetMin( string subgraph )
     {
-        if (mSharedYAxis)
+        if (!mData.ContainsKey(subgraph))
         {
-            bool min_set = false;
-            float min = 0;
-            foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
-            {
-                GraphItDataInternal g = entry.Value;
-                if (!min_set)
-                {
-                    min = g.mMin;
-                    min_set = true;
-                }
-                min = Math.Min(min, g.mMin);
-            }
-            return min;
+            mData[subgraph] = new GraphItDataInternal();
         }
-        else
-        {
-            if (!mData.ContainsKey(subgraph))
-            {
-                mData[subgraph] = new GraphItDataInternal(mData.Count);
-            }
-            return mData[subgraph].mMin;
-        }
+        return mData[subgraph].mMin;
     }
 
     public float GetMax( string subgraph )
     {
-        if (mSharedYAxis)
+        bool max_set = false;
+        float max = 0;
+        foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
         {
-            bool max_set = false;
-            float max = 0;
-            foreach (KeyValuePair<string, GraphItDataInternal> entry in mData)
+            GraphItDataInternal g = entry.Value;
+            if (!max_set)
             {
-                GraphItDataInternal g = entry.Value;
-                if (!max_set)
-                {
-                    max = g.mMax;
-                    max_set = true;
-                }
-                max = Math.Max(max, g.mMax);
+                max = g.mMax;
+                max_set = true;
             }
-            return max;
+            max = Math.Max(max, g.mMax);
         }
-        else
-        {
-            if (!mData.ContainsKey(subgraph))
-            {
-                mData[subgraph] = new GraphItDataInternal(mData.Count);
-            }
-            return mData[subgraph].mMax;
-        }
+        return max;
     }
 
     public float GetHeight()
@@ -190,7 +138,6 @@ public class GraphItData
         mHidden = hidden;
         PlayerPrefs.SetInt(mName + "_hidden", GetHidden() ? 1 : 0 );
     }
-
 }
 
 public class GraphIt 
@@ -405,7 +352,7 @@ public class GraphIt
         GraphItData g = Instance.Graphs[graph];
         if (!g.mData.ContainsKey(subgraph))
         {
-            g.mData[subgraph] = new GraphItDataInternal(g.mData.Count);
+            g.mData[subgraph] = new GraphItDataInternal();
         }
         g.mData[subgraph].mColor = color;
 #endif
@@ -440,7 +387,7 @@ public class GraphIt
         GraphItData g = Instance.Graphs[graph];
         if (!g.mData.ContainsKey(subgraph))
         {
-            g.mData[subgraph] = new GraphItDataInternal(g.mData.Count);
+            g.mData[subgraph] = new GraphItDataInternal();
         }
         g.mData[subgraph].mCounter += f;
 
@@ -569,24 +516,6 @@ public class GraphIt
 
         GraphItData g = Instance.Graphs[graph];
         g.mReadyForUpdate = true;
-#endif
-    }
-
-    /// <summary>
-    /// Allows you to switch between sharing the y-axis on a graph for all subgraphs, or for them to be independent.
-    /// </summary>
-    /// <param name="graph"></param>
-    /// <param name="shared_y_axis"></param>
-    public static void ShareYAxis(string graph, bool shared_y_axis)
-    {
-#if UNITY_EDITOR
-        if (!Instance.Graphs.ContainsKey(graph))
-        {
-            Instance.Graphs[graph] = new GraphItData(graph);
-        }
-
-        GraphItData g = Instance.Graphs[graph];
-        g.mSharedYAxis = shared_y_axis;
 #endif
     }
 }
