@@ -29,11 +29,11 @@ public class PAChartDataSet : IEnumerable
         if (m_autoShrinkMaxSize > 0 && 
             m_autoShrinkMaxSize < m_dataSet.Count)
         {
-            Shrink(m_autoShrinkMaxSize);
+            ShrinkTo(m_autoShrinkMaxSize);
         }
     }
 
-    public void Shrink(int newSize)
+    public void ShrinkTo(int newSize)
     {
         while (newSize < m_dataSet.Count)
         {
