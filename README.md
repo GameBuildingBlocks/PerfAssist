@@ -54,4 +54,7 @@ _table.OnSelected += TableView_Selected;
 ## History
 
 - [2016-11-08] new version: [v1.01 notes](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.01) 
+    + based on v1.0
+    + rely on `PA_Common` now
+    + some common functions are merged into `PA_Common`
 - [2016-10-14] initial version
