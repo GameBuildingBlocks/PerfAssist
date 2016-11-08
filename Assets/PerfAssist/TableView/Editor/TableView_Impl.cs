@@ -78,14 +78,6 @@ public partial class TableView
         GUI.Label(rect, desc.FormatObject(obj), style);
     }
 
-    static void DrawLabel(string content, GUIStyle style)
-    {
-        EditorGUILayout.BeginHorizontal();
-        GUILayout.FlexibleSpace();
-        EditorGUILayout.LabelField(content, style, GUILayout.Width(style.CalcSize(new GUIContent(content)).x + 3));
-        EditorGUILayout.EndHorizontal();
-    }
-
     private void SortData()
     {
         m_lines.Sort((s1, s2) =>

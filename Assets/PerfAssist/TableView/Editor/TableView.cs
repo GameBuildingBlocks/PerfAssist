@@ -68,7 +68,7 @@ public partial class TableView : IDisposable
             Rect r = EditorGUILayout.BeginVertical(s);
             {
                 // this silly line (empty label) is required by Unity to ensure the scroll bar appear as expected.
-                DrawLabel("", _appearance.Style_Line);
+                PAEditorUtil.DrawLabel("", _appearance.Style_Line);
 
                 DrawTitle(r.width);
 

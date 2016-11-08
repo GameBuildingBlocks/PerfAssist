@@ -17,13 +17,13 @@ public class TableViewColDesc
 
     public string FormatObject(object obj)
     {
-        return PAUtil.FieldToString(obj, FieldInfo, Format);
+        return PAEditorUtil.FieldToString(obj, FieldInfo, Format);
     }
 
     public int Compare(object o1, object o2)
     {
-        object fv1 = PAUtil.FieldValue(o1, FieldInfo);
-        object fv2 = PAUtil.FieldValue(o2, FieldInfo);
+        object fv1 = PAEditorUtil.FieldValue(o1, FieldInfo);
+        object fv2 = PAEditorUtil.FieldValue(o2, FieldInfo);
 
         IComparable fc1 = fv1 as IComparable;
         IComparable fc2 = fv2 as IComparable;

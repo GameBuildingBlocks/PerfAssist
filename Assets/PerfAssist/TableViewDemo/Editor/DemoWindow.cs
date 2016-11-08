@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class FooItem
 {
@@ -18,7 +19,7 @@ public class FooItem
         return new FooItem()
         {
             SeqID = (int)(Random.value * 100.0f),
-            Name = "Foo " + PAUtil.GetRandomString(),
+            Name = "Foo " + PAEditorUtil.GetRandomString(),
             Count_A = (int)(Random.value * 100.0f),
             Time_A = (Random.value * 100.0f),
             Count_B = (int)(Random.value * 100.0f),
@@ -64,8 +65,36 @@ public class DemoWindow : EditorWindow
 
     void OnGUI()
     {
+        GUILayout.BeginVertical();
+
+        GUILayout.BeginArea(new Rect(20, 20, position.width * 0.8f, position.height - 80));
         if (_table != null)
-            _table.Draw(new Rect(20, 20, position.width * 0.8f, position.height - 40));
+            _table.Draw(new Rect(0, 0, position.width * 0.8f, position.height - 80));
+        GUILayout.EndArea();
+
+        GUILayout.Space(position.height - 30);
+
+        if (GUILayout.Button("Test_PAChartDataSet", GUILayout.Height(20)))
+        {
+            Test_PAChartDataSet();
+        }
+
+        GUILayout.EndVertical();
+    }
+
+    void Test_PAChartDataSet()
+    {
+        PAChartDataSet ds = new PAChartDataSet(100);
+        for (int i = 0; i < 100; i++)
+        {
+            ds.Append(new PAChartPlotPoint(i, Random.value * 100.0f));
+        }
+
+        Assert.IsTrue(ds.Count == 100);
+
+        ds.ShrinkTo(60);
+
+        Assert.IsTrue(ds.Count == 60);
     }
 
     void TableView_Selected(object selected, int col)

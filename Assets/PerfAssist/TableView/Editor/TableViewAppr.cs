@@ -15,23 +15,23 @@ public class TableViewAppr
     {
         Style_Title = new GUIStyle(EditorStyles.whiteBoldLabel);
         Style_Title.alignment = TextAnchor.MiddleCenter;
-        Style_Title.normal.background = PAUtil.getColorTexture((Color)new Color32(38, 158, 111, 255));
+        Style_Title.normal.background = PAEditorUtil.getColorTexture((Color)new Color32(38, 158, 111, 255));
         Style_Title.normal.textColor = Color.white;
 
         Style_Line = new GUIStyle(EditorStyles.whiteLabel);
-        Style_Line.normal.background = PAUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
+        Style_Line.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
         Style_Line.normal.textColor = Color.white;
 
         Style_LineAlt = new GUIStyle(EditorStyles.whiteLabel);
-        Style_LineAlt.normal.background = PAUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
+        Style_LineAlt.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
         Style_LineAlt.normal.textColor = Color.white;
 
         Style_Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Style_Selected.normal.background = PAUtil.getColorTexture(PAConst.SelectionColor);
+        Style_Selected.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColor);
         Style_Selected.normal.textColor = Color.white;
 
         Style_SelectedCell = new GUIStyle(EditorStyles.whiteLabel);
-        Style_SelectedCell.normal.background = PAUtil.getColorTexture(PAConst.SelectionColorDark);
+        Style_SelectedCell.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColorDark);
         Style_SelectedCell.normal.textColor = Color.yellow;
     }
 
