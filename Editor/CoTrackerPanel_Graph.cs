@@ -48,16 +48,16 @@ public class CoTrackerPanel_Graph
         if (NameLabel == null)
         {
             NameLabel = new GUIStyle(EditorStyles.whiteBoldLabel);
-            NameLabel.normal.background = PAUtil.getColorTexture(LabelBackground);
+            NameLabel.normal.background = PAEditorUtil.getColorTexture(LabelBackground);
             NameLabel.normal.textColor = Color.white;
 
             SmallLabel = new GUIStyle(EditorStyles.whiteLabel);
-            SmallLabel.normal.background = PAUtil.getColorTexture(LabelBackground);
+            SmallLabel.normal.background = PAEditorUtil.getColorTexture(LabelBackground);
             SmallLabel.normal.textColor = Color.white;
 
             HoverText = new GUIStyle(EditorStyles.whiteLabel);
             HoverText.alignment = TextAnchor.MiddleCenter;
-            HoverText.normal.background = PAUtil.getColorTexture(LabelBackground);
+            HoverText.normal.background = PAEditorUtil.getColorTexture(LabelBackground);
             HoverText.normal.textColor = Color.white;
         }
     }
