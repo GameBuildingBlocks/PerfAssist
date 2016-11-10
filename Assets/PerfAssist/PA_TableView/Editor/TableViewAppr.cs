@@ -11,38 +11,84 @@ public class TableViewAppr
     }
     float _lineHeight = 25;
 
-    public TableViewAppr()
-    {
-        Style_Title = new GUIStyle(EditorStyles.whiteBoldLabel);
-        Style_Title.alignment = TextAnchor.MiddleCenter;
-        Style_Title.normal.background = PAEditorUtil.getColorTexture((Color)new Color32(38, 158, 111, 255));
-        Style_Title.normal.textColor = Color.white;
-
-        Style_Line = new GUIStyle(EditorStyles.whiteLabel);
-        Style_Line.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
-        Style_Line.normal.textColor = Color.white;
-
-        Style_LineAlt = new GUIStyle(EditorStyles.whiteLabel);
-        Style_LineAlt.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
-        Style_LineAlt.normal.textColor = Color.white;
-
-        Style_Selected = new GUIStyle(EditorStyles.whiteLabel);
-        Style_Selected.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColor);
-        Style_Selected.normal.textColor = Color.white;
-
-        Style_SelectedCell = new GUIStyle(EditorStyles.whiteLabel);
-        Style_SelectedCell.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColorDark);
-        Style_SelectedCell.normal.textColor = Color.yellow;
-    }
-
     public string GetSortMark(bool descending)
     {
         return descending ? " ▼" : " ▲";
     }
 
-    public GUIStyle Style_Title;
-    public GUIStyle Style_Line;
-    public GUIStyle Style_LineAlt;
-    public GUIStyle Style_Selected;
-    public GUIStyle Style_SelectedCell;
+    public GUIStyle Style_Title
+    {
+        get
+        {
+            if (_styleTitle == null)
+            {
+                _styleTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
+                _styleTitle.alignment = TextAnchor.MiddleCenter;
+                _styleTitle.normal.background = PAEditorUtil.getColorTexture((Color)new Color32(38, 158, 111, 255));
+                _styleTitle.normal.textColor = Color.white;
+            }
+            return _styleTitle;
+        }
+    }
+    private GUIStyle _styleTitle;
+
+    public GUIStyle Style_Line
+    {
+        get
+        {
+            if (_styleLine == null)
+            {
+                _styleLine = new GUIStyle(EditorStyles.whiteLabel);
+                _styleLine.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.1f));
+                _styleLine.normal.textColor = Color.white;
+            }
+            return _styleLine;
+        }
+    }
+    private GUIStyle _styleLine;
+
+    public GUIStyle Style_LineAlt
+    {
+        get
+        {
+            if (_styleLineAlt == null)
+            {
+                _styleLineAlt = new GUIStyle(EditorStyles.whiteLabel);
+                _styleLineAlt.normal.background = PAEditorUtil.getColorTexture(new Color(0.5f, 0.5f, 0.5f, 0.2f));
+                _styleLineAlt.normal.textColor = Color.white;
+            }
+            return _styleLineAlt;
+        }
+    }
+    private GUIStyle _styleLineAlt;
+
+    public GUIStyle Style_Selected
+    {
+        get
+        {
+            if (_styleSelected == null)
+            {
+                _styleSelected = new GUIStyle(EditorStyles.whiteLabel);
+                _styleSelected.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColor);
+                _styleSelected.normal.textColor = Color.white;
+            }
+            return _styleSelected;
+        }
+    }
+    private GUIStyle _styleSelected;
+
+    public GUIStyle Style_SelectedCell
+    {
+        get
+        {
+            if (_styleSelectedCell == null)
+            {
+                _styleSelectedCell = new GUIStyle(EditorStyles.whiteLabel);
+                _styleSelectedCell.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColorDark);
+                _styleSelectedCell.normal.textColor = Color.yellow;
+            }
+            return _styleSelectedCell;
+        }
+    }
+    private GUIStyle _styleSelectedCell;
 }
