@@ -1,0 +1,3 @@
+[submodule "Assets/PerfAssist/PA_Common"]
+	path = Assets/PerfAssist/PA_Common
+	url = https://github.com/PerfAssist/PA_Common.git
