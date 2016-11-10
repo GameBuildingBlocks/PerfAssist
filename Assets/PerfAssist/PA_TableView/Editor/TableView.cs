@@ -39,7 +39,10 @@ public partial class TableView : IDisposable
         desc.Format = string.IsNullOrEmpty(fmt) ? null : fmt;
         desc.FieldInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
         if (desc.FieldInfo == null)
+        {
+            Debug.LogWarningFormat("Field '{0}' accessing failed.", desc.PropertyName);
             return false;
+        }
 
         m_descArray.Add(desc);
         return true;
@@ -87,5 +90,21 @@ public partial class TableView : IDisposable
         }
         GUILayout.EndScrollView();
         GUILayout.EndArea();
+    }
+
+    public void SetSortParams(int sortSlot, bool descending)
+    {
+        _sortSlot = sortSlot;
+        _descending = descending;
+    }
+
+    public void SetSelected(object obj)
+    {
+        m_selected = obj;
+    }
+
+    public object GetSelected()
+    {
+        return m_selected;
     }
 }
