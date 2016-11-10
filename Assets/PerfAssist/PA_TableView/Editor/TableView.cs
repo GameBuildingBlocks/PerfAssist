@@ -47,13 +47,14 @@ public partial class TableView : IDisposable
 
     public void RefreshData(List<object> entries)
     {
-        if (entries == null)
-            return;
-
         m_lines.Clear();
-        m_lines.AddRange(entries);
 
-        SortData();
+        if (entries != null && entries.Count > 0)
+        {
+            m_lines.AddRange(entries);
+
+            SortData();
+        }
     }
 
     public void Draw(Rect area)
