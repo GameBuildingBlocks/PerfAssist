@@ -53,7 +53,10 @@ _table.OnSelected += TableView_Selected;
 
 ## History
 
-- [2016-11-08] new version: [v1.02 notes](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.2) 
+- [v1.0.3 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.3) [2016-11-10]
+    + data items could be cleared by passing `null` or an empty list
+    + use delay-init to prevent `EditorStyles.xxx` from being accessing too early
+- [v1.0.2 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.2) [2016-11-08]  
     + rely on `PA_Common` now
     + some common functions are merged into `PA_Common`
     + directory name changed (add prefix `PA_`)
