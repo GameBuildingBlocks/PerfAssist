@@ -53,6 +53,9 @@ _table.OnSelected += TableView_Selected;
 
 ## History
 
+
+- [v1.0.4 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.4) [2016-11-10]
+    + add new interfaces SetSortParams / SetSelected / GetSelected
 - [v1.0.3 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.3) [2016-11-10]
     + data items could be cleared by passing `null` or an empty list
     + use delay-init to prevent `EditorStyles.xxx` from being accessing too early
