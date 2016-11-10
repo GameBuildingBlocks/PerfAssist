@@ -21,6 +21,9 @@ public class PAEditorUtil
         object val = FieldValue(obj, fieldInfo);
         if (val == null)
             return "";
+
+        if (fmt == PAEditorConst.BytesFormatter)
+            return EditorUtility.FormatBytes((int)val);
         if (val is float)
             return ((float)val).ToString(fmt);
         if (val is double)
