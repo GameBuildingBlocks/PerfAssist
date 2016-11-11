@@ -75,7 +75,9 @@ public partial class TableView
 
         var desc = m_descArray[col];
         style.alignment = desc.Alignment;
-        GUI.Label(rect, desc.FormatObject(obj), style);
+
+        var text = desc.FormatObject(obj);
+        GUI.Label(rect, new GUIContent(text, text), style);
     }
 
     private void SortData()
