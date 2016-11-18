@@ -30,7 +30,7 @@ public class FooItem
 
 public class DemoWindow : EditorWindow
 {
-    [MenuItem("Window/TableView Demo")]
+    [MenuItem("Window/PerfAssist/TableView Demo")]
     static void Create()
     {
         DemoWindow w = EditorWindow.GetWindow<DemoWindow>();
