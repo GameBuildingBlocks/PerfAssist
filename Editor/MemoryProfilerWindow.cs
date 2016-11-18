@@ -47,7 +47,7 @@ namespace MemoryProfilerWindow
         eShowType m_selectedView = 0;
         string[] _snapshotFiles = new string[] { };
 
-        [MenuItem("Window/Memory/MemoryProfiler")]
+        [MenuItem("Window/PerfAssist/MemoryProfiler")]
         static void Create()
         {
             EditorWindow.GetWindow<MemoryProfilerWindow>();
