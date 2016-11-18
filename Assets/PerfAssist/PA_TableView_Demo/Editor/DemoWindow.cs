@@ -72,29 +72,7 @@ public class DemoWindow : EditorWindow
             _table.Draw(new Rect(0, 0, position.width * 0.8f, position.height - 80));
         GUILayout.EndArea();
 
-        GUILayout.Space(position.height - 30);
-
-        if (GUILayout.Button("Test_PAChartDataSet", GUILayout.Height(20)))
-        {
-            Test_PAChartDataSet();
-        }
-
         GUILayout.EndVertical();
-    }
-
-    void Test_PAChartDataSet()
-    {
-        PAChartDataSet ds = new PAChartDataSet(100);
-        for (int i = 0; i < 100; i++)
-        {
-            ds.Append(new PAChartPlotPoint(i, Random.value * 100.0f));
-        }
-
-        Assert.IsTrue(ds.Count == 100);
-
-        ds.ShrinkTo(60);
-
-        Assert.IsTrue(ds.Count == 60);
     }
 
     void TableView_Selected(object selected, int col)
