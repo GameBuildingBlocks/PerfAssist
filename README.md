@@ -53,7 +53,8 @@ _table.OnSelected += TableView_Selected;
 
 ## History
 
-
+- [v1.0.5 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.5) [2016-11-18]
+    + add new class UniqueString: support client-side string interning
 - [v1.0.4 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.4) [2016-11-10]
     + add new interfaces SetSortParams / SetSelected / GetSelected
 - [v1.0.3 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.3) [2016-11-10]
