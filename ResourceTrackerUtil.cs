@@ -29,7 +29,7 @@ public class SceneGraphExtractor
     public List<int> TextureIDs = new List<int>();
     public List<int> AnimationClipIDs = new List<int>();
 
-    public static List<string> MemCategories = new List<string>() { "Texture2D", "AnimationClip", "Mesh", "Font", "ParticleSystem" };
+    public static List<string> MemCategories = new List<string>() { "Texture2D", "AnimationClip", "Mesh", "Font", "ParticleSystem", "Camera" };
 
     public Dictionary<string, List<int>> MemObjectIDs = new Dictionary<string, List<int>>();
 
