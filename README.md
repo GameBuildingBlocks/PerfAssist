@@ -23,7 +23,7 @@
 
 A typical table is built in 3 steps:
 
-1. create the table object and setup columns 
+1. create the table object and setup columns  
     ``` cs
     // create the table with a specified object type
     _table = new TableView(this, typeof(FooItem));
@@ -32,20 +32,22 @@ A typical table is built in 3 steps:
     _table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
     _table.AddColumn("Count_A", "Count_A", 0.1f);
     _table.AddColumn("Time_A", "Time_A", 0.15f, TextAnchor.MiddleCenter, "0.000");
-    ```
-2. add test data 
+    ```  
+    
+2. add test data  
     ``` cs
     // add test data
     List<object> entries = new List<object>();
     for (int i = 0; i < 100; i++)
         entries.Add(FooItem.MakeRandom());
     _table.RefreshData(entries);
-    ```
-3. add event handler 
+    ```  
+    
+3. add event handler   
     ``` cs
     // register the event-handling function
     _table.OnSelected += TableView_Selected;
-    ```
+    ```  
 
 ## History
 
