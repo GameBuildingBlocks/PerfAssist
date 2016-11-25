@@ -84,7 +84,7 @@ public class MemTableBrowser
 
         _objectTable.AddColumn("InstanceName", "Instance Name", 0.8f, TextAnchor.MiddleLeft);
         _objectTable.AddColumn("Size", "Size", 0.1f, TextAnchor.MiddleCenter, PAEditorConst.BytesFormatter);
-        _objectTable.AddColumn("RefCount", "RefCount", 0.1f);
+        _objectTable.AddColumn("RefCount", "Refs", 0.1f);
 
         // sorting
         _typeTable.SetSortParams(2, true);
