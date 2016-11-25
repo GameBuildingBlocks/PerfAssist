@@ -270,28 +270,50 @@ public class MemTableBrowser
 
     public void SelectThing(ThingInMemory thing)
     {
-        string typeName = MemUtil.GetGroupName(thing);
-
-        MemType mt;
-        if (!_types.TryGetValue(typeName, out mt))
-            return;
-
-        if (_typeTable.GetSelected() != mt)
+        if (_searchString != "")
         {
-            _typeTable.SetSelected(mt);
-            _objectTable.RefreshData(mt.Objects);
+            //MemType mt;
+            //if (!_types.TryGetValue(MemConst.SearchResultTypeString, out mt))
+            //    return;
+
+            //foreach (var item in mt.Objects)
+            //{
+            //    var mo = item as MemObject;
+            //    if (mo != null && mo._thing == thing)
+            //    {
+            //        if (_objectTable.GetSelected() != mo)
+            //        {
+            //            _objectTable.SetSelected(mo);
+            //        }
+            //        break;
+            //    }
+            //}
         }
-
-        foreach (var item in mt.Objects)
+        else
         {
-            var mo = item as MemObject;
-            if (mo != null && mo._thing == thing)
+            string typeName = MemUtil.GetGroupName(thing);
+
+            MemType mt;
+            if (!_types.TryGetValue(typeName, out mt))
+                return;
+
+            if (_typeTable.GetSelected() != mt)
             {
-                if (_objectTable.GetSelected() != mo)
+                _typeTable.SetSelected(mt);
+                _objectTable.RefreshData(mt.Objects);
+            }
+
+            foreach (var item in mt.Objects)
+            {
+                var mo = item as MemObject;
+                if (mo != null && mo._thing == thing)
                 {
-                    _objectTable.SetSelected(mo);
+                    if (_objectTable.GetSelected() != mo)
+                    {
+                        _objectTable.SetSelected(mo);
+                    }
+                    break;
                 }
-                break;
             }
         }
     }
