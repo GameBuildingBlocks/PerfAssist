@@ -24,35 +24,33 @@
 A typical table is built in 3 steps:
 
 1. create the table object and setup columns 
+    ``` cs
+    // create the table with a specified object type
+    _table = new TableView(this, typeof(FooItem));
 
-``` cs
-// create the table with a specified object type
-_table = new TableView(this, typeof(FooItem));
-
-// setup the description for content
-_table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
-_table.AddColumn("Count_A", "Count_A", 0.1f);
-_table.AddColumn("Time_A", "Time_A", 0.15f, TextAnchor.MiddleCenter, "0.000");
-```
-
+    // setup the description for content
+    _table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
+    _table.AddColumn("Count_A", "Count_A", 0.1f);
+    _table.AddColumn("Time_A", "Time_A", 0.15f, TextAnchor.MiddleCenter, "0.000");
+    ```
 2. add test data 
-
-``` cs
-// add test data
-List<object> entries = new List<object>();
-for (int i = 0; i < 100; i++)
-    entries.Add(FooItem.MakeRandom());
-_table.RefreshData(entries);
-```
-
+    ``` cs
+    // add test data
+    List<object> entries = new List<object>();
+    for (int i = 0; i < 100; i++)
+        entries.Add(FooItem.MakeRandom());
+    _table.RefreshData(entries);
+    ```
 3. add event handler 
-``` cs
-// register the event-handling function
-_table.OnSelected += TableView_Selected;
-```
+    ``` cs
+    // register the event-handling function
+    _table.OnSelected += TableView_Selected;
+    ```
 
 ## History
 
+- [v1.0.6 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.6) [2016-11-25]
+    + add highlight for selected title cell; set cell as bold when selected
 - [v1.0.5 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.5) [2016-11-18]
     + add new class UniqueString: support client-side string interning
 - [v1.0.4 released](https://github.com/PerfAssist/PA_TableView/releases/tag/v1.0.4) [2016-11-10]
