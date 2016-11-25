@@ -15,7 +15,6 @@ namespace MemoryProfilerWindow
         ThingInMemory _selectedThing;
         private ThingInMemory[] _shortestPath;
         private ShortestPathToRootFinder _shortestPathToRootFinder;
-        Vector2 _scrollPositionSearching;
         Vector2 _scrollPosition;
         MemoryProfilerWindow _hostWindow;
         CrawledMemorySnapshot _unpackedCrawl;
@@ -25,6 +24,7 @@ namespace MemoryProfilerWindow
         private int _prevInstance;
         private float _textureSize = 128.0f;
 
+        MemObjHistory Instance = new MemObjHistory();
 
         static class Styles
         {
@@ -34,86 +34,63 @@ namespace MemoryProfilerWindow
 
         GUILayoutOption labelWidth = GUILayout.Width(150);
 
+        private Texture2D _textureBack;
+        private Texture2D _textureForward;
+
         public Inspector(MemoryProfilerWindow hostWindow, CrawledMemorySnapshot unpackedCrawl, PackedMemorySnapshot snapshot)
         {
             _unpackedCrawl = unpackedCrawl;
             _hostWindow = hostWindow;
             _shortestPathToRootFinder = new ShortestPathToRootFinder(unpackedCrawl);
             _primitiveValueReader = new PrimitiveValueReader(_unpackedCrawl.virtualMachineInformation, _unpackedCrawl.managedHeap);
+
+            _textureBack = Resources.Load("back") as Texture2D;
+            _textureForward = Resources.Load("forward") as Texture2D;
         }
 
         public void SelectThing(ThingInMemory thing)
         {
             _selectedThing = thing;
             _shortestPath = _shortestPathToRootFinder.FindFor(thing);
+            Instance.OnObjSelected(thing);
         }
-
-        float SearchBarHeight = 30.0f;
-        float SearchResultHeight = 30.0f;
-        float SearchAreaHeight = 0.0f;
-
-        string _searchString = "";
-        int _searchResultSelected = -1;
-        string[] _searchResults;
 
         public void Draw()
         {
-            SearchAreaHeight = SearchBarHeight + SearchResultHeight;
+            float NavAreaHeight = 40.0f;
             if (_hostWindow.EnhancedMode)
             {
                 GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth,
-                    MemConst.TopBarHeight, MemConst.InspectorWidth, SearchAreaHeight));
+                    MemConst.TopBarHeight, MemConst.InspectorWidth, NavAreaHeight));
 
-                GUILayout.BeginHorizontal(GUILayout.Height(SearchBarHeight));
-                string enteredString = GUILayout.TextField(_searchString, 100, GUI.skin.FindStyle("ToolbarSeachTextField"), GUILayout.MinWidth(300));
-                if (enteredString != _searchString)
+                GUILayout.Space(5);
+
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(3);
+
+                GUI.enabled = Instance.TryGetPrev() != null;
+                if (GUILayout.Button(new GUIContent("Back", _textureBack), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
                 {
-                    _searchResults = _hostWindow.FindThingsByName(enteredString);
-                    _searchString = enteredString;
+                    ThingInMemory prev = Instance.MovePrev();
+                    if (prev != null)
+                        _hostWindow.SelectThing(prev);
                 }
-                if (GUILayout.Button("", GUI.skin.FindStyle("ToolbarSeachCancelButton")))
+                GUI.enabled = Instance.TryGetNext() != null;
+                if (GUILayout.Button(new GUIContent("Forward", _textureForward), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
                 {
-                    // Remove focus if cleared
-                    _searchString = "";
-                    GUI.FocusControl(null);
-                    _searchResults = null;
-                    _searchResultSelected = -1;
+                    ThingInMemory next = Instance.MoveNext();
+                    if (next != null)
+                        _hostWindow.SelectThing(next);
                 }
+                GUI.enabled = true;
+                
+                GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
 
-                if (_searchResults != null && _searchResults.Length > 0)
-                {
-                    int selected = 0;
-                    selected = EditorGUILayout.Popup(
-                        string.Format("Result(s): {0}", _searchResults.Length),
-                        _searchResultSelected,
-                        _searchResults,
-                        GUILayout.Height(SearchResultHeight));
-
-                    if (_searchResultSelected != selected && selected >= 0)
-                    {
-                        string fullname = _searchResults[selected];
-                        int index = fullname.IndexOf("/");
-                        if (index != -1)
-                        {
-                            fullname = fullname.Substring(fullname.IndexOf("/") + 1);
-                        }
-                        var thing = _hostWindow.FindThingInMemoryByExactName(fullname);
-                        if (thing != null)
-                        {
-                            _hostWindow.SelectThing(thing);
-                            _searchResultSelected = selected;
-                        }
-                        else
-                        {
-                            Debug.LogErrorFormat("not found in memory: {0}", _searchResults[selected]);
-                        }
-                    }
-                }
                 GUILayout.EndArea();
             }
 
-            float topSpace = MemConst.TopBarHeight + (_hostWindow.EnhancedMode ? SearchAreaHeight : 0);
+            float topSpace = MemConst.TopBarHeight + (_hostWindow.EnhancedMode ? NavAreaHeight : 0);
             GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth, topSpace, MemConst.InspectorWidth, _hostWindow.position.height - topSpace));
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
 

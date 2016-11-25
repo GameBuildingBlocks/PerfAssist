@@ -72,7 +72,6 @@ public class MemTableBrowser
     string _searchString = "";
     MemType _searchResultType;
 
-
     public MemTableBrowser(EditorWindow hostWindow)
     {
         _hostWindow = hostWindow;
