@@ -16,21 +16,23 @@ public class TableViewAppr
         return descending ? " ▼" : " ▲";
     }
 
-    public GUIStyle Style_Title
+    public GUIStyle GetTitleStyle(bool selected)
     {
-        get
+        if (_styleTitle == null)
         {
-            if (_styleTitle == null)
-            {
-                _styleTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
-                _styleTitle.alignment = TextAnchor.MiddleCenter;
-                _styleTitle.normal.background = PAEditorUtil.getColorTexture((Color)new Color32(38, 158, 111, 255));
-                _styleTitle.normal.textColor = Color.white;
-            }
-            return _styleTitle;
+            _styleTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
+            _styleTitle.alignment = TextAnchor.MiddleCenter;
+            _titleOrdinary = PAEditorUtil.getColorTexture(PAEditorConst.TitleColor);
+            _titleSelected = PAEditorUtil.getColorTexture(PAEditorConst.TitleColorSelected); 
         }
+
+        _styleTitle.normal.background = selected ? _titleSelected : _titleOrdinary;
+        _styleTitle.normal.textColor = selected ? Color.yellow : Color.white;
+        return _styleTitle;
     }
     private GUIStyle _styleTitle;
+    private Texture2D _titleOrdinary;
+    private Texture2D _titleSelected;
 
     public GUIStyle Style_Line
     {
@@ -83,7 +85,7 @@ public class TableViewAppr
         {
             if (_styleSelectedCell == null)
             {
-                _styleSelectedCell = new GUIStyle(EditorStyles.whiteLabel);
+                _styleSelectedCell = new GUIStyle(EditorStyles.whiteBoldLabel);
                 _styleSelectedCell.normal.background = PAEditorUtil.getColorTexture(PAEditorConst.SelectionColorDark);
                 _styleSelectedCell.normal.textColor = Color.yellow;
             }

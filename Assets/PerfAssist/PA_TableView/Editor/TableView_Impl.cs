@@ -14,7 +14,8 @@ public partial class TableView
             var desc = m_descArray[i];
 
             Rect r = LabelRect(width, i, 0);
-            GUI.Label(r, desc.TitleText + (_sortSlot == i ? _appearance.GetSortMark(_descending) : ""), _appearance.Style_Title);
+            bool selected = _sortSlot == i;
+            GUI.Label(r, desc.TitleText + (selected ? _appearance.GetSortMark(_descending) : ""), _appearance.GetTitleStyle(selected));
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition))
             {
                 if (_sortSlot == i)
