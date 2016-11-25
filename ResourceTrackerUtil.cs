@@ -59,6 +59,17 @@ public class SceneGraphExtractor
                     }
                 }
             }
+
+            Component[] cameras = go.GetComponentsInChildren(typeof(Camera), true);
+            foreach (Camera camera in cameras)
+            {
+                List<int> ids = null;
+                if (camera != null && MemObjectIDs.TryGetValue("Camera", out ids))
+                {
+                    if (ids != null && !ids.Contains(camera.GetInstanceID()))
+                        ids.Add(camera.GetInstanceID());
+                }
+            }
 #endif
         }
     }
