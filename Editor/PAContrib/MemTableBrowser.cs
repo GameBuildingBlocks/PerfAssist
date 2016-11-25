@@ -69,6 +69,10 @@ public class MemTableBrowser
     private int _memTypeCategory = 0;
     private int _memTypeSizeLimiter = 0;
 
+    string _searchString = "";
+    MemType _searchResultType;
+
+
     public MemTableBrowser(EditorWindow hostWindow)
     {
         _hostWindow = hostWindow;
@@ -132,53 +136,106 @@ public class MemTableBrowser
         if (_unpacked == null)
             return;
 
-        List<object> qualified = new List<object>();
-        foreach (var p in _types)
+        if (string.IsNullOrEmpty(_searchString))
         {
-            MemType mt = p.Value;
-
-            // skip this type if category mismatched
-            if (_memTypeCategory != 0 && 
-                _memTypeCategory != mt.Category)
+            List<object> qualified = new List<object>();
+            foreach (var p in _types)
             {
-                continue;
+                MemType mt = p.Value;
+
+                // skip this type if category mismatched
+                if (_memTypeCategory != 0 &&
+                    _memTypeCategory != mt.Category)
+                {
+                    continue;
+                }
+
+                if (!MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
+                    continue;
+
+                qualified.Add(mt);
             }
 
-            if (!MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
-                continue;
-
-            qualified.Add(mt);
+            _typeTable.RefreshData(qualified);
+            _objectTable.RefreshData(null);
         }
+        else
+        {
+            _types.Remove(MemConst.SearchResultTypeString);
+            _searchResultType = new MemType();
+            _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchString;
+            _searchResultType.Category = 0;
+            _searchResultType.Objects = new List<object>();
 
-        _typeTable.RefreshData(qualified);
-        _objectTable.RefreshData(null);
+            string search = _searchString.ToLower();
+            foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
+            {
+                if (thingInMemory.caption.ToLower().Contains(search))
+                {
+                    _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
+                }
+            }
+
+            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
+            List<object> qualified = new List<object>();
+            qualified.Add(_searchResultType);
+            _typeTable.RefreshData(qualified);
+            _objectTable.RefreshData(_searchResultType.Objects);
+        }
     }
 
     public void Draw(Rect r)
     {
         int border = MemConst.TableBorder;
         float split = MemConst.SplitterRatio;
+        int toolbarHeight = 30;
 
         GUILayout.BeginArea(r, MemStyles.Background);
-
-        int toolbarHeight = 30;
         GUILayout.BeginHorizontal(MemStyles.Toolbar);
-        GUILayout.Label("Category: ");
-        int newCategory = GUILayout.SelectionGrid(_memTypeCategory, MemConst.MemTypeCategories, MemConst.MemTypeCategories.Length, MemStyles.ToolbarButton);
-        if (newCategory != _memTypeCategory)
+
+        // categories
         {
-            _memTypeCategory = newCategory;
-            RefreshTables();
+            GUILayout.Label("Category: ");
+            int newCategory = GUILayout.SelectionGrid(_memTypeCategory, MemConst.MemTypeCategories, MemConst.MemTypeCategories.Length, MemStyles.ToolbarButton);
+            if (newCategory != _memTypeCategory)
+            {
+                _memTypeCategory = newCategory;
+                RefreshTables();
+            }
         }
-        GUILayout.Space(50);
-        GUILayout.Label("Size Limit: ");
-        int newLimiter = GUILayout.SelectionGrid(_memTypeSizeLimiter, MemConst.MemTypeLimitations, MemConst.MemTypeLimitations.Length, MemStyles.ToolbarButton);
-        if (newLimiter != _memTypeSizeLimiter)
+
+        GUILayout.Space(30);
+
+        // size limiter
         {
-            _memTypeSizeLimiter = newLimiter;
-            RefreshTables();
+            GUILayout.Label("Size: ");
+            int newLimiter = GUILayout.SelectionGrid(_memTypeSizeLimiter, MemConst.MemTypeLimitations, MemConst.MemTypeLimitations.Length, MemStyles.ToolbarButton);
+            if (newLimiter != _memTypeSizeLimiter)
+            {
+                _memTypeSizeLimiter = newLimiter;
+                RefreshTables();
+            }
         }
-        GUILayout.FlexibleSpace();
+
+        GUILayout.Space(30);
+        
+        // search box
+        {
+            string enteredString = GUILayout.TextField(_searchString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(150));
+            if (enteredString != _searchString)
+            {
+                _searchString = enteredString;
+                RefreshTables();
+            }
+            if (GUILayout.Button("", MemStyles.SearchCancelButton))
+            {
+                _types.Remove(MemConst.SearchResultTypeString);
+                _searchString = "";
+                GUI.FocusControl(null); // Remove focus if cleared
+                RefreshTables();
+            }
+        }
+
         GUILayout.EndHorizontal();
 
         int startY = toolbarHeight + border;

@@ -15,6 +15,8 @@ public class MemConst
 
     public static int _1KB = 1024;
     public static int _1MB = _1KB * _1KB;
+
+    public static readonly string SearchResultTypeString = "{search_result}";
 }
 
 public class MemStyles
@@ -22,4 +24,7 @@ public class MemStyles
     public static GUIStyle Toolbar = "Toolbar";
     public static GUIStyle ToolbarButton = "ToolbarButton";
     public static GUIStyle Background = "AnimationCurveEditorBackground";
+
+    public static GUIStyle SearchTextField = "ToolbarSeachTextField";
+    public static GUIStyle SearchCancelButton = "ToolbarSeachCancelButton";
 }
