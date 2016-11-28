@@ -33,7 +33,7 @@ public class MemObjHistory
 
     public ThingInMemory TryGetPrev()
     {
-        if (_history.Count == 0 || _cursor == 0 || _cursor == -1)
+        if (_history.Count == 0 || _cursor == 0 || _cursor == -1 || _cursor >= _history.Count)
             return null;
 
         return _history[_cursor - 1];
