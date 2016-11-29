@@ -15,25 +15,36 @@ public class MemObjHistory
     {
         if (_cursor != -1)
         {
-            if (_history[_cursor] == thing)
+            if (!OutOfBounds() && _history[_cursor] == thing)
                 return;
 
-            if (_history.Count > 50)
-                _history.RemoveRange(0, 10);
-
-            if (_cursor != _history.Count - 1)
+            if (_cursor < _history.Count - 1)
             {
                 _history.RemoveRange(_cursor + 1, _history.Count - (_cursor + 1));
             }
         }
 
         _history.Add(thing);
+
+        if (_history.Count > 50)
+        {
+            _history.RemoveRange(0, 10);
+        }
+
         _cursor = _history.Count - 1;
+    }
+
+    bool OutOfBounds()
+    {
+        return _cursor < 0 || _cursor >= _history.Count;
     }
 
     public ThingInMemory TryGetPrev()
     {
         if (_history.Count == 0 || _cursor == 0 || _cursor == -1 || _cursor >= _history.Count)
+            return null;
+
+        if (OutOfBounds())
             return null;
 
         return _history[_cursor - 1];
@@ -50,6 +61,9 @@ public class MemObjHistory
     public ThingInMemory TryGetNext()
     {
         if (_history.Count == 0 || _cursor == _history.Count - 1 || _cursor == -1)
+            return null;
+
+        if (OutOfBounds())
             return null;
 
         return _history[_cursor + 1];
