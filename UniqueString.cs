@@ -8,6 +8,9 @@ public class UniqueString
     //  which would stay in memory in the rest of the whole execution period.
     public static string Intern(string str, bool removable = true)  
     {
+        if (str == null)
+            return null;
+
         string ret = IsInterned(str);
         if (ret != null)
             return ret;
@@ -28,6 +31,9 @@ public class UniqueString
     //  return-val is the ref to the unique interned one, which should be tested against `null`
     public static string IsInterned(string str)      
     {
+        if (str == null)
+            return null;
+
         string ret = string.IsInterned(str);
         if (ret != null)
             return ret;
