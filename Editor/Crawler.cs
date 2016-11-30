@@ -31,8 +31,10 @@ namespace MemoryProfilerWindow
             for (int i = 0; i != input.gcHandles.Length; i++)
             {
                 CrawlPointer(input, result.startIndices, input.gcHandles[i].target, result.startIndices.OfFirstGCHandle + i, connections, managedObjects);
-                MemUtil.LoadSnapshotProgress(0.2f + 0.2f * ((float)i / (float)input.gcHandles.Length), 
-                    string.Format("CrawlPointer({0}/{1})", i, input.gcHandles.Length));
+                
+                if (i % 5 == 0)
+                    MemUtil.LoadSnapshotProgress(0.2f + 0.2f * ((float)i / (float)input.gcHandles.Length), 
+                        string.Format("CrawlPointer({0}/{1})", i, input.gcHandles.Length));
             }
 
             MemUtil.LoadSnapshotProgress(0.4f, "CrawlRawObjectData");
@@ -40,8 +42,10 @@ namespace MemoryProfilerWindow
             {
                 var typeDescription = result.typesWithStaticFields[i];
                 CrawlRawObjectData(input, result.startIndices, new BytesAndOffset {bytes = typeDescription.staticFieldBytes, offset = 0, pointerSize = _virtualMachineInformation.pointerSize}, typeDescription, true, result.startIndices.OfFirstStaticFields + i, connections, managedObjects);
-                MemUtil.LoadSnapshotProgress(0.4f + 0.2f * ((float)i / (float)result.typesWithStaticFields.Length),
-                    string.Format("CrawlRawObjectData({0}/{1})", i, result.typesWithStaticFields.Length));
+
+                if (i % 5 == 0)
+                    MemUtil.LoadSnapshotProgress(0.4f + 0.2f * ((float)i / (float)result.typesWithStaticFields.Length),
+                        string.Format("CrawlRawObjectData({0}/{1})", i, result.typesWithStaticFields.Length));
             }
 
             MemUtil.LoadSnapshotProgress(0.6f, "composing result");

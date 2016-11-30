@@ -5,6 +5,13 @@ using UnityEditor;
 using MemoryProfilerWindow;
 using Assets.Editor.Treemap;
 
+public class MemCategory
+{
+    public int Category;
+    public int Count;
+    public int Size;
+}
+
 public class MemType
 {
     public string TypeName = "Foo";
@@ -65,6 +72,8 @@ public class MemTableBrowser
     EditorWindow _hostWindow;
 
     private Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
+    private Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
+    private string[] _categoryLiterals = new string[MemConst.MemTypeCategories.Length];
 
     private int _memTypeCategory = 0;
     private int _memTypeSizeLimiter = 0;
@@ -103,18 +112,23 @@ public class MemTableBrowser
         _unpacked = unpackedCrawl;
 
         _types.Clear();
+        _categories.Clear();
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
             string typeName = MemUtil.GetGroupName(thingInMemory);
             if (typeName.Length == 0)
                 continue;
 
+            int category = MemUtil.GetCategory(thingInMemory);
+
+            MemObject item = new MemObject(thingInMemory, _unpacked);
+
             MemType theType;
             if (!_types.ContainsKey(typeName))
             {
                 theType = new MemType();
                 theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
-                theType.Category = MemUtil.GetCategory(thingInMemory);
+                theType.Category = category;
                 theType.Objects = new List<object>();
                 _types.Add(typeName, theType);
             }
@@ -122,9 +136,46 @@ public class MemTableBrowser
             {
                 theType = _types[typeName];
             }
-
-            MemObject item = new MemObject(thingInMemory, _unpacked);
             theType.AddObject(item);
+
+            MemCategory theCategory;
+            if (!_categories.TryGetValue(category, out theCategory))
+            {
+                theCategory = new MemCategory();
+                theCategory.Category = category;
+                _categories.Add(category, theCategory);
+            }
+            theCategory.Size += item.Size;
+            theCategory.Count++;
+        }
+
+        int[] sizes = new int[MemConst.MemTypeCategories.Length];
+        int[] counts = new int[MemConst.MemTypeCategories.Length];
+        foreach (var item in _categories)
+        {
+            sizes[0] += item.Value.Size;
+            counts[0] += item.Value.Count;
+
+            if (item.Key == 1)
+            {
+                sizes[1] += item.Value.Size;
+                counts[1] += item.Value.Count;
+            }
+            else if (item.Key == 2)
+            {
+                sizes[2] += item.Value.Size;
+                counts[2] += item.Value.Count;
+            }
+            else
+            {
+                sizes[3] += item.Value.Size;
+                counts[3] += item.Value.Count;
+            }
+        }
+
+        for (int i = 0; i < _categoryLiterals.Length; i++)
+        {
+            _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
         }
 
         RefreshTables();
@@ -142,17 +193,17 @@ public class MemTableBrowser
             {
                 MemType mt = p.Value;
 
-                // skip this type if category mismatched
-                if (_memTypeCategory != 0 &&
-                    _memTypeCategory != mt.Category)
+                bool isAll = _memTypeCategory == 0;
+                bool isNative = _memTypeCategory == 1 && mt.Category == 1;
+                bool isManaged = _memTypeCategory == 2 && mt.Category == 2;
+                bool isOthers = _memTypeCategory == 3 && (mt.Category == 3 || mt.Category == 4);
+                if (isAll || isNative || isManaged || isOthers)
                 {
-                    continue;
+                    if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
+                    {
+                        qualified.Add(mt);
+                    }
                 }
-
-                if (!MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
-                    continue;
-
-                qualified.Add(mt);
             }
 
             _typeTable.RefreshData(qualified);
@@ -187,27 +238,33 @@ public class MemTableBrowser
     {
         int border = MemConst.TableBorder;
         float split = MemConst.SplitterRatio;
-        int toolbarHeight = 30;
+        int toolbarHeight = 50;
 
         GUILayout.BeginArea(r, MemStyles.Background);
         GUILayout.BeginHorizontal(MemStyles.Toolbar);
 
         // categories
         {
-            GUILayout.Label("Category: ");
-            int newCategory = GUILayout.SelectionGrid(_memTypeCategory, MemConst.MemTypeCategories, MemConst.MemTypeCategories.Length, MemStyles.ToolbarButton);
+            GUILayout.Label("Category: ", GUILayout.MinWidth(120));
+
+            string[] literals = _unpacked != null ? _categoryLiterals : MemConst.MemTypeCategories;
+
+            int newCategory = GUILayout.SelectionGrid(_memTypeCategory, literals, literals.Length, MemStyles.ToolbarButton);
             if (newCategory != _memTypeCategory)
             {
                 _memTypeCategory = newCategory;
                 RefreshTables();
             }
         }
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
 
-        GUILayout.Space(30);
+        GUILayout.Space(3);
 
+        GUILayout.BeginHorizontal(MemStyles.Toolbar);
         // size limiter
         {
-            GUILayout.Label("Size: ");
+            GUILayout.Label("Size: ", GUILayout.MinWidth(120));
             int newLimiter = GUILayout.SelectionGrid(_memTypeSizeLimiter, MemConst.MemTypeLimitations, MemConst.MemTypeLimitations.Length, MemStyles.ToolbarButton);
             if (newLimiter != _memTypeSizeLimiter)
             {
@@ -216,11 +273,11 @@ public class MemTableBrowser
             }
         }
 
-        GUILayout.Space(30);
+        GUILayout.FlexibleSpace();
         
         // search box
         {
-            string enteredString = GUILayout.TextField(_searchString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(150));
+            string enteredString = GUILayout.TextField(_searchString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(200));
             if (enteredString != _searchString)
             {
                 _searchString = enteredString;

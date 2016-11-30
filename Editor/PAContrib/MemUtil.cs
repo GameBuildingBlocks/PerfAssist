@@ -103,8 +103,12 @@ public class MemUtil
             return 1;
         if (thing is ManagedObject)
             return 2;
+        if (thing is GCHandle)
+            return 3;
+        if (thing is StaticFields)
+            return 4;
 
-        return 3;
+        return 5;
     }
 
     public static string GetCategoryLiteral(ThingInMemory thing)
