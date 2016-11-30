@@ -68,6 +68,12 @@ public class MemTableBrowser
     CrawledMemorySnapshot _unpacked;
     CrawledMemorySnapshot _preUnpacked;
 
+    HashSet<NativeUnityEngineObject> _unpackedNativeHS;
+    HashSet<NativeUnityEngineObject> _preUnpackedNativeHS;
+    HashSet<ManagedObject> _unpackedManagedHS;
+    HashSet<ManagedObject> _preUnpackedManagedHS;
+
+
     TableView _typeTable;
     TableView _objectTable;
     EditorWindow _hostWindow;
@@ -108,7 +114,7 @@ public class MemTableBrowser
         _objectTable.OnSelected += OnObjectSelected;
     }
 
-    public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl=null)
+    public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl = null)
     {
         _unpacked = unpackedCrawl;
         _preUnpacked = preUnpackedCrawl;
@@ -178,94 +184,101 @@ public class MemTableBrowser
         {
             _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
         }
+        calculateCrawledHashSet();
         checkAddtiveThings();
         checkNegativeThings();
         RefreshTables();
     }
 
-    bool _exsistDiff(ThingInMemory checkedThings, CrawledMemorySnapshot expectedUnpackedCrawl)
+    void calculateCrawledHashSet()
     {
-        if (checkedThings == null || expectedUnpackedCrawl == null)
-            return false;
-        foreach (ThingInMemory expectedThings in expectedUnpackedCrawl.nativeObjects)
-        {
-            var checkedNat = checkedThings as NativeUnityEngineObject;
-            var expectedNat = expectedThings as NativeUnityEngineObject;
-            if (checkedNat == null || expectedNat == null)
-                continue;
-            if (checkedNat.instanceID == expectedNat.instanceID)
-                return false;
-        }
-        return true;
+        if (_preUnpacked == null)
+            return;
+        _unpackedNativeHS = new HashSet<NativeUnityEngineObject>(_unpacked.nativeObjects);
+        _preUnpackedNativeHS = new HashSet<NativeUnityEngineObject>(_preUnpacked.nativeObjects);
+        _unpackedManagedHS = new HashSet<ManagedObject>(_unpacked.managedObjects);
+        _preUnpackedManagedHS = new HashSet<ManagedObject>(_preUnpacked.managedObjects);
     }
-
 
     void checkAddtiveThings()
     {
         if (_preUnpacked == null)
             return;
-
-        foreach (ThingInMemory curThingInMemory in _unpacked.nativeObjects)
-        {
-            var curNat = curThingInMemory as NativeUnityEngineObject;
-            string curTypeName = MemUtil.GetGroupName(curThingInMemory);
-            if (curTypeName.Length == 0 || curNat == null)
-                continue;
-            if(_exsistDiff(curThingInMemory,_preUnpacked))
-            {
-                string addtiveTypeName = MemUtil.GetCategoryLiteral(curThingInMemory) + curTypeName + sDiffType.AdditiveType;
-                MemType theType;
-                if (!_types.ContainsKey(addtiveTypeName))
-                {
-                    theType = new MemType();
-                    theType.TypeName = addtiveTypeName;
-                    theType.Category = MemUtil.GetCategory(curThingInMemory);
-                    theType.Objects = new List<object>();
-                    _types.Add(addtiveTypeName, theType);
-                }
-                else
-                {
-                    theType = _types[addtiveTypeName];
-                }
-                curNat.className = addtiveTypeName;
-                MemObject item = new MemObject(curThingInMemory, _unpacked);
-                theType.AddObject(item);
-            }
-        }
+        _checkDiffThings(sDiffType.AdditiveType, _unpacked, _unpackedNativeHS, _preUnpackedNativeHS,
+             _unpackedManagedHS, _preUnpackedManagedHS);
     }
 
     void checkNegativeThings()
     {
         if (_preUnpacked == null)
             return;
-        foreach (ThingInMemory preThingInMemory in _preUnpacked.nativeObjects)
-        {
-            var preNat = preThingInMemory as NativeUnityEngineObject;
-            string preTypeName = MemUtil.GetGroupName(preThingInMemory);
-            if (preTypeName.Length == 0 || preNat == null || preTypeName.Contains(sDiffType.AdditiveType))
-                continue;
+        _checkDiffThings(sDiffType.NegativeType, _preUnpacked, _preUnpackedNativeHS,
+            _unpackedNativeHS, _preUnpackedManagedHS, _unpackedManagedHS);
+    }
 
-            if (_exsistDiff(preThingInMemory, _unpacked))
-            {
-                string negativeTypeName = MemUtil.GetCategoryLiteral(preThingInMemory) + preTypeName + sDiffType.NegativeType;
-                MemObject item = new MemObject(preThingInMemory, _preUnpacked);
-                MemType theType;
-                if (!_types.ContainsKey(negativeTypeName))
-                {
-                    theType = new MemType();
-                    theType.TypeName = negativeTypeName;
-                    theType.Category = MemUtil.GetCategory(preThingInMemory);
-                    theType.Objects = new List<object>();
-                    _types.Add(negativeTypeName, theType);
-                }
-                else
-                {
-                    theType = _types[negativeTypeName];
-                }
-                preNat.className = negativeTypeName;
-                theType.AddObject(item);
-            }
+    void _checkDiffThings(string diffType, CrawledMemorySnapshot resultPacked, HashSet<NativeUnityEngineObject> orginNativeHS, HashSet<NativeUnityEngineObject> exceptNativeHS,
+        HashSet<ManagedObject> orginManageHS, HashSet<ManagedObject> exceptManageHS)
+    {
+        if (_preUnpacked == null)
+            return;
+
+        var diffNativeHs = new HashSet<NativeUnityEngineObject>(orginNativeHS);
+        var diffManageHS = new HashSet<ManagedObject>(orginManageHS);
+        diffNativeHs.ExceptWith(exceptNativeHS);
+        diffManageHS.ExceptWith(exceptManageHS);
+
+        foreach (NativeUnityEngineObject curThingInMemory in diffNativeHs)
+        {
+            _handleDiffNativeObj(curThingInMemory, diffType, resultPacked);
         }
+
+        foreach (ManagedObject curThingInMemory in diffManageHS)
+        {
+            _handleDiffManangeObj(curThingInMemory, diffType, resultPacked);
+        }
+    }
+
+    void _handleDiffNativeObj(NativeUnityEngineObject nat, string diffType, CrawledMemorySnapshot resultPacked)
+    {
+        var theType = _checkNewTypes(nat, diffType);
+        if (theType == null)
+            return;
+        string TypeName = MemUtil.GetGroupName(nat);
+        string diffTypeName = MemUtil.GetCategoryLiteral(nat) + TypeName + diffType;
+        nat.className = diffTypeName;
+        MemObject item = new MemObject(nat, resultPacked);
+        theType.AddObject(item);
+    }
+
+    void _handleDiffManangeObj(ManagedObject nat, string diffType, CrawledMemorySnapshot resultPacked)
+    {
+        var theType = _checkNewTypes(nat, diffType);
+        if (theType == null)
+            return;
+        MemObject item = new MemObject(nat, resultPacked);
+        theType.AddObject(item);
+    }
+
+    MemType _checkNewTypes(ThingInMemory things, string diffType)
+    {
+        string TypeName = MemUtil.GetGroupName(things);
+        if (TypeName.Length == 0 || things == null || TypeName.Contains(sDiffType.AdditiveType))
+            return null;
+        string diffTypeName = MemUtil.GetCategoryLiteral(things) + TypeName + diffType;
+        MemType theType;
+        if (!_types.ContainsKey(diffTypeName))
+        {
+            theType = new MemType();
+            theType.TypeName = diffTypeName;
+            theType.Category = MemUtil.GetCategory(things);
+            theType.Objects = new List<object>();
+            _types.Add(diffTypeName, theType);
+        }
+        else
+        {
+            theType = _types[diffTypeName];
+        }
+        return theType;
     }
 
     public void RefreshTables()
@@ -361,7 +374,7 @@ public class MemTableBrowser
         }
 
         GUILayout.FlexibleSpace();
-        
+
         // search box
         {
             string enteredString = GUILayout.TextField(_searchString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(200));

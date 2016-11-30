@@ -61,7 +61,7 @@ namespace MemoryProfilerWindow
 
             if (!_registered)
             {
-                UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += IncomingSnapshot;
+                UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += IncomingSnapshotByBtn;
                 _registered = true;
             }
 
@@ -75,7 +75,7 @@ namespace MemoryProfilerWindow
         {
             if (_registered)
             {
-                UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived -= IncomingSnapshot;
+                UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived -= IncomingSnapshotByBtn;
                 _registered = false;
             }
 
@@ -141,7 +141,7 @@ namespace MemoryProfilerWindow
             {
                 if (_snapshot != null)
                 {
-                    string fileName = EditorUtility.SaveFilePanel("Save Snapshot", null, "MemorySnapshot", "memsnap");
+                    string fileName = EditorUtility.SaveFilePanel("Save Snapshot", MemUtil.SnapshotsDir, "MemorySnapshot", "memsnap");
                     if (!string.IsNullOrEmpty(fileName))
                     {
                         System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -158,13 +158,13 @@ namespace MemoryProfilerWindow
             }
             if (GUILayout.Button("Load Snapshot..."))
             {
-                string fileName = EditorUtility.OpenFilePanel("Load Snapshot", null, "memsnap");
+                string fileName = EditorUtility.OpenFilePanel("Load Snapshot", MemUtil.SnapshotsDir, "memsnap");
                 if (!string.IsNullOrEmpty(fileName))
                 {
                     System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                     using (Stream stream = File.Open(fileName, FileMode.Open))
                     {
-                        IncomingSnapshot(bf.Deserialize(stream) as PackedMemorySnapshot);
+                        IncomingSnapshotByBtn(bf.Deserialize(stream) as PackedMemorySnapshot);
                     }
                 }
             }
@@ -200,7 +200,7 @@ namespace MemoryProfilerWindow
                     {
                         MemCompareTarget.Instance.SetCompareTarget(snapshotBegin);
 
-                        IncomingSnapshot(snapshotEnd);
+                        IncomingSnapshotForCompare(snapshotEnd,snapshotBegin);
 
                         if (_treeMapView != null)
                             _treeMapView.Setup(this, _unpackedCrawl, MemCompareTarget.Instance.GetNewlyAdded(_unpackedCrawl));
@@ -323,13 +323,32 @@ namespace MemoryProfilerWindow
             GUILayout.EndScrollView();
         }
 
-        void IncomingSnapshot(PackedMemorySnapshot snapshot)
+        void IncomingSnapshotByBtn(PackedMemorySnapshot snapshot)
         {
             if (_unpackedCrawl != null)
                 _preUnpackedCrawl = _unpackedCrawl;
+            _IncomingSnapshot(snapshot);
+        }
 
+        void IncomingSnapshotForCompare(PackedMemorySnapshot snapshot, PackedMemorySnapshot preSnapshot = null)
+        {
+            if (preSnapshot != null)
+            {
+                var tempPrePackedCrawled = new Crawler().Crawl(preSnapshot);
+                _preUnpackedCrawl = CrawlDataUnpacker.Unpack(tempPrePackedCrawled);
+            }
+            else
+            {
+                if (_unpackedCrawl != null)
+                    _preUnpackedCrawl = _unpackedCrawl;
+            }
+            _IncomingSnapshot(snapshot);
+        }
+
+        void _IncomingSnapshot(PackedMemorySnapshot snapshot)
+        {
             _snapshot = snapshot;
-            
+
             MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
 
             _packedCrawled = new Crawler().Crawl(_snapshot);

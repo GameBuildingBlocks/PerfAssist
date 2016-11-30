@@ -35,6 +35,22 @@ namespace MemoryProfilerWindow
     {
         public UInt64 address;
         public TypeDescription typeDescription;
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if ((obj.GetType().Equals(this.GetType())) == false)
+                return false;
+            ManagedObject temp = (ManagedObject)obj;
+
+            return this.address.Equals(temp.address) && this.size.Equals(temp.size);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.address.GetHashCode()+this.size.GetHashCode();
+        }
     }
 
     public class NativeUnityEngineObject : ThingInMemory
@@ -47,6 +63,22 @@ namespace MemoryProfilerWindow
         public bool isDontDestroyOnLoad;
         public bool isManager;
         public HideFlags hideFlags;
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null)
+                return false;
+            if ((obj.GetType().Equals(this.GetType())) == false)
+                return false;
+            NativeUnityEngineObject temp = (NativeUnityEngineObject)obj;
+
+            return this.instanceID.Equals(temp.instanceID);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.instanceID.GetHashCode();
+        }
     }
 
     public class GCHandle : ThingInMemory
