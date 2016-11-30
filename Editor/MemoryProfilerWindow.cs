@@ -26,6 +26,7 @@ namespace MemoryProfilerWindow
 
         [NonSerialized]
         CrawledMemorySnapshot _unpackedCrawl;
+        CrawledMemorySnapshot _preUnpackedCrawl;
 
         Vector2 _scrollPosition;
 
@@ -324,8 +325,11 @@ namespace MemoryProfilerWindow
 
         void IncomingSnapshot(PackedMemorySnapshot snapshot)
         {
-            _snapshot = snapshot;
+            if (_unpackedCrawl != null)
+                _preUnpackedCrawl = _unpackedCrawl;
 
+            _snapshot = snapshot;
+            
             MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
 
             _packedCrawled = new Crawler().Crawl(_snapshot);
@@ -355,7 +359,7 @@ namespace MemoryProfilerWindow
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        _tableBrowser.RefreshData(_unpackedCrawl);
+                        _tableBrowser.RefreshData(_unpackedCrawl,_preUnpackedCrawl);
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)

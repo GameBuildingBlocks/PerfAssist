@@ -66,6 +66,7 @@ public class MemObject
 public class MemTableBrowser
 {
     CrawledMemorySnapshot _unpacked;
+    CrawledMemorySnapshot _preUnpacked;
 
     TableView _typeTable;
     TableView _objectTable;
@@ -107,10 +108,10 @@ public class MemTableBrowser
         _objectTable.OnSelected += OnObjectSelected;
     }
 
-    public void RefreshData(CrawledMemorySnapshot unpackedCrawl)
+    public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl=null)
     {
         _unpacked = unpackedCrawl;
-
+        _preUnpacked = preUnpackedCrawl;
         _types.Clear();
         _categories.Clear();
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
@@ -177,8 +178,94 @@ public class MemTableBrowser
         {
             _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
         }
-
+        checkAddtiveThings();
+        checkNegativeThings();
         RefreshTables();
+    }
+
+    bool _exsistDiff(ThingInMemory checkedThings, CrawledMemorySnapshot expectedUnpackedCrawl)
+    {
+        if (checkedThings == null || expectedUnpackedCrawl == null)
+            return false;
+        foreach (ThingInMemory expectedThings in expectedUnpackedCrawl.nativeObjects)
+        {
+            var checkedNat = checkedThings as NativeUnityEngineObject;
+            var expectedNat = expectedThings as NativeUnityEngineObject;
+            if (checkedNat == null || expectedNat == null)
+                continue;
+            if (checkedNat.instanceID == expectedNat.instanceID)
+                return false;
+        }
+        return true;
+    }
+
+
+    void checkAddtiveThings()
+    {
+        if (_preUnpacked == null)
+            return;
+
+        foreach (ThingInMemory curThingInMemory in _unpacked.nativeObjects)
+        {
+            var curNat = curThingInMemory as NativeUnityEngineObject;
+            string curTypeName = MemUtil.GetGroupName(curThingInMemory);
+            if (curTypeName.Length == 0 || curNat == null)
+                continue;
+            if(_exsistDiff(curThingInMemory,_preUnpacked))
+            {
+                string addtiveTypeName = MemUtil.GetCategoryLiteral(curThingInMemory) + curTypeName + sDiffType.AdditiveType;
+                MemType theType;
+                if (!_types.ContainsKey(addtiveTypeName))
+                {
+                    theType = new MemType();
+                    theType.TypeName = addtiveTypeName;
+                    theType.Category = MemUtil.GetCategory(curThingInMemory);
+                    theType.Objects = new List<object>();
+                    _types.Add(addtiveTypeName, theType);
+                }
+                else
+                {
+                    theType = _types[addtiveTypeName];
+                }
+                curNat.className = addtiveTypeName;
+                MemObject item = new MemObject(curThingInMemory, _unpacked);
+                theType.AddObject(item);
+            }
+        }
+    }
+
+    void checkNegativeThings()
+    {
+        if (_preUnpacked == null)
+            return;
+        foreach (ThingInMemory preThingInMemory in _preUnpacked.nativeObjects)
+        {
+            var preNat = preThingInMemory as NativeUnityEngineObject;
+            string preTypeName = MemUtil.GetGroupName(preThingInMemory);
+            if (preTypeName.Length == 0 || preNat == null || preTypeName.Contains(sDiffType.AdditiveType))
+                continue;
+
+            if (_exsistDiff(preThingInMemory, _unpacked))
+            {
+                string negativeTypeName = MemUtil.GetCategoryLiteral(preThingInMemory) + preTypeName + sDiffType.NegativeType;
+                MemObject item = new MemObject(preThingInMemory, _preUnpacked);
+                MemType theType;
+                if (!_types.ContainsKey(negativeTypeName))
+                {
+                    theType = new MemType();
+                    theType.TypeName = negativeTypeName;
+                    theType.Category = MemUtil.GetCategory(preThingInMemory);
+                    theType.Objects = new List<object>();
+                    _types.Add(negativeTypeName, theType);
+                }
+                else
+                {
+                    theType = _types[negativeTypeName];
+                }
+                preNat.className = negativeTypeName;
+                theType.AddObject(item);
+            }
+        }
     }
 
     public void RefreshTables()
