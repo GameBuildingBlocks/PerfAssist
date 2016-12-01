@@ -348,65 +348,67 @@ public class MemTableBrowser
         if (_unpacked == null)
             return;
 
-        if (string.IsNullOrEmpty(_searchInstanceString))
+        List<object> qualified = new List<object>();
+
+        // search for instances
+        if (!string.IsNullOrEmpty(_searchInstanceString))
         {
-            if (string.IsNullOrEmpty(_searchTypeString))
+            _types.Remove(MemConst.SearchResultTypeString);
+            _searchResultType = new MemType();
+            _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchInstanceString;
+            _searchResultType.Category = 0;
+            _searchResultType.Objects = new List<object>();
+
+            string search = _searchInstanceString.ToLower();
+            foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
             {
-                List<object> qualified = new List<object>();
-                foreach (var p in _types)
+                if (thingInMemory.caption.ToLower().Contains(search))
                 {
-                    MemType mt = p.Value;
-
-                    bool isAll = _memTypeCategory == 0;
-                    bool isNative = _memTypeCategory == 1 && mt.Category == 1;
-                    bool isManaged = _memTypeCategory == 2 && mt.Category == 2;
-                    bool isOthers = _memTypeCategory == 3 && (mt.Category == 3 || mt.Category == 4);
-                    if (isAll || isNative || isManaged || isOthers)
-                    {
-                        if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
-                        {
-                            qualified.Add(mt);
-                        }
-                    }
+                    _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
                 }
+            }
 
-                _typeTable.RefreshData(qualified);
-                _objectTable.RefreshData(null);
-            }else{
-                List<object> qualified = new List<object>();
-                foreach (var p in _types)
+            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
+            qualified.Add(_searchResultType);
+            _typeTable.RefreshData(qualified);
+            _objectTable.RefreshData(_searchResultType.Objects);
+            return;
+        }
+
+        // search for types
+        if (!string.IsNullOrEmpty(_searchTypeString))
+        {
+            foreach (var p in _types)
+            {
+                MemType mt = p.Value;
+                if (mt.TypeName.ToLower().Contains(_searchTypeString.ToLower()))
+                    qualified.Add(mt);
+            }
+            _typeTable.RefreshData(qualified);
+            _objectTable.RefreshData(null);
+            return;
+        }
+
+        // ordinary case - list categorized types and instances
+        foreach (var p in _types)
+        {
+            MemType mt = p.Value;
+
+            bool isAll = _memTypeCategory == 0;
+            bool isNative = _memTypeCategory == 1 && mt.Category == 1;
+            bool isManaged = _memTypeCategory == 2 && mt.Category == 2;
+            bool isOthers = _memTypeCategory == 3 && (mt.Category == 3 || mt.Category == 4);
+            if (isAll || isNative || isManaged || isOthers)
+            {
+                if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
                 {
-                    MemType mt = p.Value;
-                    if (mt.TypeName.Contains(_searchTypeString))
-                        qualified.Add(mt);
+                    qualified.Add(mt);
                 }
-                _typeTable.RefreshData(qualified);
-                _objectTable.RefreshData(null);
             }
         }
-        else
-        {
-                _types.Remove(MemConst.SearchResultTypeString);
-                _searchResultType = new MemType();
-                _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchInstanceString;
-                _searchResultType.Category = 0;
-                _searchResultType.Objects = new List<object>();
 
-                string search = _searchInstanceString.ToLower();
-                foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
-                {
-                    if (thingInMemory.caption.ToLower().Contains(search))
-                    {
-                        _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
-                    }
-                }
-
-                _types.Add(MemConst.SearchResultTypeString, _searchResultType);
-                List<object> qualified = new List<object>();
-                qualified.Add(_searchResultType);
-                _typeTable.RefreshData(qualified);
-                _objectTable.RefreshData(_searchResultType.Objects);
-        }
+        _typeTable.RefreshData(qualified);
+        _objectTable.RefreshData(null);
     }
 
     public void Draw(Rect r)
