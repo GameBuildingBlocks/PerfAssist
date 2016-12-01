@@ -67,12 +67,7 @@ public class MemTableBrowser
 {
     CrawledMemorySnapshot _unpacked;
     CrawledMemorySnapshot _preUnpacked;
-
-    HashSet<NativeUnityEngineObject> _unpackedNativeHS;
-    HashSet<NativeUnityEngineObject> _preUnpackedNativeHS;
-    HashSet<ManagedObject> _unpackedManagedHS;
-    HashSet<ManagedObject> _preUnpackedManagedHS;
-
+    UnPackedInfos _unpackedInfos;
 
     TableView _typeTable;
     TableView _objectTable;
@@ -87,6 +82,71 @@ public class MemTableBrowser
 
     string _searchString = "";
     MemType _searchResultType;
+
+    private class UnPackedInfos
+    {
+        CrawledMemorySnapshot unpacked; 
+        CrawledMemorySnapshot preUnpacked;
+
+        public Dictionary<int, NativeUnityEngineObject> _unpackedNativeDict= new Dictionary<int, NativeUnityEngineObject>();
+        public Dictionary<int, NativeUnityEngineObject> _preUnpackedNativeDict = new Dictionary<int, NativeUnityEngineObject>();
+        public Dictionary<int, ManagedObject> _unpackedManagedDict = new Dictionary<int, ManagedObject>();
+        public Dictionary<int, ManagedObject> _preUnpackedManagedDict = new Dictionary<int,ManagedObject>();
+
+        public UnPackedInfos(CrawledMemorySnapshot unpacked, CrawledMemorySnapshot preUnpacked)
+        {
+            this.unpacked = unpacked;
+            this.preUnpacked = preUnpacked;
+        }
+
+        public void calculateCrawledDict()
+        {
+            if (preUnpacked == null)
+                return;
+
+            foreach (NativeUnityEngineObject nat in unpacked.nativeObjects)
+            {
+                if (nat == null)
+                    continue;
+                int key =getNativeObjHashCode(nat);
+                _unpackedNativeDict.Add(key,nat);
+            }
+
+            foreach (NativeUnityEngineObject nat in preUnpacked.nativeObjects)
+            {
+                if (nat == null)
+                    continue;
+                int key = getNativeObjHashCode(nat);
+                _preUnpackedNativeDict.Add(key, nat);
+            }
+
+            foreach (ManagedObject mao in unpacked.managedObjects)
+            {
+                if (mao == null)
+                    continue;
+                int key = getManagedObjHashCode(mao);
+                _unpackedManagedDict.Add(key, mao);
+            }
+
+            foreach (ManagedObject mao in preUnpacked.managedObjects)
+            {
+                if (mao == null)
+                    continue;
+                int key = getManagedObjHashCode(mao);
+                _preUnpackedManagedDict.Add(key, mao);
+            }
+        }
+
+        int getNativeObjHashCode(NativeUnityEngineObject nat) 
+        {
+            return nat.instanceID.GetHashCode();
+        }
+
+        int getManagedObjHashCode(ManagedObject mao)
+        {
+            return mao.address.GetHashCode() + mao.size.GetHashCode();
+        }
+    }
 
     public MemTableBrowser(EditorWindow hostWindow)
     {
@@ -184,57 +244,58 @@ public class MemTableBrowser
         {
             _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
         }
-        calculateCrawledHashSet();
+        freshUnpackInfos();
         checkAddtiveThings();
         checkNegativeThings();
         RefreshTables();
     }
 
-    void calculateCrawledHashSet()
+    void freshUnpackInfos()
     {
         if (_preUnpacked == null)
             return;
-        _unpackedNativeHS = new HashSet<NativeUnityEngineObject>(_unpacked.nativeObjects);
-        _preUnpackedNativeHS = new HashSet<NativeUnityEngineObject>(_preUnpacked.nativeObjects);
-        _unpackedManagedHS = new HashSet<ManagedObject>(_unpacked.managedObjects);
-        _preUnpackedManagedHS = new HashSet<ManagedObject>(_preUnpacked.managedObjects);
+        _unpackedInfos = new UnPackedInfos(_unpacked, _preUnpacked);
+        _unpackedInfos.calculateCrawledDict();
     }
 
     void checkAddtiveThings()
     {
-        if (_preUnpacked == null)
+        if (_preUnpacked == null || _unpackedInfos ==null)
             return;
-        _checkDiffThings(sDiffType.AdditiveType, _unpacked, _unpackedNativeHS, _preUnpackedNativeHS,
-             _unpackedManagedHS, _preUnpackedManagedHS);
+
+        _checkDiffThings(sDiffType.AdditiveType, _unpacked,_unpackedInfos._unpackedNativeDict, _unpackedInfos._preUnpackedNativeDict,
+        _unpackedInfos._unpackedManagedDict, _unpackedInfos._preUnpackedManagedDict);
     }
 
     void checkNegativeThings()
     {
-        if (_preUnpacked == null)
+        if (_preUnpacked == null || _unpackedInfos == null)
             return;
-        _checkDiffThings(sDiffType.NegativeType, _preUnpacked, _preUnpackedNativeHS,
-            _unpackedNativeHS, _preUnpackedManagedHS, _unpackedManagedHS);
+        _checkDiffThings(sDiffType.NegativeType, _preUnpacked,_unpackedInfos._preUnpackedNativeDict,_unpackedInfos._unpackedNativeDict
+            , _unpackedInfos._preUnpackedManagedDict, _unpackedInfos._unpackedManagedDict);
     }
 
-    void _checkDiffThings(string diffType, CrawledMemorySnapshot resultPacked, HashSet<NativeUnityEngineObject> orginNativeHS, HashSet<NativeUnityEngineObject> exceptNativeHS,
-        HashSet<ManagedObject> orginManageHS, HashSet<ManagedObject> exceptManageHS)
+    void _checkDiffThings(string diffType, CrawledMemorySnapshot resultPacked, Dictionary<int,NativeUnityEngineObject> orginNativeDict,
+        Dictionary<int,NativeUnityEngineObject> exceptNativeDict,Dictionary<int, ManagedObject> orginManageDict,
+        Dictionary<int,ManagedObject> exceptManageDict)
     {
         if (_preUnpacked == null)
             return;
 
-        var diffNativeHs = new HashSet<NativeUnityEngineObject>(orginNativeHS);
-        var diffManageHS = new HashSet<ManagedObject>(orginManageHS);
-        diffNativeHs.ExceptWith(exceptNativeHS);
-        diffManageHS.ExceptWith(exceptManageHS);
-
-        foreach (NativeUnityEngineObject curThingInMemory in diffNativeHs)
+        foreach (var orginNat in orginNativeDict)
         {
-            _handleDiffNativeObj(curThingInMemory, diffType, resultPacked);
+            if (!exceptNativeDict.ContainsKey(orginNat.Key))
+            {
+                _handleDiffNativeObj(orginNat.Value, diffType, resultPacked);
+            }
         }
 
-        foreach (ManagedObject curThingInMemory in diffManageHS)
+        foreach (var orginMao in orginManageDict)
         {
-            _handleDiffManangeObj(curThingInMemory, diffType, resultPacked);
+            if (!exceptManageDict.ContainsKey(orginMao.Key))
+            {
+                _handleDiffManangeObj(orginMao.Value, diffType, resultPacked);
+            }
         }
     }
 
