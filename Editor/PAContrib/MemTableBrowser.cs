@@ -80,7 +80,8 @@ public class MemTableBrowser
     private int _memTypeCategory = 0;
     private int _memTypeSizeLimiter = 0;
 
-    string _searchString = "";
+    string _searchInstanceString = "";
+    string _searchTypeString = "";
     MemType _searchResultType;
 
     private class UnPackedInfos
@@ -347,51 +348,64 @@ public class MemTableBrowser
         if (_unpacked == null)
             return;
 
-        if (string.IsNullOrEmpty(_searchString))
+        if (string.IsNullOrEmpty(_searchInstanceString))
         {
-            List<object> qualified = new List<object>();
-            foreach (var p in _types)
+            if (string.IsNullOrEmpty(_searchTypeString))
             {
-                MemType mt = p.Value;
-
-                bool isAll = _memTypeCategory == 0;
-                bool isNative = _memTypeCategory == 1 && mt.Category == 1;
-                bool isManaged = _memTypeCategory == 2 && mt.Category == 2;
-                bool isOthers = _memTypeCategory == 3 && (mt.Category == 3 || mt.Category == 4);
-                if (isAll || isNative || isManaged || isOthers)
+                List<object> qualified = new List<object>();
+                foreach (var p in _types)
                 {
-                    if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
+                    MemType mt = p.Value;
+
+                    bool isAll = _memTypeCategory == 0;
+                    bool isNative = _memTypeCategory == 1 && mt.Category == 1;
+                    bool isManaged = _memTypeCategory == 2 && mt.Category == 2;
+                    bool isOthers = _memTypeCategory == 3 && (mt.Category == 3 || mt.Category == 4);
+                    if (isAll || isNative || isManaged || isOthers)
                     {
-                        qualified.Add(mt);
+                        if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
+                        {
+                            qualified.Add(mt);
+                        }
                     }
                 }
-            }
 
-            _typeTable.RefreshData(qualified);
-            _objectTable.RefreshData(null);
+                _typeTable.RefreshData(qualified);
+                _objectTable.RefreshData(null);
+            }else{
+                List<object> qualified = new List<object>();
+                foreach (var p in _types)
+                {
+                    MemType mt = p.Value;
+                    if (mt.TypeName.Contains(_searchTypeString))
+                        qualified.Add(mt);
+                }
+                _typeTable.RefreshData(qualified);
+                _objectTable.RefreshData(null);
+            }
         }
         else
         {
-            _types.Remove(MemConst.SearchResultTypeString);
-            _searchResultType = new MemType();
-            _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchString;
-            _searchResultType.Category = 0;
-            _searchResultType.Objects = new List<object>();
+                _types.Remove(MemConst.SearchResultTypeString);
+                _searchResultType = new MemType();
+                _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchInstanceString;
+                _searchResultType.Category = 0;
+                _searchResultType.Objects = new List<object>();
 
-            string search = _searchString.ToLower();
-            foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
-            {
-                if (thingInMemory.caption.ToLower().Contains(search))
+                string search = _searchInstanceString.ToLower();
+                foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
                 {
-                    _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
+                    if (thingInMemory.caption.ToLower().Contains(search))
+                    {
+                        _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
+                    }
                 }
-            }
 
-            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
-            List<object> qualified = new List<object>();
-            qualified.Add(_searchResultType);
-            _typeTable.RefreshData(qualified);
-            _objectTable.RefreshData(_searchResultType.Objects);
+                _types.Add(MemConst.SearchResultTypeString, _searchResultType);
+                List<object> qualified = new List<object>();
+                qualified.Add(_searchResultType);
+                _typeTable.RefreshData(qualified);
+                _objectTable.RefreshData(_searchResultType.Objects);
         }
     }
 
@@ -423,6 +437,22 @@ public class MemTableBrowser
         GUILayout.Space(3);
 
         GUILayout.BeginHorizontal(MemStyles.Toolbar);
+        {
+            string enteredString = GUILayout.TextField(_searchTypeString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(200));
+            if (enteredString != _searchTypeString)
+            {
+                _searchTypeString = enteredString;
+                RefreshTables();
+            }
+            if (GUILayout.Button("", MemStyles.SearchCancelButton))
+            {
+                _types.Remove(MemConst.SearchResultTypeString);
+                _searchTypeString = "";
+                GUI.FocusControl(null); // Remove focus if cleared
+                RefreshTables();
+            }
+        }
+
         // size limiter
         {
             GUILayout.Label("Size: ", GUILayout.MinWidth(120));
@@ -438,16 +468,16 @@ public class MemTableBrowser
 
         // search box
         {
-            string enteredString = GUILayout.TextField(_searchString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(200));
-            if (enteredString != _searchString)
+            string enteredString = GUILayout.TextField(_searchInstanceString, 100, MemStyles.SearchTextField, GUILayout.MinWidth(200));
+            if (enteredString != _searchInstanceString)
             {
-                _searchString = enteredString;
+                _searchInstanceString = enteredString;
                 RefreshTables();
             }
             if (GUILayout.Button("", MemStyles.SearchCancelButton))
             {
                 _types.Remove(MemConst.SearchResultTypeString);
-                _searchString = "";
+                _searchInstanceString = "";
                 GUI.FocusControl(null); // Remove focus if cleared
                 RefreshTables();
             }
@@ -488,7 +518,7 @@ public class MemTableBrowser
 
     public void SelectThing(ThingInMemory thing)
     {
-        if (_searchString != "")
+        if (_searchInstanceString != "")
         {
             //MemType mt;
             //if (!_types.TryGetValue(MemConst.SearchResultTypeString, out mt))
