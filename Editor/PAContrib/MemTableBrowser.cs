@@ -312,12 +312,14 @@ public class MemTableBrowser
         theType.AddObject(item);
     }
 
-    void _handleDiffManangeObj(ManagedObject nat, string diffType, CrawledMemorySnapshot resultPacked)
+    void _handleDiffManangeObj(ManagedObject mao, string diffType, CrawledMemorySnapshot resultPacked)
     {
-        var theType = _checkNewTypes(nat, diffType);
+        var theType = _checkNewTypes(mao, diffType);
         if (theType == null)
             return;
-        MemObject item = new MemObject(nat, resultPacked);
+        MemObject item = new MemObject(mao, resultPacked);
+        string TypeName = MemUtil.GetGroupName(mao);
+        mao.caption = MemUtil.GetCategoryLiteral(mao) + TypeName + diffType;
         theType.AddObject(item);
     }
 
