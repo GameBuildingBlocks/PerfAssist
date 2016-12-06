@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using MemoryProfilerWindow;
 using Assets.Editor.Treemap;
-
 public class MemCategory
 {
     public int Category;
@@ -84,6 +83,8 @@ public class MemTableBrowser
     string _searchTypeString = "";
     MemType _searchResultType;
 
+    StaticDetailInfo _staticDetailInfo = new StaticDetailInfo();
+
     private class UnPackedInfos
     {
         CrawledMemorySnapshot unpacked; 
@@ -110,7 +111,8 @@ public class MemTableBrowser
                 if (nat == null)
                     continue;
                 int key =getNativeObjHashCode(nat);
-                _unpackedNativeDict.Add(key,nat);
+                if (!_unpackedNativeDict.ContainsKey(key))
+                    _unpackedNativeDict.Add(key,nat);
             }
 
             foreach (NativeUnityEngineObject nat in preUnpacked.nativeObjects)
@@ -118,23 +120,30 @@ public class MemTableBrowser
                 if (nat == null)
                     continue;
                 int key = getNativeObjHashCode(nat);
-                _preUnpackedNativeDict.Add(key, nat);
+                if (!_preUnpackedNativeDict.ContainsKey(key))
+                    _preUnpackedNativeDict.Add(key, nat);
             }
 
             foreach (ManagedObject mao in unpacked.managedObjects)
             {
                 if (mao == null)
                     continue;
-                int key = getManagedObjHashCode(mao);
-                _unpackedManagedDict.Add(key, mao);
+                int key = getManagedObjHashCode(mao, unpacked);
+                if (key == -1)
+                    continue;
+                if (!_unpackedManagedDict.ContainsKey(key))
+                    _unpackedManagedDict.Add(key,mao);
             }
 
             foreach (ManagedObject mao in preUnpacked.managedObjects)
             {
                 if (mao == null)
                     continue;
-                int key = getManagedObjHashCode(mao);
-                _preUnpackedManagedDict.Add(key, mao);
+                int key = getManagedObjHashCode(mao, preUnpacked);
+                if (key == -1)
+                    continue;
+                if (!_preUnpackedManagedDict.ContainsKey(key))
+                    _preUnpackedManagedDict.Add(key,mao);
             }
         }
 
@@ -143,12 +152,25 @@ public class MemTableBrowser
             return nat.instanceID.GetHashCode();
         }
 
-        int getManagedObjHashCode(ManagedObject mao)
+        int getManagedObjHashCode(ManagedObject mao ,CrawledMemorySnapshot unpacked)
         {
-            return mao.address.GetHashCode() + mao.size.GetHashCode();
+            var ba =unpacked.managedHeap.Find(mao.address, unpacked.virtualMachineInformation);
+            var result =getBytesFromHeap(ba,mao.size);
+            if (result != null && result.Length>0)
+                return result.GetHashCode() * mao.size;
+            return -1;
+        }
+
+        byte[] getBytesFromHeap(BytesAndOffset ba, int size)
+        {
+            byte[] result = new byte[size];
+            for (int i = 0; i < size;i++)
+            {
+                result[i] = ba.bytes[i+ba.offset];
+            }
+            return result;
         }
     }
-
     public MemTableBrowser(EditorWindow hostWindow)
     {
         _hostWindow = hostWindow;
@@ -175,12 +197,14 @@ public class MemTableBrowser
         _objectTable.OnSelected += OnObjectSelected;
     }
 
+
     public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl = null)
     {
         _unpacked = unpackedCrawl;
         _preUnpacked = preUnpackedCrawl;
         _types.Clear();
         _categories.Clear();
+        _staticDetailInfo.clear();
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
             string typeName = MemUtil.GetGroupName(thingInMemory);
@@ -190,21 +214,23 @@ public class MemTableBrowser
             int category = MemUtil.GetCategory(thingInMemory);
 
             MemObject item = new MemObject(thingInMemory, _unpacked);
-
-            MemType theType;
-            if (!_types.ContainsKey(typeName))
+            if (! _staticDetailInfo.isDetailStaticFileds(typeName, thingInMemory.caption,item.Size))
             {
-                theType = new MemType();
-                theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
-                theType.Category = category;
-                theType.Objects = new List<object>();
-                _types.Add(typeName, theType);
+                MemType theType;
+                if (!_types.ContainsKey(typeName))
+                {
+                    theType = new MemType();
+                    theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
+                    theType.Category = category;
+                    theType.Objects = new List<object>();
+                    _types.Add(typeName, theType);
+                }
+                else
+                {
+                    theType = _types[typeName];
+                }
+                theType.AddObject(item);
             }
-            else
-            {
-                theType = _types[typeName];
-            }
-            theType.AddObject(item);
 
             MemCategory theCategory;
             if (!_categories.TryGetValue(category, out theCategory))
@@ -275,6 +301,16 @@ public class MemTableBrowser
         _checkDiffThings(sDiffType.NegativeType, _preUnpacked,_unpackedInfos._preUnpackedNativeDict,_unpackedInfos._unpackedNativeDict
             , _unpackedInfos._preUnpackedManagedDict, _unpackedInfos._unpackedManagedDict);
     }
+    private void _handleModifyObj(ref Dictionary<int, ManagedObject> exceptNativeDict, KeyValuePair<int, ManagedObject> orginNat, CrawledMemorySnapshot resultPacked)
+    {
+        ManagedObject exceptObj;
+        exceptNativeDict.TryGetValue(orginNat.Key, out exceptObj);
+
+        if (exceptObj.address == orginNat.Value.address)
+        {
+            _handleDiffManangeObj(orginNat.Value, sDiffType.ModificationType, resultPacked);
+        }
+    }
 
     void _checkDiffThings(string diffType, CrawledMemorySnapshot resultPacked, Dictionary<int,NativeUnityEngineObject> orginNativeDict,
         Dictionary<int,NativeUnityEngineObject> exceptNativeDict,Dictionary<int, ManagedObject> orginManageDict,
@@ -296,6 +332,12 @@ public class MemTableBrowser
             if (!exceptManageDict.ContainsKey(orginMao.Key))
             {
                 _handleDiffManangeObj(orginMao.Value, diffType, resultPacked);
+            }
+            else
+            {
+                if (diffType != sDiffType.AdditiveType)
+                    continue;
+                _handleModifyObj(ref orginManageDict, orginMao, resultPacked);
             }
         }
     }
@@ -436,6 +478,13 @@ public class MemTableBrowser
             }
         }
         GUILayout.FlexibleSpace();
+
+
+        if (GUILayout.Button("DetailInfo", GUILayout.MinWidth(80)))
+        {
+            _staticDetailInfo.showInfos();
+        }
+
         GUILayout.EndHorizontal();
 
         GUILayout.Space(3);

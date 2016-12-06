@@ -58,34 +58,34 @@ namespace MemoryProfilerWindow
         public void Draw()
         {
             float NavAreaHeight = 40.0f;
-            GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth,
-                MemConst.TopBarHeight, MemConst.InspectorWidth, NavAreaHeight));
+                GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth,
+                    MemConst.TopBarHeight, MemConst.InspectorWidth, NavAreaHeight));
 
-            GUILayout.Space(5);
+                GUILayout.Space(5);
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(3);
+                GUILayout.BeginHorizontal();
+                GUILayout.Space(3);
 
-            GUI.enabled = Instance.TryGetPrev() != null;
-            if (GUILayout.Button(new GUIContent("Back", _textureBack), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
-            {
-                ThingInMemory prev = Instance.MovePrev();
-                if (prev != null)
-                    _hostWindow.SelectThing(prev);
-            }
-            GUI.enabled = Instance.TryGetNext() != null;
-            if (GUILayout.Button(new GUIContent("Forward", _textureForward), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
-            {
-                ThingInMemory next = Instance.MoveNext();
-                if (next != null)
-                    _hostWindow.SelectThing(next);
-            }
-            GUI.enabled = true;
+                GUI.enabled = Instance.TryGetPrev() != null;
+                if (GUILayout.Button(new GUIContent("Back", _textureBack), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
+                {
+                    ThingInMemory prev = Instance.MovePrev();
+                    if (prev != null)
+                        _hostWindow.SelectThing(prev);
+                }
+                GUI.enabled = Instance.TryGetNext() != null;
+                if (GUILayout.Button(new GUIContent("Forward", _textureForward), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
+                {
+                    ThingInMemory next = Instance.MoveNext();
+                    if (next != null)
+                        _hostWindow.SelectThing(next);
+                }
+                GUI.enabled = true;
 
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
 
-            GUILayout.EndArea();
+                GUILayout.EndArea();
 
             float topSpace = MemConst.TopBarHeight + NavAreaHeight;
             GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth, topSpace, MemConst.InspectorWidth, _hostWindow.position.height - topSpace));
@@ -143,7 +143,7 @@ namespace MemoryProfilerWindow
                     GUILayout.Label("Of type: " + staticFields.typeDescription.name);
                     GUILayout.Label("size: " + staticFields.size);
 
-                    DrawFields(staticFields.typeDescription, new BytesAndOffset() { bytes = staticFields.typeDescription.staticFieldBytes, offset = 0, pointerSize = _unpackedCrawl.virtualMachineInformation.pointerSize}, true);
+                    DrawFields(staticFields.typeDescription, new BytesAndOffset() { bytes = staticFields.typeDescription.staticFieldBytes, offset = 0, pointerSize = _unpackedCrawl.virtualMachineInformation.pointerSize }, true);
                 }
 
                 if (managedObject == null)
@@ -242,7 +242,6 @@ namespace MemoryProfilerWindow
         private void DrawFields(TypeDescription typeDescription, BytesAndOffset bytesAndOffset, bool useStatics = false)
         {
             int counter = 0;
-        
             foreach (var field in TypeTools.AllFieldsOf(typeDescription, _unpackedCrawl.typeDescriptions, useStatics ? TypeTools.FieldFindOptions.OnlyStatic : TypeTools.FieldFindOptions.OnlyInstance))
             {
                 counter++;
@@ -272,68 +271,75 @@ namespace MemoryProfilerWindow
         {
             var typeDescription = _unpackedCrawl.typeDescriptions[field.typeIndex];
 
-            switch (typeDescription.name)
+            try
             {
-                case "System.Int32":
-                    GUILayout.Label(_primitiveValueReader.ReadInt32(bytesAndOffset).ToString());
-                    break;
-                case "System.Int64":
-                    GUILayout.Label(_primitiveValueReader.ReadInt64(bytesAndOffset).ToString());
-                    break;
-                case "System.UInt32":
-                    GUILayout.Label(_primitiveValueReader.ReadUInt32(bytesAndOffset).ToString());
-                    break;
-                case "System.UInt64":
-                    GUILayout.Label(_primitiveValueReader.ReadUInt64(bytesAndOffset).ToString());
-                    break;
-                case "System.Int16":
-                    GUILayout.Label(_primitiveValueReader.ReadInt16(bytesAndOffset).ToString());
-                    break;
-                case "System.UInt16":
-                    GUILayout.Label(_primitiveValueReader.ReadUInt16(bytesAndOffset).ToString());
-                    break;
-                case "System.Byte":
-                    GUILayout.Label(_primitiveValueReader.ReadByte(bytesAndOffset).ToString());
-                    break;
-                case "System.SByte":
-                    GUILayout.Label(_primitiveValueReader.ReadSByte(bytesAndOffset).ToString());
-                    break;
-                case "System.Char":
-                    GUILayout.Label(_primitiveValueReader.ReadChar(bytesAndOffset).ToString());
-                    break;
-                case "System.Boolean":
-                    GUILayout.Label(_primitiveValueReader.ReadBool(bytesAndOffset).ToString());
-                    break;
-                case "System.Single":
-                    GUILayout.Label(_primitiveValueReader.ReadSingle(bytesAndOffset).ToString());
-                    break;
-                case "System.Double":
-                    GUILayout.Label(_primitiveValueReader.ReadDouble(bytesAndOffset).ToString());
-                    break;
-                case "System.IntPtr":
-                    GUILayout.Label(_primitiveValueReader.ReadPointer(bytesAndOffset).ToString("X"));
-                    break;
-                default:
-
-                    if (!typeDescription.isValueType)
-                    {
-                        ThingInMemory item = GetThingAt(bytesAndOffset.ReadPointer());
-                        if (item == null)
+                switch (typeDescription.name)
+                {
+                    case "System.Int32":
+                        GUILayout.Label(_primitiveValueReader.ReadInt32(bytesAndOffset).ToString());
+                        break;
+                    case "System.Int64":
+                        GUILayout.Label(_primitiveValueReader.ReadInt64(bytesAndOffset).ToString());
+                        break;
+                    case "System.UInt32":
+                        GUILayout.Label(_primitiveValueReader.ReadUInt32(bytesAndOffset).ToString());
+                        break;
+                    case "System.UInt64":
+                        GUILayout.Label(_primitiveValueReader.ReadUInt64(bytesAndOffset).ToString());
+                        break;
+                    case "System.Int16":
+                        GUILayout.Label(_primitiveValueReader.ReadInt16(bytesAndOffset).ToString());
+                        break;
+                    case "System.UInt16":
+                        GUILayout.Label(_primitiveValueReader.ReadUInt16(bytesAndOffset).ToString());
+                        break;
+                    case "System.Byte":
+                        GUILayout.Label(_primitiveValueReader.ReadByte(bytesAndOffset).ToString());
+                        break;
+                    case "System.SByte":
+                        GUILayout.Label(_primitiveValueReader.ReadSByte(bytesAndOffset).ToString());
+                        break;
+                    case "System.Char":
+                        GUILayout.Label(_primitiveValueReader.ReadChar(bytesAndOffset).ToString());
+                        break;
+                    case "System.Boolean":
+                        GUILayout.Label(_primitiveValueReader.ReadBool(bytesAndOffset).ToString());
+                        break;
+                    case "System.Single":
+                        GUILayout.Label(_primitiveValueReader.ReadSingle(bytesAndOffset).ToString());
+                        break;
+                    case "System.Double":
+                        GUILayout.Label(_primitiveValueReader.ReadDouble(bytesAndOffset).ToString());
+                        break;
+                    case "System.IntPtr":
+                        GUILayout.Label(_primitiveValueReader.ReadPointer(bytesAndOffset).ToString("X"));
+                        break;
+                    default:
+                        if (!typeDescription.isValueType)
                         {
-                            EditorGUI.BeginDisabledGroup(true);
-                            GUILayout.Button("Null");
-                            EditorGUI.EndDisabledGroup();
+                            ThingInMemory item = GetThingAt(bytesAndOffset.ReadPointer());
+                            if (item == null)
+                            {
+                                EditorGUI.BeginDisabledGroup(true);
+                                GUILayout.Button("Null");
+                                EditorGUI.EndDisabledGroup();
+                            }
+                            else
+                            {
+                                DrawLinks(new ThingInMemory[] { item });
+                            }
                         }
                         else
                         {
-                            DrawLinks(new ThingInMemory[] { item });
-                        }
-                    }
-                    else
-                    {
                         DrawFields(typeDescription, bytesAndOffset);
-                    }
-                    break;
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                GUILayout.Label(string.Format("<bad_entry> type: {0}, len: {1}, offset: {2}, ex: {3}", typeDescription.name, bytesAndOffset.bytes.Length, bytesAndOffset.offset, ex.GetType().Name));
+                Debug.LogFormat("<bad_entry> type: {0}, len: {1}, offset: {2}, ex: {3}", typeDescription.name, bytesAndOffset.bytes.Length, bytesAndOffset.offset, ex.GetType().Name);
             }
         }
 
