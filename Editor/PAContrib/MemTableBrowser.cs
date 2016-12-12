@@ -4,6 +4,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using MemoryProfilerWindow;
 using Assets.Editor.Treemap;
+
+public struct sDiffType
+{
+    public static readonly string AdditiveType = " (added)";
+    public static readonly string NegativeType = " (removed)";
+    public static readonly string ModificationType = " (modified)";
+}
+
 public class MemCategory
 {
     public int Category;
