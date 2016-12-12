@@ -358,6 +358,7 @@ public class MemTableBrowser
         string TypeName = MemUtil.GetGroupName(nat);
         string diffTypeName = MemUtil.GetCategoryLiteral(nat) + TypeName + diffType;
         nat.className = diffTypeName;
+        nat.caption = diffTypeName;
         MemObject item = new MemObject(nat, resultPacked);
         theType.AddObject(item);
     }
@@ -395,6 +396,35 @@ public class MemTableBrowser
         return theType;
     }
 
+
+    private Dictionary<object, Color> getSpecialColorDict(List<object> objs){
+        Dictionary<object, Color> resultDict=  new Dictionary<object, Color>();
+        foreach (object obj in objs)
+        {
+            var memType = obj as MemType;
+
+            string typeName = memType.TypeName;
+            if (typeName.Length == 0)
+                continue;
+
+            if (typeName.Contains(sDiffType.AdditiveType))
+            {
+                resultDict.Add(obj, Color.green);
+            }
+            else
+                if (typeName.Contains(sDiffType.NegativeType))
+                {
+                    resultDict.Add(obj, Color.red);
+                }
+                else
+                    if (typeName.Contains(sDiffType.ModificationType))
+                    {
+                        resultDict.Add(obj, Color.blue);
+                    }
+        }
+        return resultDict;
+    }
+
     public void RefreshTables()
     {
         if (_unpacked == null)
@@ -422,7 +452,7 @@ public class MemTableBrowser
 
             _types.Add(MemConst.SearchResultTypeString, _searchResultType);
             qualified.Add(_searchResultType);
-            _typeTable.RefreshData(qualified);
+            _typeTable.RefreshData(qualified,getSpecialColorDict(qualified));
             _objectTable.RefreshData(_searchResultType.Objects);
             return;
         }
@@ -436,7 +466,7 @@ public class MemTableBrowser
                 if (mt.TypeName.ToLower().Contains(_searchTypeString.ToLower()))
                     qualified.Add(mt);
             }
-            _typeTable.RefreshData(qualified);
+            _typeTable.RefreshData(qualified,getSpecialColorDict(qualified));
             _objectTable.RefreshData(null);
             return;
         }
@@ -459,7 +489,7 @@ public class MemTableBrowser
             }
         }
 
-        _typeTable.RefreshData(qualified);
+        _typeTable.RefreshData(qualified,getSpecialColorDict(qualified));
         _objectTable.RefreshData(null);
     }
 
