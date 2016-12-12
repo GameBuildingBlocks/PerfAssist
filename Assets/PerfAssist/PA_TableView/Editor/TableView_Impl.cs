@@ -6,7 +6,6 @@ using UnityEditor;
 
 public partial class TableView 
 {
-
     private void DrawTitle(float width)
     {
         for (int i = 0; i < m_descArray.Count; i++)
@@ -51,6 +50,13 @@ public partial class TableView
             style = _appearance.Style_Selected;
         }
 
+        Color specialColor;
+        if (m_specialTextColors != null &&
+            m_specialTextColors.TryGetValue(obj, out specialColor))
+        {
+            style.normal.textColor = specialColor;
+        }
+
         for (int i = 0; i < m_descArray.Count; i++)
             DrawLineCol(pos, i, width, obj, style, selectionHappens);
     }
@@ -67,6 +73,9 @@ public partial class TableView
             m_hostWindow.Repaint();
         }
 
+        var desc = m_descArray[col];
+        var text = desc.FormatObject(obj);
+
         // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
         // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
         if (m_selectedCol == col && m_selected == obj)
@@ -74,10 +83,7 @@ public partial class TableView
             style = _appearance.Style_SelectedCell;
         }
 
-        var desc = m_descArray[col];
         style.alignment = desc.Alignment;
-
-        var text = desc.FormatObject(obj);
         GUI.Label(rect, new GUIContent(text, text), style);
     }
 
@@ -114,6 +120,9 @@ public partial class TableView
     Type m_itemType = null;
     EditorWindow m_hostWindow = null;
     List<object> m_lines = new List<object>();
+
     object m_selected = null;
     int m_selectedCol = -1;
+
+    Dictionary<object, Color> m_specialTextColors;
 }

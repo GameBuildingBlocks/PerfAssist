@@ -48,7 +48,7 @@ public partial class TableView : IDisposable
         return true;
     }
 
-    public void RefreshData(List<object> entries)
+    public void RefreshData(List<object> entries, Dictionary<object, Color> specialTextColors = null)
     {
         m_lines.Clear();
 
@@ -58,6 +58,8 @@ public partial class TableView : IDisposable
 
             SortData();
         }
+
+        m_specialTextColors = specialTextColors;
     }
 
     public void Draw(Rect area)
