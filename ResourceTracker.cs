@@ -29,7 +29,7 @@ public class ResourceRequestInfo
 
     public int stacktraceHash = 0;
 
-    public string ToString()
+    public override string ToString()
     {
         return string.Format("#{0} ({1:0.000}) {2} {3} {4} +{5} +{6} ({7})",
             seqID, requestTime, rootID, resourceType.ToString(), 
@@ -69,6 +69,7 @@ public class ResourceTracker : IDisposable
                 _logWriter = new FileInfo(logPath).CreateText();
                 _logWriter.AutoFlush = true;
                 _logPath = logPath;
+                UnityEngine.Debug.LogFormat("[ResourceTracker] logging started at: {0} ", _logPath);
             }
             catch (Exception ex)
             {
@@ -157,9 +158,6 @@ public class ResourceTracker : IDisposable
             return;
 
         UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        if (scene == null)
-            return;
-
         GameObject[] roots = scene.GetRootGameObjects();
         for (int i = 0; i < roots.Length; i++)
         {

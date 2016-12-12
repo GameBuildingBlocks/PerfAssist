@@ -579,26 +579,7 @@ public class MemTableBrowser
 
     public void SelectThing(ThingInMemory thing)
     {
-        if (_searchInstanceString != "")
-        {
-            //MemType mt;
-            //if (!_types.TryGetValue(MemConst.SearchResultTypeString, out mt))
-            //    return;
-
-            //foreach (var item in mt.Objects)
-            //{
-            //    var mo = item as MemObject;
-            //    if (mo != null && mo._thing == thing)
-            //    {
-            //        if (_objectTable.GetSelected() != mo)
-            //        {
-            //            _objectTable.SetSelected(mo);
-            //        }
-            //        break;
-            //    }
-            //}
-        }
-        else
+        if (_searchInstanceString == "")
         {
             string typeName = MemUtil.GetGroupName(thing);
 
