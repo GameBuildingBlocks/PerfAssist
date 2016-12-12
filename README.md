@@ -2,7 +2,7 @@
 
 ## Screenshot
 
-![screenshot](TableView.png)
+![screenshot](/Docs/TableView.png)
 
 ## Features
 
