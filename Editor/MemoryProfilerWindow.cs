@@ -39,7 +39,6 @@ namespace MemoryProfilerWindow
 
         ThingInMemory _selectedThing;
 
-        public bool EnhancedMode { get { return _enhancedMode; } }
         bool _enhancedMode = true;
 
         bool _autoSaveForComparison = false;
@@ -111,114 +110,26 @@ namespace MemoryProfilerWindow
 
         void OnGUI()
         {
-            GUILayout.BeginHorizontal();
-
-            _enhancedMode = GUILayout.Toggle(_enhancedMode, "Enhanced Mode", GUILayout.MaxWidth(150));
-
-            if (GUILayout.Button("Take Snapshot"))
+            // main bar
             {
-                UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
-
-                // the above call (RequestNewSnapshot) is a sync-invoke so we can process it immediately
-                if (_enhancedMode && _autoSaveForComparison)
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Take Snapshot", GUILayout.Width(150)))
                 {
-                    string filename = MemUtil.Save(_snapshot);
-                    if (!string.IsNullOrEmpty(filename))
-                    {
-                        Debug.LogFormat("snapshot '{0}' saved.", filename);
-
-                        RefreshSnapshotList();
-                    }
+                    UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
                 }
-            }
 
-            if (_enhancedMode)
-            {
-                _autoSaveForComparison = GUILayout.Toggle(_autoSaveForComparison, "Auto-Save");
-            }
+                // add time point snapshots
 
-            if (GUILayout.Button("Save Snapshot..."))
-            {
-                if (_snapshot != null)
-                {
-                    string fileName = EditorUtility.SaveFilePanel("Save Snapshot", MemUtil.SnapshotsDir, "MemorySnapshot", "memsnap");
-                    if (!string.IsNullOrEmpty(fileName))
-                    {
-                        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                        using (Stream stream = File.Open(fileName, FileMode.Create))
-                        {
-                            bf.Serialize(stream, _snapshot);
-                        }
-                    }
-                }
-                else
-                {
-                    UnityEngine.Debug.LogWarning("No snapshot to save.  Try taking a snapshot first.");
-                }
-            }
-            if (GUILayout.Button("Load Snapshot..."))
-            {
-                string fileName = EditorUtility.OpenFilePanel("Load Snapshot", MemUtil.SnapshotsDir, "memsnap");
-                if (!string.IsNullOrEmpty(fileName))
-                {
-                    System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    using (Stream stream = File.Open(fileName, FileMode.Open))
-                    {
-                        IncomingSnapshotByBtn(bf.Deserialize(stream) as PackedMemorySnapshot);
-                    }
-                }
-            }
-
-            if (_enhancedMode)
-            {
                 GUILayout.FlexibleSpace();
-
-                {
-                    GUILayout.Space(50);
-                    EditorGUIUtility.labelWidth = 40;
-                    _selectedBegin = EditorGUILayout.Popup(string.Format("Begin"), _selectedBegin, _snapshotFiles, GUILayout.Width(250));
-
-                    GUILayout.Space(50);
-
-                    _selectedEnd = EditorGUILayout.Popup(string.Format("End"), _selectedEnd, _snapshotFiles, GUILayout.Width(250));
-                    EditorGUIUtility.labelWidth = 0; // reset to default
-                    GUILayout.Space(50);
-                }
-
-                if (_selectedBegin == _selectedEnd)
-                {
-                    GUI.enabled = false;
-                }
-                if (GUILayout.Button("Compare", GUILayout.MaxWidth(120)))
-                {
-                    Debug.LogFormat("Compare '{0}' with '{1}'", _snapshotFiles[_selectedBegin], _snapshotFiles[_selectedEnd]);
-
-                    var snapshotBegin = MemUtil.Load(_snapshotFiles[_selectedBegin]);
-                    var snapshotEnd = MemUtil.Load(_snapshotFiles[_selectedEnd]);
-
-                    if (snapshotBegin != null && snapshotEnd != null)
-                    {
-                        MemCompareTarget.Instance.SetCompareTarget(snapshotBegin);
-
-                        IncomingSnapshotForCompare(snapshotEnd,snapshotBegin);
-
-                        if (_treeMapView != null)
-                            _treeMapView.Setup(this, _unpackedCrawl, MemCompareTarget.Instance.GetNewlyAdded(_unpackedCrawl));
-                    }
-                }
-                if (_selectedBegin == _selectedEnd)
-                {
-                    GUI.enabled = true;
-                }
 
                 if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(120)))
                 {
                     EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
                 }
+                GUILayout.EndHorizontal();
             }
 
-            GUILayout.EndHorizontal();
-
+            // view bar
             GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
             GUILayout.BeginHorizontal(MemStyles.Toolbar);
             int selected = GUILayout.SelectionGrid((int)m_selectedView, MemConst.ShowTypes, MemConst.ShowTypes.Length, MemStyles.ToolbarButton);
@@ -230,10 +141,10 @@ namespace MemoryProfilerWindow
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
 
+            // selected views
             float TabHeight = 30;
             float yoffset = MemConst.TopBarHeight + TabHeight;
             Rect view = new Rect(0f, yoffset, position.width - MemConst.InspectorWidth, position.height - yoffset);
-
             switch (m_selectedView)
             {
                 case eShowType.InTable:
@@ -252,8 +163,6 @@ namespace MemoryProfilerWindow
 
             if (_inspector != null)
                 _inspector.Draw();
-
-            //RenderDebugList();
         }
 
         public string[] FindThingsByName(string name)
@@ -299,28 +208,6 @@ namespace MemoryProfilerWindow
                 default:
                     break;
             }
-        }
-
-        private void RenderDebugList()
-        {
-            _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
-
-            foreach (var thing in _unpackedCrawl.allObjects)
-            {
-                var mo = thing as ManagedObject;
-                if (mo != null)
-                    GUILayout.Label("MO: " + mo.typeDescription.name);
-
-                var gch = thing as GCHandle;
-                if (gch != null)
-                    GUILayout.Label("GCH: " + gch.caption);
-
-                var sf = thing as StaticFields;
-                if (sf != null)
-                    GUILayout.Label("SF: " + sf.typeDescription.name);
-            }
-
-            GUILayout.EndScrollView();
         }
 
         void IncomingSnapshotByBtn(PackedMemorySnapshot snapshot)

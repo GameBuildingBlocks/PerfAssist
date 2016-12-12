@@ -58,39 +58,36 @@ namespace MemoryProfilerWindow
         public void Draw()
         {
             float NavAreaHeight = 40.0f;
-            if (_hostWindow.EnhancedMode)
+            GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth,
+                MemConst.TopBarHeight, MemConst.InspectorWidth, NavAreaHeight));
+
+            GUILayout.Space(5);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(3);
+
+            GUI.enabled = Instance.TryGetPrev() != null;
+            if (GUILayout.Button(new GUIContent("Back", _textureBack), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
             {
-                GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth,
-                    MemConst.TopBarHeight, MemConst.InspectorWidth, NavAreaHeight));
-
-                GUILayout.Space(5);
-
-                GUILayout.BeginHorizontal();
-                GUILayout.Space(3);
-
-                GUI.enabled = Instance.TryGetPrev() != null;
-                if (GUILayout.Button(new GUIContent("Back", _textureBack), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
-                {
-                    ThingInMemory prev = Instance.MovePrev();
-                    if (prev != null)
-                        _hostWindow.SelectThing(prev);
-                }
-                GUI.enabled = Instance.TryGetNext() != null;
-                if (GUILayout.Button(new GUIContent("Forward", _textureForward), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
-                {
-                    ThingInMemory next = Instance.MoveNext();
-                    if (next != null)
-                        _hostWindow.SelectThing(next);
-                }
-                GUI.enabled = true;
-                
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-
-                GUILayout.EndArea();
+                ThingInMemory prev = Instance.MovePrev();
+                if (prev != null)
+                    _hostWindow.SelectThing(prev);
             }
+            GUI.enabled = Instance.TryGetNext() != null;
+            if (GUILayout.Button(new GUIContent("Forward", _textureForward), GUILayout.MinWidth(100), GUILayout.MaxHeight(25)))
+            {
+                ThingInMemory next = Instance.MoveNext();
+                if (next != null)
+                    _hostWindow.SelectThing(next);
+            }
+            GUI.enabled = true;
 
-            float topSpace = MemConst.TopBarHeight + (_hostWindow.EnhancedMode ? NavAreaHeight : 0);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            GUILayout.EndArea();
+
+            float topSpace = MemConst.TopBarHeight + NavAreaHeight;
             GUILayout.BeginArea(new Rect(_hostWindow.position.width - MemConst.InspectorWidth, topSpace, MemConst.InspectorWidth, _hostWindow.position.height - topSpace));
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
 
