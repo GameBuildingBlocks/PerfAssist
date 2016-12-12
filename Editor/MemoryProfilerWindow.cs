@@ -15,9 +15,10 @@ namespace MemoryProfilerWindow
 {
     using Item = Assets.Editor.Treemap.Item;
     using Group = Assets.Editor.Treemap.Group;
-
     public class MemoryProfilerWindow : EditorWindow
     {
+        public static int Invalid_Int = -1;
+
         [NonSerialized]
         UnityEditor.MemoryProfiler.PackedMemorySnapshot _snapshot;
 
@@ -39,6 +40,12 @@ namespace MemoryProfilerWindow
 
         eShowType m_selectedView = 0;
 
+        float _trackerStartTime = Invalid_Int;
+
+        public static List<string> _SnapshotOptions = new List<string>();
+        public static List<PackedMemorySnapshot> _SnapshotChunk = new List<PackedMemorySnapshot>();
+        public static int _SnapshotChunkIndex = Invalid_Int;
+
         [MenuItem("Window/PerfAssist/ResourceTracker")]
         static void Create()
         {
@@ -58,6 +65,7 @@ namespace MemoryProfilerWindow
 
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
+            clearSnapshotChunk();
         }
 
         void OnDisable()
@@ -98,6 +106,12 @@ namespace MemoryProfilerWindow
             }
         }
 
+        public void clearSnapshotChunk(){
+            _SnapshotOptions.Clear();
+            _SnapshotChunk.Clear();
+        }
+
+
         void OnGUI()
         {
             // main bar
@@ -109,10 +123,28 @@ namespace MemoryProfilerWindow
                 }
 
                 // add time point snapshots
+                var snapShotOptArray = _SnapshotOptions.ToArray();
+                int currentIndex = GUI.SelectionGrid(new Rect(200, 0, 900, 20),_SnapshotChunkIndex,snapShotOptArray,snapShotOptArray.Length);
+                if (currentIndex != Invalid_Int && currentIndex != _SnapshotChunkIndex)
+                {
+                    _SnapshotChunkIndex = currentIndex;
+                    showSnapshotInfo();
+                }
 
                 GUILayout.FlexibleSpace();
+                //save 
+                if (GUILayout.Button("Save Snapshot",GUILayout.MaxWidth(100)))
+                {
+                    EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+                }
 
-                if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(120)))
+                //load
+                if (GUILayout.Button("Load Snapshot", GUILayout.MaxWidth(100)))
+                {
+                    EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+                }
+
+                if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(100)))
                 {
                     EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
                 }
@@ -200,11 +232,29 @@ namespace MemoryProfilerWindow
             }
         }
 
+        void addNewSnapshotBtn(PackedMemorySnapshot snapshot)
+        {
+            var optTime = Time.realtimeSinceStartup;
+            if (_trackerStartTime == Invalid_Int)
+                _trackerStartTime = optTime;
+            _SnapshotOptions.Add((optTime - _trackerStartTime).ToString());
+            _SnapshotChunk.Add(snapshot);
+        }
+
+        void showSnapshotInfo() {
+            var curSnapShotChunk =_SnapshotChunk[_SnapshotChunkIndex];
+            PackedMemorySnapshot preSnapShotChunk = null;
+            if (_SnapshotChunkIndex >= 1)
+            {
+                preSnapShotChunk = _SnapshotChunk[_SnapshotChunkIndex-1];
+            }
+            IncomingSnapshotForCompare(curSnapShotChunk,preSnapShotChunk);
+        }
+
+
         void IncomingSnapshotByBtn(PackedMemorySnapshot snapshot)
         {
-            if (_unpackedCrawl != null)
-                _preUnpackedCrawl = _unpackedCrawl;
-            _IncomingSnapshot(snapshot);
+            addNewSnapshotBtn(snapshot);
         }
 
         void IncomingSnapshotForCompare(PackedMemorySnapshot snapshot, PackedMemorySnapshot preSnapshot = null)
@@ -216,8 +266,7 @@ namespace MemoryProfilerWindow
             }
             else
             {
-                if (_unpackedCrawl != null)
-                    _preUnpackedCrawl = _unpackedCrawl;
+                _preUnpackedCrawl = null;
             }
             _IncomingSnapshot(snapshot);
         }
