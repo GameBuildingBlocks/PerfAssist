@@ -49,12 +49,14 @@ public partial class TableView
         {
             style = _appearance.Style_Selected;
         }
-
-        Color specialColor;
-        if (m_specialTextColors != null &&
-            m_specialTextColors.TryGetValue(obj, out specialColor))
+        else
         {
-            style.normal.textColor = specialColor;
+            Color specialColor;
+            if (m_specialTextColors != null &&
+                m_specialTextColors.TryGetValue(obj, out specialColor))
+            {
+                style.normal.textColor = specialColor;
+            }
         }
 
         for (int i = 0; i < m_descArray.Count; i++)
