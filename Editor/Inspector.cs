@@ -202,7 +202,7 @@ namespace MemoryProfilerWindow
             if (_textureObject != null)
             {
                 EditorGUILayout.LabelField("textureInfo: " + _textureObject.width + "x" + _textureObject.height + " " + _textureObject.format);
-                EditorGUILayout.ObjectField(_textureObject, typeof(Texture2D));
+                EditorGUILayout.ObjectField(_textureObject, typeof(Texture2D), false);
                 _textureSize = EditorGUILayout.Slider(_textureSize, 100.0f, 1024.0f);
                 GUILayout.Label(_textureObject, GUILayout.Width(_textureSize), GUILayout.Height(_textureSize * _textureObject.height / _textureObject.width));
             }

@@ -318,7 +318,7 @@ namespace MemoryProfilerWindow
                 return;
 
             GUI.color = Color.black;
-            Matrix4x4 mat = _ZoomArea.drawingToViewMatrix;
+            //Matrix4x4 mat = _ZoomArea.drawingToViewMatrix;
 
             foreach (Group group in _groups.Values)
             {

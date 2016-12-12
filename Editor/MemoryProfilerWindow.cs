@@ -28,8 +28,6 @@ namespace MemoryProfilerWindow
         CrawledMemorySnapshot _unpackedCrawl;
         CrawledMemorySnapshot _preUnpackedCrawl;
 
-        Vector2 _scrollPosition;
-
         [NonSerialized]
         private bool _registered = false;
 
@@ -39,13 +37,7 @@ namespace MemoryProfilerWindow
 
         ThingInMemory _selectedThing;
 
-        bool _enhancedMode = true;
-
-        bool _autoSaveForComparison = false;
-        int _selectedBegin = 0;
-        int _selectedEnd = 0;
         eShowType m_selectedView = 0;
-        string[] _snapshotFiles = new string[] { };
 
         [MenuItem("Window/PerfAssist/ResourceTracker")]
         static void Create()
@@ -66,8 +58,6 @@ namespace MemoryProfilerWindow
 
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
-
-            RefreshSnapshotList();
         }
 
         void OnDisable()
@@ -249,11 +239,6 @@ namespace MemoryProfilerWindow
 
             RefreshCurrentView();
             MemUtil.LoadSnapshotProgress(1.0f, "done");
-        }
-
-        void RefreshSnapshotList()
-        {
-            _snapshotFiles = MemUtil.GetFiles();
         }
 
         void RefreshCurrentView()
