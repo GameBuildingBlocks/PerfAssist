@@ -62,14 +62,14 @@ public class SnapshotIOperator {
         return temp;
     }
 
-    public void saveAllSnapshot(List<PackedMemorySnapshot> snapshots)
+    public bool saveAllSnapshot(List<MemSnapshotInfo> snapshotInfos)
     {
-        if (snapshots.Count <= 0)
-            return;
+        if (snapshotInfos.Count <= 0)
+            return false;
         int count = 0;
         var path = createPathDir();
         int index=0;
-        foreach (var packed in snapshots)
+        foreach (var packed in snapshotInfos)
         {
             if (saveSnapshotIndex > index)
             {
@@ -79,23 +79,32 @@ public class SnapshotIOperator {
             string fileName = path + saveSnapshotIndex + ".memsnap";
             if (!string.IsNullOrEmpty(fileName))
             {
-                System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                using (Stream stream = File.Open(fileName, FileMode.Create))
+                try
                 {
-                    bf.Serialize(stream, packed);
-                    saveSnapshotIndex++;
-                    index++;
-                    count++;
+                    System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                    using (Stream stream = File.Open(fileName, FileMode.Create))
+                    {
+                        bf.Serialize(stream, packed);
+                        saveSnapshotIndex++;
+                        index++;
+                        count++;
+                    }
+                }
+                catch (Exception)
+                {
+                    DirectoryInfo TheFolder = new DirectoryInfo(path);
+                    TheFolder.Delete();
+                    return false; 
                 }
             }
         }
-        EditorUtility.DisplayDialog("save all snapshots",
-            string.Format("\nsave all snapshots successed!, save  {0} snapshots \n\n\nSavepath:{1}", count, path), "confirm");
+
+        return true;
     }
 
-    public System.Collections.Generic.List<object> loadSnapshotMemPacked()
+    public bool loadSnapshotMemPacked(out System.Collections.Generic.List<object> result)
     {
-        List<object> result =new List<object>();
+        result =new List<object>();
         string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");
         DirectoryInfo TheFolder = new DirectoryInfo(pathName);
         System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -104,12 +113,19 @@ public class SnapshotIOperator {
             var fileName = file.FullName;
             if (!string.IsNullOrEmpty(fileName))
             {
-                using (Stream stream = File.Open(fileName, FileMode.Open))
+                try
                 {
-                    result.Add(bf.Deserialize(stream));
+                    using (Stream stream = File.Open(fileName, FileMode.Open))
+                    {
+                        result.Add(bf.Deserialize(stream));
+                    }
+                }
+                catch (Exception)
+                {
+                    return false;
                 }
             }
         }
-        return result;
+        return true;
     }
 }

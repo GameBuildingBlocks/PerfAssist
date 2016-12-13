@@ -10,15 +10,21 @@ enum eShowType
     InTable,
     InTreemap,
 }
+enum eConnectedType
+{
+    Editor,
+    Remote,
+}
 
 namespace MemoryProfilerWindow
 {
     using Item = Assets.Editor.Treemap.Item;
     using Group = Assets.Editor.Treemap.Group;
+    using UnityEditorInternal;
     public class MemoryProfilerWindow : EditorWindow
     {
         public static int Invalid_Int = -1;
-
+        private const int PLAYER_DIRECT_IP_CONNECT_GUID = 65261;
         [NonSerialized]
         UnityEditor.MemoryProfiler.PackedMemorySnapshot _snapshot;
 
@@ -43,10 +49,17 @@ namespace MemoryProfilerWindow
         int _snapshotIndex = 0;
 
         public static List<string> _SnapshotOptions = new List<string>();
-        public static List<PackedMemorySnapshot> _SnapshotChunk = new List<PackedMemorySnapshot>();
+        public static List<MemSnapshotInfo> _SnapshotChunk = new List<MemSnapshotInfo>();
         public static int _SnapshotChunkIndex = Invalid_Int;
 
+        public static string [] _ConnectedOptions = new string []{"editor","remote"};
+        public static int _connectedIndex =0;
+
         SnapshotIOperator _snapshotIOperator = new SnapshotIOperator();
+        
+        [SerializeField]
+        string lastLoginIP ="10.20.90.32";
+
 
         [MenuItem("Window/PerfAssist/ResourceTracker")]
         static void Create()
@@ -70,6 +83,28 @@ namespace MemoryProfilerWindow
             clearSnapshotChunk();
             _snapshotIOperator.reset();
         }
+
+        public void connectedIP(string ip) {
+            if (!ip.Equals(""))
+            {
+                ProfilerDriver.DirectIPConnect(ip);
+                if (ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID)
+                {
+                    var content = new GUIContent("Connecting succeeed!)");
+                    ShowNotification(content);
+                }
+                else {
+                    var content = new GUIContent("Connecting failed!)");
+                    ShowNotification(content);
+                    Debug.LogErrorFormat("connected failed ip:{0}", ip);                    
+                }
+            }
+        }
+
+        public void connectedNative() {
+            ProfilerDriver.connectedProfiler =-1;
+        }
+
 
         void OnDisable()
         {
@@ -121,14 +156,44 @@ namespace MemoryProfilerWindow
             // main bar
             {
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Take Snapshot", GUILayout.Width(150)))
+                int connectedIndex = GUI.SelectionGrid(new Rect(0, 0,120, 20), _connectedIndex, _ConnectedOptions, _ConnectedOptions.Length);
+                if (connectedIndex != _connectedIndex)
+                {
+                    _connectedIndex = connectedIndex;
+                    if (_connectedIndex == (int)eConnectedType.Editor)
+                        connectedNative();
+                }
+                GUILayout.Space(130);
+                if (connectedIndex == (int)eConnectedType.Remote)
+                {
+                    var currentStr = GUILayout.TextField(lastLoginIP, GUILayout.Width(80));
+                    if (!lastLoginIP.Equals(currentStr))
+                    {
+                        lastLoginIP = currentStr;
+                    }
+
+                    if (GUILayout.Button("connect", GUILayout.Width(60)))
+                    {
+                        connectedIP(lastLoginIP);
+                    }
+                }
+
+                if (GUILayout.Button("Take Snapshot", GUILayout.Width(100)))
                 {
                     UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
                 }
 
                 // add time point snapshots
                 var snapShotOptArray = _SnapshotOptions.ToArray();
-                int currentIndex = GUI.SelectionGrid(new Rect(200, 0, 900, 20),_SnapshotChunkIndex,snapShotOptArray,snapShotOptArray.Length);
+                int gridPosX = 250;
+                int gridWidth = 820;
+                if (_connectedIndex == (int)eConnectedType.Remote)
+                {
+                    gridPosX += 150;
+                    gridWidth -= 150;
+                }
+
+                int currentIndex = GUI.SelectionGrid(new Rect(gridPosX, 0,gridWidth, 20), _SnapshotChunkIndex, snapShotOptArray, snapShotOptArray.Length);
                 if (currentIndex != Invalid_Int && currentIndex != _SnapshotChunkIndex)
                 {
                     _SnapshotChunkIndex = currentIndex;
@@ -137,20 +202,40 @@ namespace MemoryProfilerWindow
 
                 GUILayout.FlexibleSpace();
                 //save 
-                if (GUILayout.Button("Save Snapshot",GUILayout.MaxWidth(100)))
+                if (GUILayout.Button("Save Session",GUILayout.MaxWidth(100)))
                 {
-                    _snapshotIOperator.saveAllSnapshot(_SnapshotChunk);
+                    if (_snapshotIOperator.saveAllSnapshot(_SnapshotChunk))
+                    {
+                        var content = new GUIContent(string.Format("save all snapshots successed!"));
+                        ShowNotification(content);
+                    }
+                    else {
+                        var content = new GUIContent(string.Format("save all snapshots failed!"));
+                        ShowNotification(content);
+                    }
                 }
 
                 //load
-                if (GUILayout.Button("Load Snapshot", GUILayout.MaxWidth(100)))
+                if (GUILayout.Button("Load Session", GUILayout.MaxWidth(100)))
                 {
-                    var packeds = _snapshotIOperator.loadSnapshotMemPacked();
-                    if (packeds.Count > 0)
-                        clearSnapshotChunk();
-                    foreach (var obj in packeds)
+                    List<object> packeds;
+                    var isSuc = _snapshotIOperator.loadSnapshotMemPacked(out packeds);
+                    if (!isSuc)
                     {
-                        IncomingSnapshotByBtn(obj as PackedMemorySnapshot);
+                        var content = new GUIContent(string.Format("load snapshots failed!"));
+                        ShowNotification(content);
+                    }
+                    else {
+                        if (packeds.Count > 0)
+                        {
+                            clearSnapshotChunk();
+                            var content = new GUIContent(string.Format("load snapshots successed!"));
+                            ShowNotification(content);
+                        }
+                        foreach (var obj in packeds)
+                        {
+                            IncomingSnapshotByLoad(obj as MemSnapshotInfo);
+                        }
                     }
                 }
 
@@ -244,22 +329,35 @@ namespace MemoryProfilerWindow
 
         void addNewSnapshotBtn(PackedMemorySnapshot snapshot)
         {
-            var optTime = Time.realtimeSinceStartup;
+            var snapshotInfo =new MemSnapshotInfo();
+            snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
+            snapshotInfo.setSnapshotPacked(snapshot);
+            
+
             _SnapshotOptions.Add(_snapshotIndex.ToString());
             _snapshotIndex++;
-            _SnapshotChunk.Add(snapshot);
+            _SnapshotChunk.Add(snapshotInfo);
         }
 
         void showSnapshotInfo() {
             var curSnapShotChunk =_SnapshotChunk[_SnapshotChunkIndex];
-            PackedMemorySnapshot preSnapShotChunk = null;
+            MemSnapshotInfo preSnapShotChunk = null;
             if (_SnapshotChunkIndex >= 1)
             {
-                preSnapShotChunk = _SnapshotChunk[_SnapshotChunkIndex-1];
+                preSnapShotChunk = _SnapshotChunk[_SnapshotChunkIndex - 1];
+                IncomingSnapshotForCompare(curSnapShotChunk.snapshot, preSnapShotChunk.snapshot);
             }
-            IncomingSnapshotForCompare(curSnapShotChunk,preSnapShotChunk);
+            else {
+                IncomingSnapshotForCompare(curSnapShotChunk.snapshot);            
+            }
         }
 
+        void IncomingSnapshotByLoad(MemSnapshotInfo snapshotInfo)
+        {
+            _SnapshotOptions.Add(_snapshotIndex.ToString());
+            _snapshotIndex++;
+            _SnapshotChunk.Add(snapshotInfo);
+        }
 
         void IncomingSnapshotByBtn(PackedMemorySnapshot snapshot)
         {

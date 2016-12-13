@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using MemoryProfilerWindow;
 using Assets.Editor.Treemap;
+using UnityEditorInternal;
 
 public struct sDiffType
 {
