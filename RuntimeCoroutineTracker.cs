@@ -7,6 +7,10 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
+#if UNITY_5_5
+using UnityEngine.Profiling;
+#endif
+
 public class CoroutineRuntimeTrackingConfig
 {
     // enable the whole tracking system
