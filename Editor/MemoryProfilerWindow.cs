@@ -40,11 +40,13 @@ namespace MemoryProfilerWindow
 
         eShowType m_selectedView = 0;
 
-        float _trackerStartTime = Invalid_Int;
+        int _snapshotIndex = 0;
 
         public static List<string> _SnapshotOptions = new List<string>();
         public static List<PackedMemorySnapshot> _SnapshotChunk = new List<PackedMemorySnapshot>();
         public static int _SnapshotChunkIndex = Invalid_Int;
+
+        SnapshotIOperator _snapshotIOperator = new SnapshotIOperator();
 
         [MenuItem("Window/PerfAssist/ResourceTracker")]
         static void Create()
@@ -66,6 +68,7 @@ namespace MemoryProfilerWindow
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
             clearSnapshotChunk();
+            _snapshotIOperator.reset();
         }
 
         void OnDisable()
@@ -107,6 +110,7 @@ namespace MemoryProfilerWindow
         }
 
         public void clearSnapshotChunk(){
+            _snapshotIndex = 0;
             _SnapshotOptions.Clear();
             _SnapshotChunk.Clear();
         }
@@ -135,13 +139,19 @@ namespace MemoryProfilerWindow
                 //save 
                 if (GUILayout.Button("Save Snapshot",GUILayout.MaxWidth(100)))
                 {
-                    EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+                    _snapshotIOperator.saveAllSnapshot(_SnapshotChunk);
                 }
 
                 //load
                 if (GUILayout.Button("Load Snapshot", GUILayout.MaxWidth(100)))
                 {
-                    EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+                    var packeds = _snapshotIOperator.loadSnapshotMemPacked();
+                    if (packeds.Count > 0)
+                        clearSnapshotChunk();
+                    foreach (var obj in packeds)
+                    {
+                        IncomingSnapshotByBtn(obj as PackedMemorySnapshot);
+                    }
                 }
 
                 if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(100)))
@@ -235,9 +245,8 @@ namespace MemoryProfilerWindow
         void addNewSnapshotBtn(PackedMemorySnapshot snapshot)
         {
             var optTime = Time.realtimeSinceStartup;
-            if (_trackerStartTime == Invalid_Int)
-                _trackerStartTime = optTime;
-            _SnapshotOptions.Add((optTime - _trackerStartTime).ToString());
+            _SnapshotOptions.Add(_snapshotIndex.ToString());
+            _snapshotIndex++;
             _SnapshotChunk.Add(snapshot);
         }
 
