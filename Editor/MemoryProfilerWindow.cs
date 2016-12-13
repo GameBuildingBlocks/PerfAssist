@@ -46,7 +46,7 @@ namespace MemoryProfilerWindow
         public static List<PackedMemorySnapshot> _SnapshotChunk = new List<PackedMemorySnapshot>();
         public static int _SnapshotChunkIndex = Invalid_Int;
 
-        [MenuItem("Window/PerfAssist/ResourceTracker")]
+        [MenuItem(PAEditorConst.MenuPath + "/ResourceTracker")]
         static void Create()
         {
             EditorWindow.GetWindow<MemoryProfilerWindow>();
