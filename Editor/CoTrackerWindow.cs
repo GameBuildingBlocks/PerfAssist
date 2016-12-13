@@ -35,7 +35,7 @@ public class CoTrackerWindow : EditorWindow
 
     TableView _table;
 
-    [MenuItem("Window/CoroutineTracker")]
+    [MenuItem(PAEditorConst.MenuPath + "/CoroutineTracker")]
     static void Create()
     {
         CoTrackerWindow w = EditorWindow.GetWindow<CoTrackerWindow>();
