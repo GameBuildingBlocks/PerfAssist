@@ -4,7 +4,7 @@ using UnityEngine.Assertions;
 
 public class TestPACommon : EditorWindow
 {
-    [MenuItem("Window/PerfAssist/Common/Test Unique String")]
+    [MenuItem(PAEditorConst.DemoTestPath + "/Test UniqueString")]
     static void TestUniqueString()
     {
         int i = 15;
@@ -16,7 +16,7 @@ public class TestPACommon : EditorWindow
         UniqueString.Clear();
     }
 
-    [MenuItem("Window/PerfAssist/Common/Chart DataSet")]
+    [MenuItem(PAEditorConst.DemoTestPath + "/Test ChartDataSet")]
     static void TestPAChartDataSet()
     {
         PAChartDataSet ds = new PAChartDataSet(100);

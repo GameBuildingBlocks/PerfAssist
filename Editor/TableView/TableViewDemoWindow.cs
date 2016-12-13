@@ -28,12 +28,12 @@ public class FooItem
     }
 }
 
-public class DemoWindow : EditorWindow
+public class TableViewDemoWindow : EditorWindow
 {
-    [MenuItem("Window/PerfAssist/TableView Demo")]
+    [MenuItem(PAEditorConst.DemoTestPath + "/TableView Demo")]
     static void Create()
     {
-        DemoWindow w = EditorWindow.GetWindow<DemoWindow>();
+        TableViewDemoWindow w = EditorWindow.GetWindow<TableViewDemoWindow>();
         if (w.GetType().Name == "DemoWindow")
         {
             w.minSize = new Vector2(800, 600);
