@@ -5,16 +5,43 @@ using System.IO;
 using System;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEditorInternal;
 public class SnapshotIOperator {
-    public int saveSnapshotIndex=0;
-    public int savePathIndex=0;
-    public bool isFristSave=true;
-    public string now;
-    public string basePath;
+    private int saveSnapshotIndex=0;
+    private int savePathIndex=0;
+    private bool isFristSave=true;
+    private string _now;
+    private string _basePath;
 
-    public SnapshotIOperator() {
-        now = DateTime.Now.ToString("ddddMMMMddyyyy", new System.Globalization.DateTimeFormatInfo());
-        basePath = MemUtil.SnapshotsDir + "/" + now;
+    public bool isSaved(int snapshotCount,eProfilerMode profilerMode, string ip = null)
+    {
+        DirectoryInfo TheFolder = new DirectoryInfo(combineBasepath(profilerMode, ip));
+        if (!TheFolder.Exists || isFristSave)
+            return false;
+        if (TheFolder.GetFiles().Length!= snapshotCount)
+            return false;
+        return  true;
+    }
+
+    public SnapshotIOperator()
+    {
+        _now = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", new System.Globalization.DateTimeFormatInfo());
+    }
+
+    public string combineBasepath(eProfilerMode profilerMode,string ip=null)
+    {
+        string mode="";
+        if (profilerMode == eProfilerMode.Remote)
+        {
+            if (ip == null)
+                ip = "";
+           mode = "-Remote-" + ip;
+        }
+        else if (profilerMode == eProfilerMode.Editor)
+        {
+            mode = "-Editor";
+        }
+        return MemUtil.SnapshotsDir + "/" + _now + mode;
     }
 
     public void reset() { 
@@ -45,11 +72,11 @@ public class SnapshotIOperator {
         string path;
         if (savePathIndex == 0)
         {
-            path = basePath + "/";
+            path = _basePath + "/";
         }
         else
         {
-            path = basePath + "_" + savePathIndex + "/";
+            path = _basePath + "_" + savePathIndex + "/";
         }
         return path;
     }
@@ -62,11 +89,12 @@ public class SnapshotIOperator {
         return temp;
     }
 
-    public bool saveAllSnapshot(List<MemSnapshotInfo> snapshotInfos)
+    public bool saveAllSnapshot(List<MemSnapshotInfo> snapshotInfos,eProfilerMode profilerMode,string ip=null)
     {
         if (snapshotInfos.Count <= 0)
             return false;
         int count = 0;
+        _basePath = combineBasepath(profilerMode,ip);
         var path = createPathDir();
         int index=0;
         foreach (var packed in snapshotInfos)
@@ -98,7 +126,6 @@ public class SnapshotIOperator {
                 }
             }
         }
-
         return true;
     }
 
@@ -107,6 +134,8 @@ public class SnapshotIOperator {
         result =new List<object>();
         string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");
         DirectoryInfo TheFolder = new DirectoryInfo(pathName);
+        if (!TheFolder.Exists)
+            return false;
         System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
         foreach (var file in TheFolder.GetFiles())
         {
@@ -128,4 +157,5 @@ public class SnapshotIOperator {
         }
         return true;
     }
+
 }

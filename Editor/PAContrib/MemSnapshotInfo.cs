@@ -21,7 +21,6 @@ public class MemSnapshotInfo
         snapshot = ss;
     }
 
-
     public string showDealtaSizeStr() {
        return EditorUtility.FormatBytes(_calculateDealtaSize()); 
     }
@@ -49,8 +48,7 @@ public class MemSnapshotInfo
 
     public void calculateDealta() { 
         //计算addLsit,removeList
-    
+            
     }
-
 }
 

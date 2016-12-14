@@ -206,6 +206,11 @@ public class MemTableBrowser
         _objectTable.OnSelected += OnObjectSelected;
     }
 
+    public void clearTableData() {
+        _types.Clear();
+        _categories.Clear();
+        RefreshTables();
+    }
 
     public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl = null)
     {
