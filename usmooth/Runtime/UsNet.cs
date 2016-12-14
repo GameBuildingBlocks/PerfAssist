@@ -27,13 +27,8 @@ SOFTWARE.
 ﻿using UnityEngine;
 using System;
 
-#if UNITY_PRO_LICENSE               // 'System.Net' is only available in Unity Pro
 using System.Net;
 using System.Net.Sockets;
-#else                               //  requires GoodOldSockets in non-Unity-Pro version
-using LostPolygon.System.Net;
-using LostPolygon.System.Net.Sockets;
-#endif
 
 public class UsNet : IDisposable {
 

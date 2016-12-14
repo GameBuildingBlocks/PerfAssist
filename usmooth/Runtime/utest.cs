@@ -1,7 +1,7 @@
-using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameUtil
 {
@@ -168,7 +168,7 @@ public class utest : IDisposable
 
     public void OnLevelWasLoaded()
     {
-        if (Application.loadedLevelName == "Loading0")
+        if (SceneManager.GetActiveScene().name == "Loading0")
             return;
 
         GameUtil.Log("on_level loaded.");
