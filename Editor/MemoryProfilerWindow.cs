@@ -63,7 +63,7 @@ namespace MemoryProfilerWindow
         [SerializeField]
         string lastLoginIP ="<ip>";
 
-        [MenuItem("Window/PerfAssist/ResourceTracker")]
+        [MenuItem(PAEditorConst.MenuPath + "/ResourceTracker")]
         static void Create()
         {
             EditorWindow.GetWindow<MemoryProfilerWindow>();
