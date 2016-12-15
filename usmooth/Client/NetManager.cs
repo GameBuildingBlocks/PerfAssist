@@ -24,11 +24,7 @@ SOFTWARE.
 
 */
 
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System;
 
 using Timer = System.Timers.Timer;
 
@@ -109,9 +105,9 @@ public class NetManager : IDisposable
     {
         UsCmd cmd = new UsCmd();
         cmd.WriteInt16((short)eNetCmd.CL_Handshake);
-        cmd.WriteInt16(PA_Term.Properties.Settings.Default.VersionMajor);
-        cmd.WriteInt16(PA_Term.Properties.Settings.Default.VersionMinor);
-        cmd.WriteInt16(PA_Term.Properties.Settings.Default.VersionPatch);
+        cmd.WriteInt16(UsConst.VersionMajor);
+        cmd.WriteInt16(UsConst.VersionMinor);
+        cmd.WriteInt16(UsConst.VersionPatch);
         _client.SendPacket(cmd);
 
         _tickTimer.Start();
