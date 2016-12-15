@@ -44,8 +44,10 @@ public class UsNet : IDisposable {
 	private UsCmdParsing _cmdExec = new UsCmdParsing(); 
 	
 	// QOTD server constructor
-	public UsNet(int port) {
-		try {
+	public UsNet(int port)
+    {
+		try
+        {
 			// Create a listening server that accepts connections from
 			// any addresses on a given port
 			_tcpListener = new TcpListener(IPAddress.Any, port);
@@ -53,12 +55,14 @@ public class UsNet : IDisposable {
 			_tcpListener.Start();
 			// Set the callback that'll be called when a client connects to the server
 			_tcpListener.BeginAcceptTcpClient(OnAcceptTcpClient, _tcpListener);
-		} catch (Exception e) {
-			AddToLog(e.ToString());
+
+		    AddToLog("usmooth listening started at: {0}.", port);
+        }
+        catch (Exception e)
+        {
+            AddToLog(e.ToString());
 			throw;
 		}
-		
-		AddToLog("usmooth listening started.");
 	}
 	
 	~UsNet() {
@@ -163,11 +167,12 @@ public class UsNet : IDisposable {
 	}
 
 	// Adds a formatted entry to the log
-	private void AddToLog(string text) {
+	private void AddToLog(string text, params object[] args) {
+        string formatted = args.Length > 0 ? string.Format(text, args) : text;
 		if (_tcpClient != null) {
-			Debug.Log(string.Format("<color=green>{0}</color> <color=black>{1}</color>", _tcpClient.Client.RemoteEndPoint, text));
+			Debug.LogFormat("<color=green>{0}</color> <color=white>{1}</color>", _tcpClient.Client.RemoteEndPoint, formatted);
 		} else {
-			Debug.Log(string.Format("<color=green>{0}</color>", text));
+			Debug.LogFormat("<color=green>{0}</color>", formatted);
 		}
 	}
 }
