@@ -6,8 +6,8 @@ using System.Collections.Generic;
 
 [System.Serializable]
 public class MemSnapshotInfo 
-{	
-    public UnityEditor.MemoryProfiler.PackedMemorySnapshot snapshot;
+{
+    public CrawledMemorySnapshot unPacked;
     public float snapshotTime = 0;
  	public int dealtaSize =0;
     public List<ThingInMemory> addedList = new List<ThingInMemory>();
@@ -17,8 +17,9 @@ public class MemSnapshotInfo
         snapshotTime = time;
     }
 
-    public void setSnapshotPacked(UnityEditor.MemoryProfiler.PackedMemorySnapshot ss){
-        snapshot = ss;
+    public void setSnapshotPacked(CrawledMemorySnapshot ss)
+    {
+        unPacked = ss;
     }
 
     public string showDealtaSizeStr() {

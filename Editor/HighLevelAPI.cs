@@ -7,6 +7,7 @@ namespace MemoryProfilerWindow
     //this is the highest level dataformat. it can be unpacked from the PackedCrawledMemorySnapshot, which contains all the interesting information we want. The Packed format
     //however is designed to be serializable and relatively storage compact.  This dataformat is designed to give a nice c# api experience. so while the packed version uses typeIndex,
     //this version has TypeReferences,  and also uses references to ThingInObject, instead of the more obscure object indexing pattern that the packed format uses.
+    [System.Serializable]
     public class CrawledMemorySnapshot
     {
         public NativeUnityEngineObject[] nativeObjects;
@@ -23,6 +24,7 @@ namespace MemoryProfilerWindow
         public VirtualMachineInformation virtualMachineInformation;
     }
 
+    [System.Serializable]
     public class ThingInMemory
     {
         public int size;
@@ -30,13 +32,15 @@ namespace MemoryProfilerWindow
         public ThingInMemory[] references;
         public ThingInMemory[] referencedBy;
     }
-
+    
+    [System.Serializable]
     public class ManagedObject : ThingInMemory
     {
         public UInt64 address;
         public TypeDescription typeDescription;
     }
 
+    [System.Serializable]
     public class NativeUnityEngineObject : ThingInMemory
     {
         public int instanceID;
@@ -49,10 +53,12 @@ namespace MemoryProfilerWindow
         public HideFlags hideFlags;
     }
 
+    [System.Serializable]
     public class GCHandle : ThingInMemory
     {
     }
 
+    [System.Serializable]
     public class StaticFields : ThingInMemory
     {
         public TypeDescription typeDescription;

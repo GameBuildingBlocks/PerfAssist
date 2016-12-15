@@ -6,17 +6,19 @@ using System;
 using UnityEditor;
 using System.Collections.Generic;
 using UnityEditorInternal;
+using MemoryProfilerWindow;
+using LitJson;
+using System.Text;
 public class SnapshotIOperator {
-    private int saveSnapshotIndex=0;
-    private int savePathIndex=0;
-    private bool isFristSave=true;
     private string _now;
     private string _basePath;
+    Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
+    Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
 
     public bool isSaved(int snapshotCount,eProfilerMode profilerMode, string ip = null)
     {
         DirectoryInfo TheFolder = new DirectoryInfo(combineBasepath(profilerMode, ip));
-        if (!TheFolder.Exists || isFristSave)
+        if (!TheFolder.Exists)
             return false;
         if (TheFolder.GetFiles().Length!= snapshotCount)
             return false;
@@ -41,121 +43,221 @@ public class SnapshotIOperator {
         {
             mode = "-Editor";
         }
-        return MemUtil.SnapshotsDir + "/" + _now + mode;
+        return Path.Combine(MemUtil.SnapshotsDir, _now + mode);
     }
 
-    public void reset() { 
-        saveSnapshotIndex=0;
-        savePathIndex=0;
-        isFristSave=true;
-    }
 
-    public string createPathDir(){
-        string path =_getCurrentSnapshotPath();
-        if (!Directory.Exists(path))
+    bool savePackedInfoByJson(string output,CrawledMemorySnapshot packed)
+    {
+        try
         {
-            return _createNewDir();
+            var resolveJson = resolvePackedForJson(packed);
+            if (string.IsNullOrEmpty(resolveJson))
+                throw  new Exception("Resolve Json Data Failed");
+
+            StreamWriter sw;
+            FileInfo fileInfo = new FileInfo(output);
+            sw = fileInfo.CreateText();
+            sw.Write(resolveJson);
+            sw.Close();
+            sw.Dispose();
+            UnityEngine.Debug.Log("write Json successed");
+            return true;
         }
-        else {
-            if (isFristSave)
+        catch (System.Exception ex)
+        {
+            UnityEngine.Debug.LogErrorFormat("write json file error {0},errMsg = {1}", output,ex.Message);
+            return false;
+        }
+    }
+
+    private string resolvePackedForJson(CrawledMemorySnapshot packed)
+    {
+        if (packed == null)
+            return null;
+        var _unpacked = packed;
+        _types.Clear();
+        _categories.Clear();
+        foreach (ThingInMemory thingInMemory in packed.allObjects)
+        {
+            string typeName = MemUtil.GetGroupName(thingInMemory);
+            if (typeName.Length == 0)
+                continue;
+            int category = MemUtil.GetCategory(thingInMemory);
+            MemObject item = new MemObject(thingInMemory, _unpacked);
+            MemType theType;
+            if (!_types.ContainsKey(typeName))
             {
-                savePathIndex++;
-                saveSnapshotIndex = 0;
-                return createPathDir();
+                theType = new MemType();
+                theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
+                theType.Category = category;
+                theType.Objects = new List<object>();
+                _types.Add(typeName, theType);
             }
             else
-                return path;
+            {
+                theType = _types[typeName];
+            }
+            theType.AddObject(item);
         }
+
+        //协议格式:
+        //Data:
+            //"obj" = "TypeName,Category,Count,size"
+            //"info" ="RefCount,size,InstanceName,address,typeDescriptionIndex"
+        //TypeDescs:
+        //InstanceNames:
+
+        Dictionary<string,int> typeDescDict = new Dictionary<string,int>();
+        int typeDescIndex = 0;
+        Dictionary<string, int> instanceNameDict = new Dictionary<string, int>();
+        int instanceNameIndex = 0;
+        var jsonData = new JsonData();
+        foreach (var type in _types)
+        {
+            var typeData = new JsonData();
+            typeData["Obj"] = type.Key + "," + type.Value.Category + "," + type.Value.Count + "," + type.Value.Size;
+
+            var objectDatas = new JsonData();
+            foreach (var obj in type.Value.Objects)
+            {
+                var objectData = new JsonData();
+                var memObj = obj as MemObject;
+                string dataInfo;
+                int nameIndex = -1;
+                var instanceName = memObj.InstanceName;
+                if (instanceNameDict.ContainsKey(instanceName))
+                    nameIndex = instanceNameDict[instanceName];
+                else 
+                {
+                    nameIndex = instanceNameIndex;
+                    instanceNameDict.Add(instanceName, instanceNameIndex++);
+                }
+
+                dataInfo = memObj.RefCount + "," + memObj.Size + "," + nameIndex;
+                if (type.Value.Category == 2)
+                {
+                    int typeIndex = -1;
+                    var manged = memObj._thing as ManagedObject;
+                    var typeDescription =manged.typeDescription.name;
+                    if (typeDescDict.ContainsKey(typeDescription))
+                        typeIndex = typeDescDict[typeDescription];
+                    else
+                    {
+                        typeIndex = typeDescIndex;
+                        typeDescDict.Add(typeDescription, typeDescIndex++);
+                    }
+                    dataInfo += "," + Convert.ToString((int)manged.address, 16) + "," + typeIndex;
+                }
+                objectData["info"] = dataInfo;
+                objectDatas.Add(objectData);
+            }
+            typeData["memObj"] = objectDatas;
+            jsonData.Add(typeData);
+        }
+        var resultJson = new JsonData();
+        resultJson["Data"] = jsonData;
+
+        StringBuilder sb = new StringBuilder();
+        foreach(var str in typeDescDict.Keys)
+        {
+            sb.Append(str + ">|<");
+        }
+        resultJson["TypeDescs"] = sb.ToString();
+        sb.Remove(0,sb.Length);
+
+        foreach (var str in instanceNameDict.Keys)
+        {
+            sb.Append(str + ">|<");
+        }
+        resultJson["InstanceNames"] = sb.ToString();
+        return resultJson.ToJson();
     }
 
-    private string _getCurrentSnapshotPath() {
-        string path;
-        if (savePathIndex == 0)
+    public bool saveSnapshotJson(int fileName, MemSnapshotInfo snapshotInfos)
+    {
+        try
         {
-            path = _basePath + "/";
+            string jsonPath = Path.Combine(_basePath, "json");
+            var jsonDir = new DirectoryInfo(jsonPath);
+            if (!jsonDir.Exists)
+                jsonDir.Create();
+
+            string jsonFile = Path.Combine(jsonPath, fileName + ".json");
+            return savePackedInfoByJson(jsonFile, snapshotInfos.unPacked);
         }
-        else
+        catch (Exception ex)
         {
-            path = _basePath + "_" + savePathIndex + "/";
+            Debug.LogException(ex);
+            return false;
         }
-        return path;
-    }
-
-
-    private string _createNewDir(){
-        var temp = _getCurrentSnapshotPath();
-        Directory.CreateDirectory(temp);
-        isFristSave = false;
-        return temp;
     }
 
     public bool saveAllSnapshot(List<MemSnapshotInfo> snapshotInfos,eProfilerMode profilerMode,string ip=null)
     {
         if (snapshotInfos.Count <= 0)
             return false;
-        int count = 0;
-        _basePath = combineBasepath(profilerMode,ip);
-        var path = createPathDir();
-        int index=0;
-        foreach (var packed in snapshotInfos)
+
+        try
         {
-            if (saveSnapshotIndex > index)
+            _basePath = combineBasepath(profilerMode, ip);
+
+            if (!Directory.Exists(_basePath))
+                Directory.CreateDirectory(_basePath);
+
+            for (int index = 0; index < snapshotInfos.Count; index++)
             {
-                index++;
-                continue;
-            }
-            string fileName = path + saveSnapshotIndex + ".memsnap";
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                try
+                var packed = snapshotInfos[index];
+                string fileName = Path.Combine(_basePath, string.Format("{0}.memsnap", index));
+                if (!File.Exists(fileName))
                 {
-                    System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    using (Stream stream = File.Open(fileName, FileMode.Create))
-                    {
-                        bf.Serialize(stream, packed);
-                        saveSnapshotIndex++;
-                        index++;
-                        count++;
-                    }
-                }
-                catch (Exception)
-                {
-                    DirectoryInfo TheFolder = new DirectoryInfo(path);
-                    TheFolder.Delete();
-                    return false; 
+                        saveSnapshotJson(index, packed);
+                        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                        using (Stream stream = File.Open(fileName, FileMode.Create))
+                        {
+                            bf.Serialize(stream, packed);
+                        }
                 }
             }
+            return true;
         }
-        return true;
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("save snapshot error ! msg ={0}", ex.Message));
+            Debug.LogException(ex);
+            return false;
+        }
     }
 
-    public bool loadSnapshotMemPacked(out System.Collections.Generic.List<object> result)
+    public List<object> loadSnapshotMemPacked()
     {
-        result =new List<object>();
-        string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");
-        DirectoryInfo TheFolder = new DirectoryInfo(pathName);
-        if (!TheFolder.Exists)
-            return false;
-        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-        foreach (var file in TheFolder.GetFiles())
+        try
         {
-            var fileName = file.FullName;
-            if (!string.IsNullOrEmpty(fileName))
+            string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");
+            DirectoryInfo TheFolder = new DirectoryInfo(pathName);
+            if (!TheFolder.Exists)
+                throw new Exception(string.Format("bad path: {0}", TheFolder.ToString()));
+
+            List<object> result = new List<object>();
+            System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+            foreach (var file in TheFolder.GetFiles())
             {
-                try
+                var fileName = file.FullName;
+                if (fileName.EndsWith(".memsnap"))
                 {
                     using (Stream stream = File.Open(fileName, FileMode.Open))
                     {
                         result.Add(bf.Deserialize(stream));
                     }
                 }
-                catch (Exception)
-                {
-                    return false;
-                }
             }
+            return result;
         }
-        return true;
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("load snapshot error ! msg ={0}", ex.Message));
+            return new List<object>();
+        }
     }
 
 }

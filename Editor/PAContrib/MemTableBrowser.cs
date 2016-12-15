@@ -6,6 +6,12 @@ using MemoryProfilerWindow;
 using Assets.Editor.Treemap;
 using UnityEditorInternal;
 
+using System.IO;
+using System.Text;
+using LitJson;
+using System.Diagnostics;
+
+
 public struct sDiffType
 {
     public static readonly string AdditiveType = " (added)";
@@ -214,6 +220,7 @@ public class MemTableBrowser
 
     public void RefreshData(CrawledMemorySnapshot unpackedCrawl, CrawledMemorySnapshot preUnpackedCrawl = null)
     {
+        MemUtil.LoadSnapshotProgress(0.01f, "refresh Data");
         _unpacked = unpackedCrawl;
         _preUnpacked = preUnpackedCrawl;
         _types.Clear();
@@ -285,10 +292,14 @@ public class MemTableBrowser
         {
             _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
         }
+
+        MemUtil.LoadSnapshotProgress(0.4f, "unpack all objs");
         freshUnpackInfos();
         checkAddtiveThings();
         checkNegativeThings();
+        MemUtil.LoadSnapshotProgress(0.8f, "check diff");
         RefreshTables();
+        MemUtil.LoadSnapshotProgress(1.0f, "done");
     }
 
     void freshUnpackInfos()

@@ -37,7 +37,7 @@ namespace MemoryProfilerWindow
         private Texture2D _textureBack;
         private Texture2D _textureForward;
 
-        public Inspector(MemoryProfilerWindow hostWindow, CrawledMemorySnapshot unpackedCrawl, PackedMemorySnapshot snapshot)
+        public Inspector(MemoryProfilerWindow hostWindow, CrawledMemorySnapshot unpackedCrawl)
         {
             _unpackedCrawl = unpackedCrawl;
             _hostWindow = hostWindow;
