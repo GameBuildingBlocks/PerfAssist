@@ -44,19 +44,19 @@ public class UsNet : IDisposable {
 	private UsCmdParsing _cmdExec = new UsCmdParsing(); 
 	
 	// QOTD server constructor
-	public UsNet(int port)
+	public UsNet()
     {
 		try
         {
 			// Create a listening server that accepts connections from
 			// any addresses on a given port
-			_tcpListener = new TcpListener(IPAddress.Any, port);
+            _tcpListener = new TcpListener(IPAddress.Any, UsConst.ServerPort);
 			// Switch the listener to a started state
 			_tcpListener.Start();
 			// Set the callback that'll be called when a client connects to the server
 			_tcpListener.BeginAcceptTcpClient(OnAcceptTcpClient, _tcpListener);
 
-		    AddToLog("usmooth listening started at: {0}.", port);
+            AddToLog("usmooth listening started at: {0}.", UsConst.ServerPort);
         }
         catch (Exception e)
         {

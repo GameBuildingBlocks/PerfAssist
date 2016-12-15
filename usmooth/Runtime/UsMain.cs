@@ -32,7 +32,6 @@ public class UsMain : IDisposable
 {
     public const int MAX_CONTENT_LEN = 1024;
 
-	private ushort _serverPort = 39980;
 	private long _currentTimeInMilliseconds = 0;
 	private long _tickNetLast = 0;
 	private long _tickNetInterval = 200;
@@ -54,7 +53,7 @@ public class UsMain : IDisposable
             _logServ.LogTargets += LogTarget_Remotely;
         }
 
-		UsNet.Instance = new UsNet(_serverPort);
+		UsNet.Instance = new UsNet();
 
         UsMain_NetHandlers.Instance = new UsMain_NetHandlers(UsNet.Instance.CmdExecutor);
         UsvConsole.Instance = new UsvConsole();
