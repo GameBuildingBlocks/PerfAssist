@@ -29,63 +29,59 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace usmooth.common
+public enum eNetCmd
 {
-    public enum eNetCmd
-    {
-        None,
+    None,
 
-        CL_CmdBegin             = 1000,
-        CL_Handshake,
-        CL_KeepAlive,
-        CL_ExecCommand,
-        
-        CL_RequestFrameData,
-		CL_FrameV2_RequestMeshes,
-		CL_FrameV2_RequestNames,
+    CL_CmdBegin = 1000,
+    CL_Handshake,
+    CL_KeepAlive,
+    CL_ExecCommand,
 
-        CL_FlyToObject,
+    CL_RequestFrameData,
+    CL_FrameV2_RequestMeshes,
+    CL_FrameV2_RequestNames,
 
-        CL_QuerySwitches,
-        CL_QuerySliders,
+    CL_FlyToObject,
 
-        CL_StartAnalysePixels,
+    CL_QuerySwitches,
+    CL_QuerySliders,
 
-		CL_CmdEnd,
+    CL_StartAnalysePixels,
 
-        SV_CmdBegin             = 2000,
-        SV_HandshakeResponse,
-        SV_KeepAliveResponse,
-        SV_ExecCommandResponse,
+    CL_CmdEnd,
 
-        SV_FrameDataV2,
-        SV_FrameDataV2_Meshes,
-        SV_FrameDataV2_Names,
-        SV_FrameData_Material,
-        SV_FrameData_Texture,
-        SV_FrameDataEnd,
-		
-        SV_App_Logging,
+    SV_CmdBegin = 2000,
+    SV_HandshakeResponse,
+    SV_KeepAliveResponse,
+    SV_ExecCommandResponse,
 
-        SV_Editor_SelectionChanged,
+    SV_FrameDataV2,
+    SV_FrameDataV2_Meshes,
+    SV_FrameDataV2_Names,
+    SV_FrameData_Material,
+    SV_FrameData_Texture,
+    SV_FrameDataEnd,
 
-        SV_QuerySwitchesResponse,
-        SV_QuerySlidersResponse,
+    SV_App_Logging,
 
-        SV_StressTestNames,
-        SV_StressTestResult,
+    SV_Editor_SelectionChanged,
 
-        SV_StartAnalysePixels,
+    SV_QuerySwitchesResponse,
+    SV_QuerySlidersResponse,
 
-        SV_CmdEnd,
-    }
+    SV_StressTestNames,
+    SV_StressTestResult,
 
-    public enum eSubCmd_TransmitStage
-    {
-        DataBegin,
-        DataSlice,
-        DataEnd,
-    }
+    SV_StartAnalysePixels,
 
-
+    SV_CmdEnd,
 }
+
+public enum eSubCmd_TransmitStage
+{
+    DataBegin,
+    DataSlice,
+    DataEnd,
+}
+

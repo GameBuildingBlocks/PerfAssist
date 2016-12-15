@@ -27,7 +27,7 @@ SOFTWARE.
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using usmooth.common;
+
 using System;
 
 public class DataCollector {

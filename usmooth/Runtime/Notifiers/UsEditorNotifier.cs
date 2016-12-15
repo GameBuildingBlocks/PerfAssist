@@ -28,7 +28,7 @@ SOFTWARE.
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using usmooth.common;
+
 
 public class UsFlyToObjectEventArgs : EventArgs {
 	public UsFlyToObjectEventArgs(int instID) {

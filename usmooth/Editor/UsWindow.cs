@@ -27,11 +27,11 @@ SOFTWARE.
 using UnityEditor;
 using UnityEngine;
 using System;
-using usmooth.common;
+
 using System.Collections.Generic;
 
 class UsWindow : EditorWindow {
-	[MenuItem("Tools/usmooth")]
+    [MenuItem(PAEditorConst.DemoTestPath + "usmooth")]
 	public static void Init() {
 		var win = EditorWindow.GetWindow(typeof(UsWindow), true, "usmooth") as UsWindow;
 		if (win != null) {

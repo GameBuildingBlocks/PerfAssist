@@ -27,7 +27,7 @@ SOFTWARE.
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using usmooth.common;
+
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class ConsoleHandler : Attribute

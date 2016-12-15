@@ -26,7 +26,7 @@ SOFTWARE.
 
 ﻿using UnityEngine;
 using System;
-using usmooth.common;
+
 
 public class UsMain : IDisposable
 {

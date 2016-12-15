@@ -27,7 +27,7 @@ SOFTWARE.
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using usmooth.common;
+
 
 public class MeshLut {
 	public bool AddMesh(GameObject go) {

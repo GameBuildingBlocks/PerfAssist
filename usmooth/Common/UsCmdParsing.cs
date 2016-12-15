@@ -26,7 +26,7 @@ SOFTWARE.
 
 
 using System.Collections.Generic;
-using usmooth.common;
+
 using System;
 
 public delegate bool UsCmdHandler(eNetCmd cmd, UsCmd c);

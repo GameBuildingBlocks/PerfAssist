@@ -27,7 +27,7 @@ SOFTWARE.
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-using usmooth.common;
+
 using System.Collections.Generic;
 
 public class UsMain_NetHandlers {

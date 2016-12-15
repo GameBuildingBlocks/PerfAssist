@@ -26,7 +26,7 @@ SOFTWARE.
 
 ﻿using System;
 using System.Collections.Generic;
-using usmooth.common;
+
 
 // This is copied from UnityEngine.dll to keep compatible with it 
 public enum UsLogType 

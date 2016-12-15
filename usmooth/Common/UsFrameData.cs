@@ -26,7 +26,7 @@ SOFTWARE.
 
 ﻿using System.Collections;
 using System.Collections.Generic;
-using usmooth.common;
+
 
 public class FrameData {
 	public int _frameCount = 0;
