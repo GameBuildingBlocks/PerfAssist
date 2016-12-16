@@ -1,0 +1,43 @@
+using UnityEngine;
+
+public class UsDefaultServer : MonoBehaviour 
+{
+    public bool LogRemotely = true;
+    public bool LogIntoFile = false;
+    public bool InGameGui = false;
+
+	void Start() 
+    {
+        _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
+
+        Debug.Log("Log message...");
+        Debug.LogWarning("Warning message...");
+        Debug.LogError("Error message...");
+    }
+
+    void Update()
+    {
+        if (_usmooth != null)
+		    _usmooth.Update();
+	}
+
+    void OnDestroy()
+    {
+        if (_usmooth != null)
+            _usmooth.Dispose();
+    }
+
+    void OnGUI() 
+    {
+        if (_usmooth != null)
+            _usmooth.OnGUI();
+	}
+
+    void OnLevelWasLoaded()
+    {
+        if (_usmooth != null)
+            _usmooth.OnLevelWasLoaded();
+    }
+
+    private UsMain _usmooth;
+}
