@@ -47,11 +47,19 @@ public class SnapshotIOperator {
     }
 
 
-    bool savePackedInfoByJson(string output,CrawledMemorySnapshot packed)
+    bool savePackedInfoByJson(string output, PackedMemorySnapshot packed)
     {
+        MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
+
+        var tempCrawled = new Crawler().Crawl(packed);
+        MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+
+        var unPacked  = CrawlDataUnpacker.Unpack(tempCrawled);
+        MemUtil.LoadSnapshotProgress(1.0f, "done");
+        
         try
         {
-            var resolveJson = resolvePackedForJson(packed);
+            var resolveJson = resolvePackedForJson(unPacked);
             if (string.IsNullOrEmpty(resolveJson))
                 throw  new Exception("Resolve Json Data Failed");
 

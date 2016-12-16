@@ -138,7 +138,22 @@ namespace MemoryProfilerWindow
         void OnSnapshotReceived(PackedMemorySnapshot snapshot)
         {
             _snapshot = snapshot;
-            addNewSnapshot();
+            var snapshotInfo = new MemSnapshotInfo();
+            snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
+            snapshotInfo.setSnapshotPacked(_snapshot);
+
+            _SnapshotOptions.Add(_SnapshotChunks.Count.ToString());
+            _SnapshotChunks.Add(snapshotInfo);
+
+            _selectedSnapshot = _SnapshotChunks.Count - 1;
+
+            MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
+
+            _packedCrawled = new Crawler().Crawl(_snapshot);
+            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+
+            _unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
+            MemUtil.LoadSnapshotProgress(1.0f, "done");
             showSnapshotInfo();
         }
 
@@ -255,15 +270,11 @@ namespace MemoryProfilerWindow
             }
             if (GUILayout.Button("Take Snapshot", GUILayout.Width(100)))
             {
-                requestSnapshot();
+                UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
             }
             GUI.enabled = savedState;
         }
 
-        private void requestSnapshot()
-        {
-            UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
-        }
 
         void OnGUI()
         {
@@ -418,42 +429,27 @@ namespace MemoryProfilerWindow
             }
         }
 
-        void addNewSnapshot() {
-            MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-
-            _packedCrawled = new Crawler().Crawl(_snapshot);
-            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-
-            _unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
-            MemUtil.LoadSnapshotProgress(1.0f, "done");
-
-            var snapshotInfo = new MemSnapshotInfo();
-            snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
-            snapshotInfo.setSnapshotPacked(_unpackedCrawl);
-
-            _SnapshotOptions.Add(_SnapshotChunks.Count.ToString());
-            _SnapshotChunks.Add(snapshotInfo);
-
-            _selectedSnapshot = _SnapshotChunks.Count - 1;
-        }
-
         void showSnapshotInfo() 
         {
             var curSnapShotChunk =_SnapshotChunks[_selectedSnapshot];
-            _unpackedCrawl = curSnapShotChunk.unPacked;
             if (_selectedSnapshot >= 1)
             {
                 MemSnapshotInfo preSnapShotChunk = _SnapshotChunks[_selectedSnapshot - 1];
                 if (preSnapShotChunk != null)
                 {
-                    _preUnpackedCrawl = preSnapShotChunk.unPacked;
+                    MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
+
+                    var tempCrawled = new Crawler().Crawl(preSnapShotChunk.unPacked);
+                    MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+
+                    _preUnpackedCrawl = CrawlDataUnpacker.Unpack(tempCrawled);
+                    MemUtil.LoadSnapshotProgress(1.0f, "done");
                 }
             }
             else
             {
                 _preUnpackedCrawl = null;
             }
-
             _inspector = new Inspector(this, _unpackedCrawl);
             RefreshCurrentView();
         }

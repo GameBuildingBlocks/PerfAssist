@@ -3,11 +3,12 @@ using System.Collections;
 using MemoryProfilerWindow;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEditor.MemoryProfiler;
 
 [System.Serializable]
 public class MemSnapshotInfo 
 {
-    public CrawledMemorySnapshot unPacked;
+    public PackedMemorySnapshot unPacked;
     public float snapshotTime = 0;
  	public int dealtaSize =0;
     public List<ThingInMemory> addedList = new List<ThingInMemory>();
@@ -17,7 +18,7 @@ public class MemSnapshotInfo
         snapshotTime = time;
     }
 
-    public void setSnapshotPacked(CrawledMemorySnapshot ss)
+    public void setSnapshotPacked(PackedMemorySnapshot ss)
     {
         unPacked = ss;
     }
