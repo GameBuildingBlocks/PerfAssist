@@ -108,10 +108,8 @@ public class SnapshotIOperator {
         //TypeDescs:
         //InstanceNames:
 
-        Dictionary<string,int> typeDescDict = new Dictionary<string,int>();
-        int typeDescIndex = 0;
-        Dictionary<string, int> instanceNameDict = new Dictionary<string, int>();
-        int instanceNameIndex = 0;
+        Dictionary<int, string> typeDescDict = new Dictionary<int, string>();
+        Dictionary<int, string> instanceNameDict = new Dictionary<int,string>();
         var jsonData = new JsonData();
         foreach (var type in _types)
         {
@@ -124,30 +122,22 @@ public class SnapshotIOperator {
                 var objectData = new JsonData();
                 var memObj = obj as MemObject;
                 string dataInfo;
-                int nameIndex = -1;
-                var instanceName = memObj.InstanceName;
-                if (instanceNameDict.ContainsKey(instanceName))
-                    nameIndex = instanceNameDict[instanceName];
-                else 
+                var instanceNameHash = memObj.InstanceName.GetHashCode();
+                if (!instanceNameDict.ContainsKey(instanceNameHash))
                 {
-                    nameIndex = instanceNameIndex;
-                    instanceNameDict.Add(instanceName, instanceNameIndex++);
+                    instanceNameDict.Add(instanceNameHash,memObj.InstanceName);
                 }
 
-                dataInfo = memObj.RefCount + "," + memObj.Size + "," + nameIndex;
+                dataInfo = memObj.RefCount + "," + memObj.Size + "," + instanceNameDict[instanceNameHash];
                 if (type.Value.Category == 2)
                 {
-                    int typeIndex = -1;
                     var manged = memObj._thing as ManagedObject;
-                    var typeDescription =manged.typeDescription.name;
-                    if (typeDescDict.ContainsKey(typeDescription))
-                        typeIndex = typeDescDict[typeDescription];
-                    else
+                    var typeDescriptionHash =manged.typeDescription.name.GetHashCode();
+                    if (!typeDescDict.ContainsKey(typeDescriptionHash))
                     {
-                        typeIndex = typeDescIndex;
-                        typeDescDict.Add(typeDescription, typeDescIndex++);
+                        typeDescDict.Add(typeDescriptionHash,manged.typeDescription.name);
                     }
-                    dataInfo += "," + Convert.ToString((int)manged.address, 16) + "," + typeIndex;
+                    dataInfo += "," + Convert.ToString((int)manged.address, 16) + "," + typeDescriptionHash;
                 }
                 objectData["info"] = dataInfo;
                 objectDatas.Add(objectData);
@@ -159,16 +149,16 @@ public class SnapshotIOperator {
         resultJson["Data"] = jsonData;
 
         StringBuilder sb = new StringBuilder();
-        foreach(var str in typeDescDict.Keys)
+        foreach(var key in typeDescDict.Keys)
         {
-            sb.Append(str + ">|<");
+            sb.Append("[[" + key + "]:" + typeDescDict[key]+ "],");
         }
         resultJson["TypeDescs"] = sb.ToString();
         sb.Remove(0,sb.Length);
 
-        foreach (var str in instanceNameDict.Keys)
+        foreach (var key in instanceNameDict.Keys)
         {
-            sb.Append(str + ">|<");
+            sb.Append("[[" + key + "]:" + instanceNameDict[key] + "],");
         }
         resultJson["InstanceNames"] = sb.ToString();
         return resultJson.ToJson();
