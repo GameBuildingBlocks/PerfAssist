@@ -9,10 +9,6 @@ public class UsDefaultServer : MonoBehaviour
 	void Start() 
     {
         _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
-
-        Debug.Log("Log message...");
-        Debug.LogWarning("Warning message...");
-        Debug.LogError("Error message...");
     }
 
     void Update()
