@@ -34,7 +34,7 @@ public class PANetDrv : IDisposable
                 break;
         }
 
-        string timeStr = string.Format("{1:0.00}({2})", pkt.RealtimeSinceStartup, pkt.SeqID);
+        string timeStr = string.Format("{0:0.00}({1})", pkt.RealtimeSinceStartup, pkt.SeqID);
 
         string ret = string.Format("{0} {1} <color=white>{2}</color>", timeStr, logTypeStr, pkt.Content);
 
