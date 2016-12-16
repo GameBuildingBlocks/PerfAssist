@@ -31,7 +31,7 @@ using System;
 using System.Collections.Generic;
 
 class UsWindow : EditorWindow {
-    [MenuItem(PAEditorConst.DemoTestPath + "usmooth")]
+    [MenuItem(PAEditorConst.DemoTestPath + "/usmooth")]
 	public static void Init() {
 		var win = EditorWindow.GetWindow(typeof(UsWindow), true, "usmooth") as UsWindow;
 		if (win != null) {
