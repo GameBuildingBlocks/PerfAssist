@@ -43,8 +43,8 @@ public class UsMain_NetHandlers {
 		exec.RegisterHandler (eNetCmd.CL_FrameV2_RequestMeshes, NetHandle_FrameV2_RequestMeshes);
         exec.RegisterHandler(eNetCmd.CL_FrameV2_RequestNames, NetHandle_FrameV2_RequestNames);
         exec.RegisterHandler(eNetCmd.CL_QuerySwitches, NetHandle_QuerySwitches);
-        exec.RegisterHandler(eNetCmd.CL_QuerySliders, NetHandle_QuerySliders); 
- 
+        exec.RegisterHandler(eNetCmd.CL_QuerySliders, NetHandle_QuerySliders);
+        exec.RegisterHandler(eNetCmd.CL_RequestStackData, NetHandle_RequestStackData); 
 	}
 	
 	private bool NetHandle_Handshake(eNetCmd cmd, UsCmd c) {
@@ -156,6 +156,25 @@ public class UsMain_NetHandlers {
 
         return true;
     }
+
+    private bool NetHandle_RequestStackData(eNetCmd cmd, UsCmd c)
+    {
+        int instanceID =c.ReadInt32();
+        string  className= c.ReadString();
+        Debug.Log(string.Format("NetHandle_RequestStackData instanceID={0} className={1}", instanceID,className));
+
+        ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(instanceID,className);
+
+        UsCmd pkt = new UsCmd();
+        pkt.WriteNetCmd(eNetCmd.SV_QueryStacksResponse);
+        if (requestInfo == null)
+            pkt.WriteString("<no_callstack_available>");    
+        else
+            pkt.WriteString(ResourceTracker.Instance.GetStackTrace(requestInfo));
+        UsNet.Instance.SendCommand(pkt);
+        return true;
+    }
+
 
     private bool NetHandle_QuerySliders(eNetCmd cmd, UsCmd c)
     {

@@ -49,6 +49,8 @@ public enum eNetCmd
 
     CL_StartAnalysePixels,
 
+    CL_RequestStackData,
+
     CL_CmdEnd,
 
     SV_CmdBegin = 2000,
@@ -69,6 +71,8 @@ public enum eNetCmd
 
     SV_QuerySwitchesResponse,
     SV_QuerySlidersResponse,
+    SV_QueryStacksResponse,
+
 
     SV_StressTestNames,
     SV_StressTestResult,
