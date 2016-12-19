@@ -25,6 +25,8 @@ namespace MemoryProfilerWindow
         private float _textureSize = 128.0f;
 
         MemObjHistory Instance = new MemObjHistory();
+        //public event SysPost.StdMulticastDelegation RefreshCallStack;
+
 
         static class Styles
         {
@@ -36,6 +38,8 @@ namespace MemoryProfilerWindow
 
         private Texture2D _textureBack;
         private Texture2D _textureForward;
+
+        public  string _stackInfo = "";
 
         public Inspector(MemoryProfilerWindow hostWindow, CrawledMemorySnapshot unpackedCrawl)
         {
@@ -53,6 +57,9 @@ namespace MemoryProfilerWindow
             _selectedThing = thing;
             _shortestPath = _shortestPathToRootFinder.FindFor(thing);
             Instance.OnObjSelected(thing);
+
+            if (NetManager.Instance != null && NetManager.Instance.IsConnected)
+                requestRemoteDebugInfo();
         }
 
         public void Draw()
@@ -180,7 +187,9 @@ namespace MemoryProfilerWindow
                 }
             }
 
-            GUILayout.TextArea(GetSelectedDebugInfo(), GUILayout.MinHeight(300f));
+            if (NetManager.Instance == null || !NetManager.Instance.IsConnected)
+                _stackInfo = GetNativeDebugInfo();
+            GUILayout.TextArea(_stackInfo, GUILayout.MinHeight(300f));
 
             GUILayout.EndScrollView();
             GUILayout.EndArea();
@@ -369,6 +378,7 @@ namespace MemoryProfilerWindow
                     });
         }*/
 
+
         private void DrawLinks(IEnumerable<UInt64> pointers)
         {
             DrawLinks(pointers.Select(p => GetThingAt(p)));
@@ -413,7 +423,7 @@ namespace MemoryProfilerWindow
             throw new ArgumentException("Unexpected type: " + rb.GetType());
         }
 
-        private string GetSelectedDebugInfo()
+        private string GetNativeDebugInfo()
         {
             var obj = _selectedThing as NativeUnityEngineObject;
             if (obj == null || ResourceTracker.Instance == null || !ResourceTracker.Instance.EnableTracking)
@@ -424,6 +434,24 @@ namespace MemoryProfilerWindow
                 return "";
 
             return string.Format("{0}\n\nStackTrace:\n{1}", requestInfo.ToString(), ResourceTracker.Instance.GetStackTrace(requestInfo));
+        }
+
+        private void requestRemoteDebugInfo()
+        {
+            var selectNat = _selectedThing as NativeUnityEngineObject;
+            if (selectNat == null)
+                return;
+            UsCmd cmd = new UsCmd();
+            cmd.WriteInt16((short)eNetCmd.CL_RequestStackData);
+            cmd.WriteInt32(selectNat.instanceID);
+            cmd.WriteString(getRemoveDiffTypeStr(selectNat));
+            NetManager.Instance.Send(cmd);
+        }
+
+        private string getRemoveDiffTypeStr(NativeUnityEngineObject things)
+        {
+            return things.className.Replace(sDiffType.AdditiveType, "").Replace(sDiffType.ModificationType, "").
+                Replace(sDiffType.NegativeType, "");
         }
     }
 }

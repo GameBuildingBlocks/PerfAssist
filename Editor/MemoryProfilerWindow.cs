@@ -23,6 +23,10 @@ namespace MemoryProfilerWindow
     using Group = Assets.Editor.Treemap.Group;
     using UnityEditorInternal;
     using System.Text.RegularExpressions;
+    using System.ComponentModel;
+    using System.Runtime.Remoting.Messaging;
+    using System.Threading;
+
     public class MemoryProfilerWindow : EditorWindow
     {
         public static int Invalid_Int = -1;
@@ -65,6 +69,8 @@ namespace MemoryProfilerWindow
         [SerializeField]
         string lastLoginIP = ipDefaultTextField;
 
+        StackInfoSynObj _stackInfoObj = new StackInfoSynObj();
+
         [MenuItem(PAEditorConst.MenuPath + "/ResourceTracker")]
         static void Create()
         {
@@ -85,6 +91,12 @@ namespace MemoryProfilerWindow
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
             clearSnapshotChunk();
+
+            if (PANetDrv.Instance == null)
+            {
+                PANetDrv.Instance = new PANetDrv();
+                Debug.LogErrorFormat("PANetDrv is not available.");
+            }
         }
 
         public static bool isValidateIPAddress(string ipAddress)
@@ -100,6 +112,15 @@ namespace MemoryProfilerWindow
                 ShowNotification(new GUIContent(string.Format("Invaild IP = {0}!", ip)));
                 return;
             }
+
+            if (!NetManager.Instance.Connect(ip))
+            {
+                ShowNotification(new GUIContent("Connecting failed!)"));
+                Debug.LogErrorFormat("Connection failed ip:{0}",ip);
+                _isRemoteConnected = false;
+                return;
+            }
+
             ProfilerDriver.DirectIPConnect(ip);
             if (ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID)
             {
@@ -108,19 +129,22 @@ namespace MemoryProfilerWindow
                 _isRemoteConnected = true;
             }
             else {
-                var content = new GUIContent("Connecting failed!)");
-                ShowNotification(content);
-                Debug.LogErrorFormat("Connection failed ip:{0}", ip);
+                ShowNotification(new GUIContent("Connecting failed!)"));
+                Debug.LogErrorFormat("Connection failed ip:{0}",ip);
                 _isRemoteConnected = false;
+                if (NetManager.Instance.IsConnected)
+                    NetManager.Instance.Disconnect();
             }
         }
 
         public void connectEditor() {
-            if (ProfilerDriver.connectedProfiler == -1)
+            if (!NetManager.Instance.IsConnected &&ProfilerDriver.connectedProfiler == -1)
                 return;
             var content = new GUIContent(string.Format("Connecting Editor Succeeded!"));
             ShowNotification(content);
             ProfilerDriver.connectedProfiler = -1;
+            if (NetManager.Instance.IsConnected)
+                NetManager.Instance.Disconnect();
         }
 
         void OnDisable()
@@ -133,6 +157,12 @@ namespace MemoryProfilerWindow
 
             if (_treeMapView != null)
                 _treeMapView.CleanupMeshes();
+
+            if (PANetDrv.Instance != null)
+            {
+                PANetDrv.Instance.Dispose();
+                PANetDrv.Instance = null;
+            }
         }
 
         void OnSnapshotReceived(PackedMemorySnapshot snapshot)
@@ -146,14 +176,6 @@ namespace MemoryProfilerWindow
             _SnapshotChunks.Add(snapshotInfo);
 
             _selectedSnapshot = _SnapshotChunks.Count - 1;
-
-            MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-
-            _packedCrawled = new Crawler().Crawl(_snapshot);
-            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-
-            _unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
-            MemUtil.LoadSnapshotProgress(1.0f, "done");
             showSnapshotInfo();
         }
 
@@ -163,23 +185,32 @@ namespace MemoryProfilerWindow
             //      ArgumentException: control 1's position in group with only 1 control
             //  http://answers.unity3d.com/questions/240913/argumentexception-getting-control-1s-position-in-a.html
             //  http://answers.unity3d.com/questions/400454/argumentexception-getting-control-0s-position-in-a-1.html
-            if (_inspector != null && _selectedThing != _inspector.Selected)
+            if (_inspector != null)
             {
-                switch (m_selectedView)
+                if (_selectedThing != _inspector.Selected)
                 {
-                    case eShowType.InTable:
-                        if (_tableBrowser != null)
-                            _tableBrowser.SelectThing(_selectedThing);
-                        break;
-                    case eShowType.InTreemap:
-                        if (_treeMapView != null)
-                            _treeMapView.SelectThing(_selectedThing);
-                        break;
-                    default:
-                        break;
+                    switch (m_selectedView)
+                    {
+                        case eShowType.InTable:
+                            if (_tableBrowser != null)
+                                _tableBrowser.SelectThing(_selectedThing);
+                            break;
+                        case eShowType.InTreemap:
+                            if (_treeMapView != null)
+                                _treeMapView.SelectThing(_selectedThing);
+                            break;
+                        default:
+                            break;
+                    }
+                    if (_inspector != null)
+                        _inspector.SelectThing(_selectedThing);
                 }
-                if (_inspector != null)
-                    _inspector.SelectThing(_selectedThing);
+
+                if (_stackInfoObj.ReaderNewMsgArrived)
+                {
+                    _inspector._stackInfo = _stackInfoObj.readStackInfo();
+                    Repaint();
+                }
             }
         }
 
@@ -192,6 +223,8 @@ namespace MemoryProfilerWindow
             _SnapshotChunks.Clear();
             _tableBrowser.clearTableData();
             ProfilerDriver.connectedProfiler = -1;
+            if (NetManager.Instance.IsConnected)
+                NetManager.Instance.Disconnect();
          }
 
         void drawProfilerModeGUI() {
@@ -242,7 +275,6 @@ namespace MemoryProfilerWindow
                     drawSnapshotChunksGrid(210,930);
                     GUILayout.FlexibleSpace();
                     loadSessionBtn();
-
                     break;
                 default:
                     break;
@@ -412,6 +444,7 @@ namespace MemoryProfilerWindow
         public void SelectThing(ThingInMemory thing)
         {
             _selectedThing = thing;
+            return;
         }
 
         public void SelectGroup(Group group)
@@ -431,7 +464,14 @@ namespace MemoryProfilerWindow
 
         void showSnapshotInfo() 
         {
-            var curSnapShotChunk =_SnapshotChunks[_selectedSnapshot];
+            MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
+
+            _packedCrawled = new Crawler().Crawl(_SnapshotChunks[_selectedSnapshot].unPacked);
+            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+
+            _unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
+            MemUtil.LoadSnapshotProgress(1.0f, "done");
+
             if (_selectedSnapshot >= 1)
             {
                 MemSnapshotInfo preSnapShotChunk = _SnapshotChunks[_selectedSnapshot - 1];
@@ -451,7 +491,20 @@ namespace MemoryProfilerWindow
                 _preUnpackedCrawl = null;
             }
             _inspector = new Inspector(this, _unpackedCrawl);
+            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse,Handle_QueryStacksResponse);
             RefreshCurrentView();
+            Repaint();
+        }
+
+        private bool Handle_QueryStacksResponse(eNetCmd cmd, UsCmd c)
+        {
+            var stackInfo= c.ReadString();
+            if(string.IsNullOrEmpty(stackInfo))
+                return false;
+
+            _stackInfoObj.writeStackInfo(stackInfo);
+            NetUtil.Log("stack info{0}", stackInfo);
+            return true;
         }
 
         void RefreshCurrentView()
