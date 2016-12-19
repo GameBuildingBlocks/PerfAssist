@@ -14,9 +14,9 @@ using System.Diagnostics;
 
 public struct sDiffType
 {
-    public static readonly string AdditiveType = " (added)";
-    public static readonly string NegativeType = " (removed)";
-    public static readonly string ModificationType = " (modified)";
+    public static readonly string AdditiveType = "(added)";
+    public static readonly string NegativeType = "(removed)";
+    public static readonly string ModificationType = "(modified)";
 }
 
 public class MemCategory
@@ -374,9 +374,20 @@ public class MemTableBrowser
             return;
         string TypeName = MemUtil.GetGroupName(nat);
         string diffTypeName = MemUtil.GetCategoryLiteral(nat) + TypeName + diffType;
-        nat.className = diffTypeName;
-        nat.caption = diffTypeName;
-        MemObject item = new MemObject(nat, resultPacked);
+        var newNat=new NativeUnityEngineObject();
+        newNat.caption = nat.caption;
+        newNat.classID = nat.classID;
+        newNat.className = TypeName + diffType;
+        newNat.instanceID = nat.instanceID;
+        newNat.isManager = false;
+        newNat.size = nat.size;
+        newNat.hideFlags = nat.hideFlags;
+        newNat.isPersistent = nat.isPersistent;
+        newNat.name = nat.name;
+        newNat.referencedBy = nat.referencedBy;
+        newNat.references = nat.references;
+        newNat.isDontDestroyOnLoad = nat.isDontDestroyOnLoad;
+        MemObject item = new MemObject(newNat, resultPacked);
         theType.AddObject(item);
     }
 
@@ -387,7 +398,15 @@ public class MemTableBrowser
             return;
         MemObject item = new MemObject(mao, resultPacked);
         string TypeName = MemUtil.GetGroupName(mao);
-        mao.caption = MemUtil.GetCategoryLiteral(mao) + TypeName + diffType;
+
+        var newMao = new ManagedObject();
+        newMao.caption = TypeName + diffType;
+        newMao.address = mao.address;
+        newMao.referencedBy = mao.referencedBy;
+        newMao.references = mao.references;
+        newMao.size = mao.size;
+        newMao.typeDescription = mao.typeDescription;
+        //mao.caption = MemUtil.GetCategoryLiteral(mao) + TypeName + diffType;
         theType.AddObject(item);
     }
 
