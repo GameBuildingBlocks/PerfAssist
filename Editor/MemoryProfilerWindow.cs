@@ -26,6 +26,7 @@ namespace MemoryProfilerWindow
     using System.ComponentModel;
     using System.Runtime.Remoting.Messaging;
     using System.Threading;
+    using System.Collections;
 
     public class MemoryProfilerWindow : EditorWindow
     {
@@ -62,6 +63,8 @@ namespace MemoryProfilerWindow
 
         bool _isRemoteConnected = false;
 
+        bool _isPressedConnectBtn = false;
+
         eProfilerMode _selectedProfilerMode =eProfilerMode.Editor;
 
         const string ipDefaultTextField = "<ip>"; 
@@ -92,11 +95,18 @@ namespace MemoryProfilerWindow
                 _tableBrowser = new MemTableBrowser(this);
             clearSnapshotChunk();
 
+
+            var savedProfilerIP = EditorPrefs.GetString("ConnectIP");
+            if (!string.IsNullOrEmpty(savedProfilerIP))
+            {
+                lastLoginIP = savedProfilerIP;
+            }
+
             if (PANetDrv.Instance == null)
             {
                 PANetDrv.Instance = new PANetDrv();
-                Debug.LogErrorFormat("PANetDrv is not available.");
             }
+
         }
 
         public static bool isValidateIPAddress(string ipAddress)
@@ -106,7 +116,7 @@ namespace MemoryProfilerWindow
         }
 
 
-        public void connectIP(string ip) {
+            void connectIP(string ip) {
             if (!isValidateIPAddress(ip))
             {
                 ShowNotification(new GUIContent(string.Format("Invaild IP = {0}!", ip)));
@@ -116,7 +126,7 @@ namespace MemoryProfilerWindow
             if (!NetManager.Instance.Connect(ip))
             {
                 ShowNotification(new GUIContent("Connecting failed!)"));
-                Debug.LogErrorFormat("Connection failed ip:{0}",ip);
+                Debug.LogErrorFormat("Connection failed ip:{0}", ip);
                 _isRemoteConnected = false;
                 return;
             }
@@ -128,14 +138,17 @@ namespace MemoryProfilerWindow
                 ShowNotification(content);
                 _isRemoteConnected = true;
             }
-            else {
+            else
+            {
                 ShowNotification(new GUIContent("Connecting failed!)"));
-                Debug.LogErrorFormat("Connection failed ip:{0}",ip);
+                Debug.LogErrorFormat("Connection failed ip:{0}", ip);
                 _isRemoteConnected = false;
                 if (NetManager.Instance.IsConnected)
                     NetManager.Instance.Disconnect();
             }
+
         }
+
 
         public void connectEditor() {
             if (!NetManager.Instance.IsConnected &&ProfilerDriver.connectedProfiler == -1)
@@ -212,6 +225,13 @@ namespace MemoryProfilerWindow
                     Repaint();
                 }
             }
+
+            if (_isPressedConnectBtn)
+            {
+                EditorPrefs.SetString("ConnectIP",lastLoginIP);
+                _isPressedConnectBtn = false;
+                connectIP(lastLoginIP);
+            }
         }
 
         public bool switchProfilerModeDialog() {
@@ -261,7 +281,7 @@ namespace MemoryProfilerWindow
 
                     if (GUILayout.Button("Connect", GUILayout.Width(60)))
                     {
-                        connectIP(lastLoginIP);
+                        _isPressedConnectBtn = true;
                     }
                     GUI.enabled = savedState;
 
@@ -311,36 +331,34 @@ namespace MemoryProfilerWindow
         void OnGUI()
         {
             // main bar
+            GUILayout.BeginHorizontal();
+            int connectedIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)_selectedProfilerMode, _ConnectedOptions, _ConnectedOptions.Length, MemStyles.ToolbarButton);
+            if (connectedIndex != (int)_selectedProfilerMode)
             {
-                GUILayout.BeginHorizontal();
-                int connectedIndex = GUI.SelectionGrid(new Rect(0, 0,180, 20),(int)_selectedProfilerMode, _ConnectedOptions, _ConnectedOptions.Length, MemStyles.ToolbarButton);
-                if (connectedIndex != (int)_selectedProfilerMode)
+                _isRemoteConnected = false;
+
+                if (_SnapshotChunks.Count > 0
+                    && !_snapshotIOperator.isSaved(_SnapshotChunks.Count, _selectedProfilerMode, lastLoginIP)
+                    && !switchProfilerModeDialog())
                 {
-                    _isRemoteConnected = false;
-
-                    if (_SnapshotChunks.Count > 0 
-                        && !_snapshotIOperator.isSaved(_SnapshotChunks.Count, _selectedProfilerMode, lastLoginIP)
-                        && !switchProfilerModeDialog())
-                    {
-                    }
-                    else
-                    {
-                        clearSnapshotChunk();
-                        _selectedProfilerMode = (eProfilerMode)connectedIndex;
-
-                        if (_selectedProfilerMode == (int)eProfilerMode.Editor)
-                            connectEditor();
-                    }
                 }
-
-                GUILayout.Space(200);
-                drawProfilerModeGUI();
-                if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(100)))
+                else
                 {
-                    EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+                    clearSnapshotChunk();
+                    _selectedProfilerMode = (eProfilerMode)connectedIndex;
+
+                    if (_selectedProfilerMode == (int)eProfilerMode.Editor)
+                        connectEditor();
                 }
-                GUILayout.EndHorizontal();
             }
+
+            GUILayout.Space(200);
+            drawProfilerModeGUI();
+            if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(100)))
+            {
+                EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+            }
+            GUILayout.EndHorizontal();
 
             // view bar
             GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
@@ -351,6 +369,7 @@ namespace MemoryProfilerWindow
                 m_selectedView = (eShowType)selected;
                 RefreshCurrentView();
             }
+
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
 
