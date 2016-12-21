@@ -93,9 +93,7 @@ namespace MemoryProfilerWindow
 
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
-            clearSnapshotChunk();
-
-
+            
             var savedProfilerIP = EditorPrefs.GetString("ConnectIP");
             if (!string.IsNullOrEmpty(savedProfilerIP))
             {
@@ -105,8 +103,10 @@ namespace MemoryProfilerWindow
             if (PANetDrv.Instance == null)
             {
                 PANetDrv.Instance = new PANetDrv();
-            }
-
+            }            
+            
+            clearSnapshotChunk();
+            connectEditor();
         }
 
         public static bool isValidateIPAddress(string ipAddress)
@@ -116,7 +116,7 @@ namespace MemoryProfilerWindow
         }
 
 
-            void connectIP(string ip) {
+        void connectIP(string ip) {
             if (!isValidateIPAddress(ip))
             {
                 ShowNotification(new GUIContent(string.Format("Invaild IP = {0}!", ip)));
@@ -131,8 +131,14 @@ namespace MemoryProfilerWindow
                 return;
             }
 
-            ProfilerDriver.DirectIPConnect(ip);
-            if (ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID)
+            bool isNative = ip.Equals("127.0.0.1");
+            if (!isNative)
+            {
+                ProfilerDriver.DirectIPConnect(ip);
+            }
+
+
+            if (ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID || isNative)
             {
                 var content = new GUIContent(string.Format("Connecting {0} Succeeded!", ip));
                 ShowNotification(content);
@@ -146,18 +152,16 @@ namespace MemoryProfilerWindow
                 if (NetManager.Instance.IsConnected)
                     NetManager.Instance.Disconnect();
             }
-
         }
 
 
         public void connectEditor() {
-            if (!NetManager.Instance.IsConnected &&ProfilerDriver.connectedProfiler == -1)
-                return;
-            var content = new GUIContent(string.Format("Connecting Editor Succeeded!"));
-            ShowNotification(content);
             ProfilerDriver.connectedProfiler = -1;
             if (NetManager.Instance.IsConnected)
                 NetManager.Instance.Disconnect();
+            connectIP("127.0.0.1");
+            var content = new GUIContent(string.Format("Connecting Editor Succeeded!"));
+            ShowNotification(content);
         }
 
         void OnDisable()
