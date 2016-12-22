@@ -28,10 +28,29 @@ namespace MemoryProfilerWindow
     using System.Threading;
     using System.Collections;
 
+    public class ProfilerConnector : MonoBehaviour
+    {
+        private string connectIP;
+        public string IP
+        {
+            set { connectIP = value; }
+        }
+        private MemoryProfilerWindow hostWindow;
+        public MemoryProfilerWindow HostWindow
+        {
+            set { hostWindow = value; }
+        }
+
+        IEnumerator Connect()
+        {
+            yield return null;
+            hostWindow.connectIP(connectIP);
+        }
+    }
+
     public class MemoryProfilerWindow : EditorWindow
     {
         public static int Invalid_Int = -1;
-        private const int PLAYER_DIRECT_IP_CONNECT_GUID = 65261;
         [NonSerialized]
         UnityEditor.MemoryProfiler.PackedMemorySnapshot _snapshot;
 
@@ -51,6 +70,8 @@ namespace MemoryProfilerWindow
 
         ThingInMemory _selectedThing;
 
+        public const int PLAYER_DIRECT_IP_CONNECT_GUID = 65261;
+
         eShowType m_selectedView = 0;
 
         static List<string> _SnapshotOptions = new List<string>();
@@ -62,8 +83,6 @@ namespace MemoryProfilerWindow
         SnapshotIOperator _snapshotIOperator = new SnapshotIOperator();
 
         bool _isRemoteConnected = false;
-
-        bool _isPressedConnectBtn = false;
 
         eProfilerMode _selectedProfilerMode =eProfilerMode.Editor;
 
@@ -106,7 +125,7 @@ namespace MemoryProfilerWindow
             }            
             
             clearSnapshotChunk();
-            connectEditor();
+            //connectEditor();
         }
 
         public static bool isValidateIPAddress(string ipAddress)
@@ -116,7 +135,7 @@ namespace MemoryProfilerWindow
         }
 
 
-        void connectIP(string ip) {
+        public void connectIP(string ip) {
             if (!isValidateIPAddress(ip))
             {
                 ShowNotification(new GUIContent(string.Format("Invaild IP = {0}!", ip)));
@@ -136,7 +155,6 @@ namespace MemoryProfilerWindow
             {
                 ProfilerDriver.DirectIPConnect(ip);
             }
-
 
             if (ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID || isNative)
             {
@@ -229,13 +247,6 @@ namespace MemoryProfilerWindow
                     Repaint();
                 }
             }
-
-            if (_isPressedConnectBtn)
-            {
-                EditorPrefs.SetString("ConnectIP",lastLoginIP);
-                _isPressedConnectBtn = false;
-                connectIP(lastLoginIP);
-            }
         }
 
         public bool switchProfilerModeDialog() {
@@ -285,7 +296,12 @@ namespace MemoryProfilerWindow
 
                     if (GUILayout.Button("Connect", GUILayout.Width(60)))
                     {
-                        _isPressedConnectBtn = true;
+                        GameObject connectObj = new GameObject();
+                        connectObj.AddComponent<ProfilerConnector>();
+                        var pc = connectObj.GetComponent("ProfilerConnector") as ProfilerConnector;
+                        pc.IP = lastLoginIP;
+                        pc.HostWindow = this;
+                        pc.StartCoroutine("Connect");
                     }
                     GUI.enabled = savedState;
 
