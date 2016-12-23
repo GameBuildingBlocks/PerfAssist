@@ -33,6 +33,25 @@ public class SceneGraphExtractor
 
     public Dictionary<string, List<int>> MemObjectIDs = new Dictionary<string, List<int>>();
 
+    void CountMemObject(UnityEngine.Object obj)
+    {
+        List<int> ids = null;
+        if (obj != null && MemObjectIDs.TryGetValue(obj.GetType().Name, out ids))
+        {
+            if (ids != null && !ids.Contains(obj.GetInstanceID()))
+                ids.Add(obj.GetInstanceID());
+        }
+    }
+
+    void ExtractComponentIDs<T>(GameObject go) where T : Component
+    {
+        Component[] cameras = go.GetComponentsInChildren(typeof(T), true);
+        foreach (T comp in cameras)
+        {
+            CountMemObject(comp);
+        }
+    }
+
     public SceneGraphExtractor(UnityEngine.Object root)
     {
         m_root = root;
@@ -45,7 +64,7 @@ public class SceneGraphExtractor
         {
             ProcessRecursively(go);
 
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
             foreach (Renderer renderer in renderers)
             {
@@ -70,6 +89,44 @@ public class SceneGraphExtractor
                         ids.Add(camera.GetInstanceID());
                 }
             }
+#else
+            foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
+            {
+                Mesh mesh = meshFilter.sharedMesh;
+                CountMemObject(mesh);
+            }
+
+            foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
+            {
+                Material mat = w.material;
+                if (mat != null)
+                {
+                    CountMemObject(mat);
+                }
+                Texture2D t = w.mainTexture as Texture2D;
+                if (t != null)
+                {
+                    CountMemObject(t);
+                }
+            }
+
+            foreach (Renderer renderer in go.GetComponentsInChildren(typeof(Renderer), true))
+            {
+                Material mat = renderer.sharedMaterial;
+                if (mat != null)
+                {
+                    CountMemObject(mat);
+
+                    if (mat.mainTexture is Texture2D)
+                    {
+                        CountMemObject(mat.mainTexture);
+                    }
+                }
+            }
+
+            ExtractComponentIDs<Animator>(go);
+            ExtractComponentIDs<ParticleSystem>(go);
+            ExtractComponentIDs<Camera>(go);
 #endif
         }
     }

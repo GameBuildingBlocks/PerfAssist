@@ -128,6 +128,24 @@ namespace MemoryProfilerWindow
             //connectEditor();
         }
 
+        void disConnect() {
+            ProfilerDriver.connectedProfiler = -1;
+            NetManager.Instance.Disconnect();
+        }
+
+        private void handleCommandEvent()
+        {
+            if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName.Equals("AppStarted"))
+            {
+                connectEditor();
+            }
+
+            if (Event.current.type == EventType.ExecuteCommand && Event.current.commandName.Equals("AppStoped"))
+            {
+                disConnect();
+            }
+        }
+
         public static bool isValidateIPAddress(string ipAddress)
         {
             Regex validipregex = new Regex(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
@@ -350,6 +368,7 @@ namespace MemoryProfilerWindow
 
         void OnGUI()
         {
+            handleCommandEvent();
             // main bar
             GUILayout.BeginHorizontal();
             int connectedIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)_selectedProfilerMode, _ConnectedOptions, _ConnectedOptions.Length, MemStyles.ToolbarButton);
