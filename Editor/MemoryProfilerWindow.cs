@@ -565,7 +565,7 @@ namespace MemoryProfilerWindow
             return true;
         }
 
-        void RefreshCurrentView()
+        public void RefreshCurrentView()
         {
             if (_unpackedCrawl == null)
                 return;
@@ -574,7 +574,10 @@ namespace MemoryProfilerWindow
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        _tableBrowser.RefreshData(_unpackedCrawl,_preUnpackedCrawl);
+                        if (_tableBrowser._showdiffToggle && _SnapshotChunks.Count >= 2)
+                            _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
+                        else
+                            _tableBrowser.RefreshData(_unpackedCrawl);
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
