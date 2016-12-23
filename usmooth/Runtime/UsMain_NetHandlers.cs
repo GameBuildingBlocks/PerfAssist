@@ -86,14 +86,14 @@ public class UsMain_NetHandlers {
 
 	private int SLICE_COUNT = 50;
 	private bool NetHandle_RequestFrameData(eNetCmd cmd, UsCmd c) {
-		if (DataCollector.Instance == null) 
+		if (usmooth.DataCollector.Instance == null) 
 			return true;
 
-		FrameData data = DataCollector.Instance.CollectFrameData();
+		FrameData data = usmooth.DataCollector.Instance.CollectFrameData();
 		
 		UsNet.Instance.SendCommand(data.CreatePacket());
-		UsNet.Instance.SendCommand(DataCollector.Instance.CreateMaterialCmd());
-		UsNet.Instance.SendCommand(DataCollector.Instance.CreateTextureCmd());
+		UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateMaterialCmd());
+		UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateTextureCmd());
 
 		UsCmd end = new UsCmd();
 		end.WriteNetCmd(eNetCmd.SV_FrameDataEnd);
@@ -105,7 +105,7 @@ public class UsMain_NetHandlers {
 	}
 	
 	private bool NetHandle_FrameV2_RequestMeshes(eNetCmd cmd, UsCmd c) {
-		if (DataCollector.Instance != null) {
+		if (usmooth.DataCollector.Instance != null) {
 			List<int> meshIDs = UsCmdUtil.ReadIntList(c);
 			//Debug.Log(string.Format("requesting meshes - count ({0})", meshIDs.Count));
 			foreach (var slice in UsGeneric.Slice(meshIDs, SLICE_COUNT)) {
@@ -113,7 +113,7 @@ public class UsMain_NetHandlers {
 				fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Meshes);
 				fragment.WriteInt32 (slice.Count);
 				foreach (int meshID in slice) {
-					DataCollector.Instance.MeshTable.WriteMesh(meshID, fragment);
+					usmooth.DataCollector.Instance.MeshTable.WriteMesh(meshID, fragment);
 				}
 				UsNet.Instance.SendCommand (fragment);
 			}
@@ -123,14 +123,14 @@ public class UsMain_NetHandlers {
 	}
 	
 	private bool NetHandle_FrameV2_RequestNames(eNetCmd cmd, UsCmd c) {
-		if (DataCollector.Instance != null) {
+		if (usmooth.DataCollector.Instance != null) {
 			List<int> instIDs = UsCmdUtil.ReadIntList(c);
 			foreach (var slice in UsGeneric.Slice(instIDs, SLICE_COUNT)) {
 				UsCmd fragment = new UsCmd();
 				fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Names);
 				fragment.WriteInt32 (slice.Count);
 				foreach (int instID in slice) {
-					DataCollector.Instance.WriteName(instID, fragment);
+					usmooth.DataCollector.Instance.WriteName(instID, fragment);
 				}
 				UsNet.Instance.SendCommand (fragment);
 			}
