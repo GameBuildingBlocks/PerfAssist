@@ -168,7 +168,7 @@ public class utest : IDisposable
 
     public void OnLevelWasLoaded()
     {
-        if (SceneManager.GetActiveScene().name == "Loading0")
+        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Loading0")
             return;
 
         GameUtil.Log("on_level loaded.");
