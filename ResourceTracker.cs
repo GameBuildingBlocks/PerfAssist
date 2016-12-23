@@ -49,7 +49,7 @@ public class ResourceTracker : IDisposable
 
     // this boolean is *read-only* after the instance is created
     public bool EnableTracking { get { return _enableTracking; } }
-    private bool _enableTracking = true;    
+    private bool _enableTracking = false;    
 
     private StreamWriter _logWriter = null;
     private string _logPath = "";
@@ -59,46 +59,82 @@ public class ResourceTracker : IDisposable
     {
         if (enableTracking)
         {
+            Open();            
+        }
+    }
+
+    public void Open()
+    {
+        if (_enableTracking)
+        {
+            UnityEngine.Debug.LogFormat("[ResourceTracker] info: {0} ", "already enabled, ignored.");
+            return;
+        }
+
+        try
+        {
+            string logDir = Path.Combine(Application.persistentDataPath, "mem_logs");
+            if (!Directory.Exists(logDir))
+                Directory.CreateDirectory(logDir);
+
+            DateTime dt = DateTime.Now;
+
+            string logFile = string.Format("{0}_{1}_alloc.txt", SysUtil.FormatDateAsFileNameString(dt), SysUtil.FormatTimeAsFileNameString(dt));
+            string logPath = Path.Combine(logDir, logFile);
+
+            _logWriter = new FileInfo(logPath).CreateText();
+            _logWriter.AutoFlush = true;
+            _logPath = logPath;
+
+            _enableTracking = true;
+            UnityEngine.Debug.LogFormat("[ResourceTracker] tracking enabled: {0} ", logPath);
+        }
+        catch (Exception ex)
+        {
+            UnityEngine.Debug.LogErrorFormat("[ResourceTracker] Open() failed, error: {0} ", ex.Message);
+
+            if (_logWriter != null)
+            {
+                _logWriter.Close();
+                _logWriter = null;
+            }
+
+            _enableTracking = false;
+            _logPath = "";
+        }
+    }
+
+    public void Close()
+    {
+        if (_logWriter != null)
+        {
             try
             {
-                DateTime dt = DateTime.Now;
-
-                string logFile = string.Format("{0}_{1}_alloc.txt", SysUtil.FormatDateAsFileNameString(dt), SysUtil.FormatTimeAsFileNameString(dt));
-                string logPath = Path.Combine(Application.persistentDataPath, logFile);
-
-                _logWriter = new FileInfo(logPath).CreateText();
-                _logWriter.AutoFlush = true;
-                _logPath = logPath;
-                UnityEngine.Debug.LogFormat("[ResourceTracker] logging started at: {0} ", _logPath);
+                _logWriter.WriteLine("--------- unfinished request: {0} --------- ", InProgressAsyncObjects.Count);
+                foreach (KeyValuePair<System.Object, ResourceRequestInfo> p in InProgressAsyncObjects)
+                {
+                    _logWriter.WriteLine("  + {0}", p.Value.ToString());
+                }
+                _logWriter.Close();
             }
             catch (Exception ex)
             {
                 UnityEngine.Debug.LogErrorFormat("[ResourceTracker.ctor] error: {0} ", ex.Message);
-
-                if (_logWriter != null)
-                {
-                    _logWriter.Close();
-                    _logWriter = null;
-                }
-
-                _logPath = "";
+            }
+            finally
+            {
+                _logWriter = null;
             }
         }
 
-        _enableTracking = enableTracking;
+        _enableTracking = false;
     }
 
     public void Dispose()
     {
         if (_enableTracking && _logWriter != null)
         {
-            _logWriter.WriteLine("--------- unfinished request: {0} --------- ", InProgressAsyncObjects.Count);
-            foreach (KeyValuePair<System.Object, ResourceRequestInfo> p in InProgressAsyncObjects)
-            {
-                _logWriter.WriteLine("  + {0}", p.Value.ToString());
-            }
-            _logWriter.Close();
-            _logWriter = null;
+            Close();
         }
     }
 

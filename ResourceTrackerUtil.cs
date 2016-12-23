@@ -96,19 +96,19 @@ public class SceneGraphExtractor
                 CountMemObject(mesh);
             }
 
-            foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
-            {
-                Material mat = w.material;
-                if (mat != null)
-                {
-                    CountMemObject(mat);
-                }
-                Texture2D t = w.mainTexture as Texture2D;
-                if (t != null)
-                {
-                    CountMemObject(t);
-                }
-            }
+            //foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
+            //{
+            //    Material mat = w.material;
+            //    if (mat != null)
+            //    {
+            //        CountMemObject(mat);
+            //    }
+            //    Texture2D t = w.mainTexture as Texture2D;
+            //    if (t != null)
+            //    {
+            //        CountMemObject(t);
+            //    }
+            //}
 
             foreach (Renderer renderer in go.GetComponentsInChildren(typeof(Renderer), true))
             {
