@@ -115,10 +115,9 @@ public class MemTableBrowser
         CrawledMemorySnapshot unpacked; 
         CrawledMemorySnapshot preUnpacked;
 
-        public Dictionary<int, NativeUnityEngineObject> _unpackedNativeDict= new Dictionary<int, NativeUnityEngineObject>();
-        public Dictionary<int, NativeUnityEngineObject> _preUnpackedNativeDict = new Dictionary<int, NativeUnityEngineObject>();
-        public Dictionary<int, ManagedObject> _unpackedManagedDict = new Dictionary<int, ManagedObject>();
-        public Dictionary<int, ManagedObject> _preUnpackedManagedDict = new Dictionary<int,ManagedObject>();
+
+        public Dictionary<int, ThingInMemory> _unpackedThingsDict = new Dictionary<int,ThingInMemory>();
+        public Dictionary<int, ThingInMemory> _preunpackedThingsDict = new Dictionary<int, ThingInMemory>();
 
         public UnPackedInfos(CrawledMemorySnapshot unpacked, CrawledMemorySnapshot preUnpacked)
         {
@@ -136,8 +135,8 @@ public class MemTableBrowser
                 if (nat == null)
                     continue;
                 int key =getNativeObjHashCode(nat);
-                if (!_unpackedNativeDict.ContainsKey(key))
-                    _unpackedNativeDict.Add(key,nat);
+                if (!_unpackedThingsDict.ContainsKey(key))
+                    _unpackedThingsDict.Add(key, nat);
             }
 
             foreach (NativeUnityEngineObject nat in preUnpacked.nativeObjects)
@@ -145,8 +144,8 @@ public class MemTableBrowser
                 if (nat == null)
                     continue;
                 int key = getNativeObjHashCode(nat);
-                if (!_preUnpackedNativeDict.ContainsKey(key))
-                    _preUnpackedNativeDict.Add(key, nat);
+                if (!_preunpackedThingsDict.ContainsKey(key))
+                    _preunpackedThingsDict.Add(key, nat);
             }
 
             foreach (ManagedObject mao in unpacked.managedObjects)
@@ -156,8 +155,8 @@ public class MemTableBrowser
                 int key = getManagedObjHashCode(mao, unpacked);
                 if (key == -1)
                     continue;
-                if (!_unpackedManagedDict.ContainsKey(key))
-                    _unpackedManagedDict.Add(key,mao);
+                if (!_unpackedThingsDict.ContainsKey(key))
+                    _unpackedThingsDict.Add(key, mao);
             }
 
             foreach (ManagedObject mao in preUnpacked.managedObjects)
@@ -167,8 +166,8 @@ public class MemTableBrowser
                 int key = getManagedObjHashCode(mao, preUnpacked);
                 if (key == -1)
                     continue;
-                if (!_preUnpackedManagedDict.ContainsKey(key))
-                    _preUnpackedManagedDict.Add(key,mao);
+                if (!_preunpackedThingsDict.ContainsKey(key))
+                    _preunpackedThingsDict.Add(key, mao);
             }
         }
 
@@ -236,6 +235,38 @@ public class MemTableBrowser
         _diffDicts.Add(sDiffDictKey.removedDict, new Dictionary<string, MemType>());
     }
 
+    private void calculateCategoryInfo()
+    {
+        int[] sizes = new int[MemConst.MemTypeCategories.Length];
+        int[] counts = new int[MemConst.MemTypeCategories.Length];
+        foreach (var item in _categories)
+        {
+            sizes[0] += item.Value.Size;
+            counts[0] += item.Value.Count;
+
+            if (item.Key == 1)
+            {
+                sizes[1] += item.Value.Size;
+                counts[1] += item.Value.Count;
+            }
+            else if (item.Key == 2)
+            {
+                sizes[2] += item.Value.Size;
+                counts[2] += item.Value.Count;
+            }
+            else
+            {
+                sizes[3] += item.Value.Size;
+                counts[3] += item.Value.Count;
+            }
+        }
+
+        for (int i = 0; i < _categoryLiterals.Length; i++)
+        {
+            _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
+        }
+    }
+
     public void RefreshData(CrawledMemorySnapshot unpackedCrawl)
     {
         _unpacked = unpackedCrawl;
@@ -283,35 +314,7 @@ public class MemTableBrowser
             theCategory.Count++;
         }
 
-        int[] sizes = new int[MemConst.MemTypeCategories.Length];
-        int[] counts = new int[MemConst.MemTypeCategories.Length];
-        foreach (var item in _categories)
-        {
-            sizes[0] += item.Value.Size;
-            counts[0] += item.Value.Count;
-
-            if (item.Key == 1)
-            {
-                sizes[1] += item.Value.Size;
-                counts[1] += item.Value.Count;
-            }
-            else if (item.Key == 2)
-            {
-                sizes[2] += item.Value.Size;
-                counts[2] += item.Value.Count;
-            }
-            else
-            {
-                sizes[3] += item.Value.Size;
-                counts[3] += item.Value.Count;
-            }
-        }
-
-        for (int i = 0; i < _categoryLiterals.Length; i++)
-        {
-            _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
-        }
-
+        calculateCategoryInfo();
         RefreshTables();
     }
 
@@ -323,77 +326,82 @@ public class MemTableBrowser
         resetDiffDicts();
         _categories.Clear();
         _staticDetailInfo.clear();
-        int[] sizes = new int[MemConst.MemTypeCategories.Length];
-        int[] counts = new int[MemConst.MemTypeCategories.Length];
-        foreach (var item in _categories)
+        foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
-            sizes[0] += item.Value.Size;
-            counts[0] += item.Value.Count;
-
-            if (item.Key == 1)
+            string typeName = MemUtil.GetGroupName(thingInMemory);
+            if (typeName.Length == 0)
+                continue;
+            int category = MemUtil.GetCategory(thingInMemory);
+            MemObject item = new MemObject(thingInMemory, _unpacked);
+            MemCategory theCategory;
+            if (!_categories.TryGetValue(category, out theCategory))
             {
-                sizes[1] += item.Value.Size;
-                counts[1] += item.Value.Count;
+                theCategory = new MemCategory();
+                theCategory.Category = category;
+                _categories.Add(category, theCategory);
             }
-            else if (item.Key == 2)
-            {
-                sizes[2] += item.Value.Size;
-                counts[2] += item.Value.Count;
-            }
-            else
-            {
-                sizes[3] += item.Value.Size;
-                counts[3] += item.Value.Count;
-            }
+            theCategory.Size += item.Size;
+            theCategory.Count++;
         }
 
-        for (int i = 0; i < _categoryLiterals.Length; i++)
-        {
-            _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
-        }
+        calculateCategoryInfo();
 
         MemUtil.LoadSnapshotProgress(0.4f, "unpack all objs");
-        freshUnpackInfos();
-        checkAddtiveThings();
-        checkNegativeThings();
+        _unpackedInfos = new UnPackedInfos(_unpacked, _preUnpacked);
+        _unpackedInfos.calculateCrawledDict();
+
+        List<ThingInMemory> addedList;
+        List<ThingInMemory> unchangedList;
+        List<ThingInMemory> removedList;
+        getDiffDict(_unpackedInfos._unpackedThingsDict, _unpackedInfos._preunpackedThingsDict, out addedList, out removedList, out unchangedList);
+        foreach (var thing in addedList)
+            _handleDiffObj(thing, sDiffType.AdditiveType, _unpacked);
+        foreach (var thing in removedList)
+            _handleDiffObj(thing, sDiffType.NegativeType, _unpacked);
+        foreach (var thing in unchangedList)
+            setUnchangedThings(thing);
+
         MemUtil.LoadSnapshotProgress(0.8f, "check diff");
         RefreshTables();
         MemUtil.LoadSnapshotProgress(1.0f, "done");
     }
 
-    void freshUnpackInfos()
+    void getDiffDict<T>(Dictionary<int, T> dict1, Dictionary<int, T> dict2, out List<T> addedList, out List<T> removedList, out List<T> unchangedList)
     {
-        if (_preUnpacked == null)
-            return;
-        _unpackedInfos = new UnPackedInfos(_unpacked, _preUnpacked);
-        _unpackedInfos.calculateCrawledDict();
+        addedList = null;
+        removedList = null;
+        unchangedList = null;
+        addedList =getExceptBtwnDict(dict1, dict2);
+        removedList = getExceptBtwnDict(dict2, dict1);
+        unchangedList = getIntersectBtwnDict(dict1, dict2);
     }
 
-    void checkAddtiveThings()
+    //求差集 [dict1-dict2]
+    List<T> getExceptBtwnDict<T>(Dictionary<int,T> dict1, Dictionary<int,T> dict2)
     {
-        if (_preUnpacked == null || _unpackedInfos ==null)
-            return;
-
-        _checkDiffThings(sDiffType.AdditiveType, _unpacked,_unpackedInfos._unpackedNativeDict, _unpackedInfos._preUnpackedNativeDict,
-        _unpackedInfos._unpackedManagedDict, _unpackedInfos._preUnpackedManagedDict);
-    }
-
-    void checkNegativeThings()
-    {
-        if (_preUnpacked == null || _unpackedInfos == null)
-            return;
-        _checkDiffThings(sDiffType.NegativeType, _preUnpacked,_unpackedInfos._preUnpackedNativeDict,_unpackedInfos._unpackedNativeDict
-            , _unpackedInfos._preUnpackedManagedDict, _unpackedInfos._unpackedManagedDict);
-    }
-    private void _handleModifyObj(ref Dictionary<int, ManagedObject> exceptNativeDict, KeyValuePair<int, ManagedObject> orginNat, CrawledMemorySnapshot resultPacked)
-    {
-        ManagedObject exceptObj;
-        exceptNativeDict.TryGetValue(orginNat.Key, out exceptObj);
-
-        if (exceptObj.address == orginNat.Value.address)
+        List<T> result = new List<T>();
+        foreach (var d1 in dict1)
         {
-            _handleDiffManangeObj(orginNat.Value, sDiffType.ModificationType, resultPacked);
+            if(!dict2.ContainsKey(d1.Key))
+            {
+                result.Add(d1.Value);
+            }
         }
+        return result;
+    }
+
+    //求交集
+    List<T> getIntersectBtwnDict<T>(Dictionary<int, T> dict1, Dictionary<int, T> dict2)
+    {
+        List<T> result = new List<T>();
+        foreach (var d1 in dict1)
+        {
+            if(dict2.ContainsKey(d1.Key))
+            {
+                result.Add(d1.Value);
+            }
+        }
+        return result;
     }
 
     void setUnchangedThings(ThingInMemory thingInMemory) 
@@ -426,80 +434,46 @@ public class MemTableBrowser
             }
     }
 
-    void _checkDiffThings(string diffType, CrawledMemorySnapshot resultPacked, Dictionary<int,NativeUnityEngineObject> orginNativeDict,
-        Dictionary<int,NativeUnityEngineObject> exceptNativeDict,Dictionary<int, ManagedObject> orginManageDict,
-        Dictionary<int,ManagedObject> exceptManageDict)
+    void _handleDiffObj(ThingInMemory thing, string diffType, CrawledMemorySnapshot resultPacked)
     {
-        if (_preUnpacked == null)
-            return;
-
-        foreach (var orginNat in orginNativeDict)
-        {
-            if (!exceptNativeDict.ContainsKey(orginNat.Key))
-            {
-                _handleDiffNativeObj(orginNat.Value, diffType, resultPacked);
-            }
-            else {
-                if(diffType.Equals(sDiffType.AdditiveType))
-                    setUnchangedThings(orginNat.Value);
-            }
-        }
-
-        foreach (var orginMao in orginManageDict)
-        {
-            if (!exceptManageDict.ContainsKey(orginMao.Key))
-            {
-                _handleDiffManangeObj(orginMao.Value, diffType, resultPacked);
-            }
-            else
-            {
-                if (diffType.Equals(sDiffType.AdditiveType))
-                    setUnchangedThings(orginMao.Value);
-            }
-        }
-    }
-
-    void _handleDiffNativeObj(NativeUnityEngineObject nat, string diffType, CrawledMemorySnapshot resultPacked)
-    {
-        var theType = _checkNewTypes(nat, diffType);
+        var theType = _checkNewTypes(thing, diffType);
         if (theType == null)
             return;
-        string TypeName = MemUtil.GetGroupName(nat);
-        var newNat=new NativeUnityEngineObject();
-        newNat.caption = nat.caption;
-        newNat.classID = nat.classID;
-        newNat.className = TypeName + diffType;
-        newNat.instanceID = nat.instanceID;
-        newNat.isManager = false;
-        newNat.size = nat.size;
-        newNat.hideFlags = nat.hideFlags;
-        newNat.isPersistent = nat.isPersistent;
-        newNat.name = nat.name;
-        newNat.referencedBy = nat.referencedBy;
-        newNat.references = nat.references;
-        newNat.isDontDestroyOnLoad = nat.isDontDestroyOnLoad;
-        MemObject item = new MemObject(newNat, resultPacked);
+        string TypeName = MemUtil.GetGroupName(thing);
+
+        ThingInMemory newThings =null;
+        if (thing is NativeUnityEngineObject)
+        {
+            var nat = thing as NativeUnityEngineObject;
+            var newNat = new NativeUnityEngineObject();
+            newNat.caption = thing.caption;
+            newNat.classID = nat.classID;
+            newNat.className = TypeName + diffType;
+            newNat.instanceID = nat.instanceID;
+            newNat.isManager = false;
+            newNat.size = thing.size;
+            newNat.hideFlags = nat.hideFlags;
+            newNat.isPersistent = nat.isPersistent;
+            newNat.name = nat.name;
+            newNat.referencedBy = thing.referencedBy;
+            newNat.references = thing.references;
+            newNat.isDontDestroyOnLoad = nat.isDontDestroyOnLoad;
+            newThings = newNat;
+        }
+        else {
+            var mao = thing as ManagedObject;
+            var newMao = new ManagedObject();
+            newMao.caption = TypeName + diffType;
+            newMao.address = mao.address;
+            newMao.referencedBy = mao.referencedBy;
+            newMao.references = mao.references;
+            newMao.size = mao.size;
+            newMao.typeDescription = mao.typeDescription;
+            newThings = newMao;
+        }
+        MemObject item = new MemObject(newThings, resultPacked);
         theType.AddObject(item);
     }
-
-    void _handleDiffManangeObj(ManagedObject mao, string diffType, CrawledMemorySnapshot resultPacked)
-    {
-        var theType = _checkNewTypes(mao, diffType);
-        if (theType == null)
-            return;
-        MemObject item = new MemObject(mao, resultPacked);
-        string TypeName = MemUtil.GetGroupName(mao);
-
-        var newMao = new ManagedObject();
-        newMao.caption = TypeName + diffType;
-        newMao.address = mao.address;
-        newMao.referencedBy = mao.referencedBy;
-        newMao.references = mao.references;
-        newMao.size = mao.size;
-        newMao.typeDescription = mao.typeDescription;
-        theType.AddObject(item);
-    }
-
 
     Dictionary<string, MemType> _getDictByDiffType(string diffType) 
     {
