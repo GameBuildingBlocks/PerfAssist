@@ -64,7 +64,7 @@ public class SceneGraphExtractor
         {
             ProcessRecursively(go);
 
-#if !UNITY_EDITOR
+#if UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
             foreach (Renderer renderer in renderers)
             {
