@@ -10,7 +10,7 @@ using MemoryProfilerWindow;
 using LitJson;
 using System.Text;
 public class SnapshotIOperator {
-    private string _now;
+    private string _now ;
     private string _basePath;
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
     Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
@@ -27,7 +27,7 @@ public class SnapshotIOperator {
 
     public SnapshotIOperator()
     {
-        _now = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", new System.Globalization.DateTimeFormatInfo());
+        refreshRecordTime();
     }
 
     public string combineBasepath(eProfilerMode profilerMode,string ip=null)
@@ -172,7 +172,7 @@ public class SnapshotIOperator {
         return resultJson.ToJson();
     }
 
-    public bool saveSnapshotJson(int fileName, MemSnapshotInfo snapshotInfos)
+    public bool saveSnapshotJson(int fileName, PackedMemorySnapshot snapshot)
     {
         try
         {
@@ -182,7 +182,7 @@ public class SnapshotIOperator {
                 jsonDir.Create();
 
             string jsonFile = Path.Combine(jsonPath, fileName + ".json");
-            return savePackedInfoByJson(jsonFile, snapshotInfos.unPacked);
+            return savePackedInfoByJson(jsonFile,snapshot);
         }
         catch (Exception ex)
         {
@@ -191,30 +191,25 @@ public class SnapshotIOperator {
         }
     }
 
-    public bool saveAllSnapshot(List<MemSnapshotInfo> snapshotInfos,eProfilerMode profilerMode,string ip=null)
-    {
-        if (snapshotInfos.Count <= 0)
-            return false;
+    public void refreshRecordTime() {
+        _now = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", new System.Globalization.DateTimeFormatInfo());
+    }
 
+    public bool saveSnapshot(PackedMemorySnapshot snapshot,int sessionIndex,eProfilerMode profilerMode, string ip = null)
+    {
         try
         {
             _basePath = combineBasepath(profilerMode, ip);
-
             if (!Directory.Exists(_basePath))
                 Directory.CreateDirectory(_basePath);
-
-            for (int index = 0; index < snapshotInfos.Count; index++)
+            string fileName = Path.Combine(_basePath, string.Format("{0}.memsnap", sessionIndex));
+            if (!File.Exists(fileName))
             {
-                var packed = snapshotInfos[index];
-                string fileName = Path.Combine(_basePath, string.Format("{0}.memsnap", index));
-                if (!File.Exists(fileName))
+                saveSnapshotJson(sessionIndex, snapshot);
+                System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                using (Stream stream = File.Open(fileName, FileMode.Create))
                 {
-                        saveSnapshotJson(index, packed);
-                        System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                        using (Stream stream = File.Open(fileName, FileMode.Create))
-                        {
-                            bf.Serialize(stream, packed);
-                        }
+                    bf.Serialize(stream, snapshot);
                 }
             }
             return true;
@@ -226,6 +221,7 @@ public class SnapshotIOperator {
             return false;
         }
     }
+
 
     public List<object> loadSnapshotMemPacked()
     {

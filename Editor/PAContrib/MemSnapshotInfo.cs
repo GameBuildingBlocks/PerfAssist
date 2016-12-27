@@ -8,7 +8,7 @@ using UnityEditor.MemoryProfiler;
 [System.Serializable]
 public class MemSnapshotInfo 
 {
-    public PackedMemorySnapshot unPacked;
+    public CrawledMemorySnapshot unPacked=null;
     public float snapshotTime = 0;
  	public int dealtaSize =0;
     public List<ThingInMemory> addedList = new List<ThingInMemory>();
@@ -16,11 +16,6 @@ public class MemSnapshotInfo
 
     public void setSnapShotTime(float time){
         snapshotTime = time;
-    }
-
-    public void setSnapshotPacked(PackedMemorySnapshot ss)
-    {
-        unPacked = ss;
     }
 
     public string showDealtaSizeStr() {
@@ -52,5 +47,6 @@ public class MemSnapshotInfo
         //计算addLsit,removeList
             
     }
+
 }
 
