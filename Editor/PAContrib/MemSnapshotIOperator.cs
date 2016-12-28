@@ -9,20 +9,21 @@ using UnityEditorInternal;
 using MemoryProfilerWindow;
 using LitJson;
 using System.Text;
-public class SnapshotIOperator {
-    private string _now ;
+public class SnapshotIOperator
+{
+    private string _now;
     private string _basePath;
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
     Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
 
-    public bool isSaved(int snapshotCount,eProfilerMode profilerMode, string ip = null)
+    public bool isSaved(int snapshotCount, eProfilerMode profilerMode, string ip = null)
     {
         DirectoryInfo TheFolder = new DirectoryInfo(combineBasepath(profilerMode, ip));
         if (!TheFolder.Exists)
             return false;
-        if (TheFolder.GetFiles().Length!= snapshotCount)
+        if (TheFolder.GetFiles().Length != snapshotCount)
             return false;
-        return  true;
+        return true;
     }
 
     public SnapshotIOperator()
@@ -30,14 +31,14 @@ public class SnapshotIOperator {
         refreshRecordTime();
     }
 
-    public string combineBasepath(eProfilerMode profilerMode,string ip=null)
+    public string combineBasepath(eProfilerMode profilerMode, string ip = null)
     {
-        string mode="";
+        string mode = "";
         if (profilerMode == eProfilerMode.Remote)
         {
             if (ip == null)
                 ip = "";
-           mode = "-Remote-" + ip;
+            mode = "-Remote-" + ip;
         }
         else if (profilerMode == eProfilerMode.Editor)
         {
@@ -47,21 +48,13 @@ public class SnapshotIOperator {
     }
 
 
-    bool savePackedInfoByJson(string output, PackedMemorySnapshot packed)
+    bool savePackedInfoByJson(string output, CrawledMemorySnapshot unpacked)
     {
-        MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-
-        var tempCrawled = new Crawler().Crawl(packed);
-        MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-
-        var unPacked  = CrawlDataUnpacker.Unpack(tempCrawled);
-        MemUtil.LoadSnapshotProgress(1.0f, "done");
-        
         try
         {
-            var resolveJson = resolvePackedForJson(unPacked);
+            var resolveJson = resolvePackedForJson(unpacked);
             if (string.IsNullOrEmpty(resolveJson))
-                throw  new Exception("Resolve Json Data Failed");
+                throw new Exception("Resolve Json Data Failed");
 
             StreamWriter sw;
             FileInfo fileInfo = new FileInfo(output);
@@ -74,7 +67,7 @@ public class SnapshotIOperator {
         }
         catch (System.Exception ex)
         {
-            UnityEngine.Debug.LogErrorFormat("write json file error {0},errMsg = {1}", output,ex.Message);
+            UnityEngine.Debug.LogErrorFormat("write json file error {0},errMsg = {1}", output, ex.Message);
             return false;
         }
     }
@@ -111,13 +104,13 @@ public class SnapshotIOperator {
 
         //协议格式:
         //Data:
-            //"obj" = "TypeName,Category,Count,size"
-            //"info" ="RefCount,size,InstanceName,address,typeDescriptionIndex"
+        //"obj" = "TypeName,Category,Count,size"
+        //"info" ="RefCount,size,InstanceName,address,typeDescriptionIndex"
         //TypeDescs:
         //InstanceNames:
 
         Dictionary<int, string> typeDescDict = new Dictionary<int, string>();
-        Dictionary<int, string> instanceNameDict = new Dictionary<int,string>();
+        Dictionary<int, string> instanceNameDict = new Dictionary<int, string>();
         var jsonData = new JsonData();
         foreach (var type in _types)
         {
@@ -133,17 +126,17 @@ public class SnapshotIOperator {
                 var instanceNameHash = memObj.InstanceName.GetHashCode();
                 if (!instanceNameDict.ContainsKey(instanceNameHash))
                 {
-                    instanceNameDict.Add(instanceNameHash,memObj.InstanceName);
+                    instanceNameDict.Add(instanceNameHash, memObj.InstanceName);
                 }
 
                 dataInfo = memObj.RefCount + "," + memObj.Size + "," + instanceNameDict[instanceNameHash];
                 if (type.Value.Category == 2)
                 {
                     var manged = memObj._thing as ManagedObject;
-                    var typeDescriptionHash =manged.typeDescription.name.GetHashCode();
+                    var typeDescriptionHash = manged.typeDescription.name.GetHashCode();
                     if (!typeDescDict.ContainsKey(typeDescriptionHash))
                     {
-                        typeDescDict.Add(typeDescriptionHash,manged.typeDescription.name);
+                        typeDescDict.Add(typeDescriptionHash, manged.typeDescription.name);
                     }
                     dataInfo += "," + Convert.ToString((int)manged.address, 16) + "," + typeDescriptionHash;
                 }
@@ -157,12 +150,12 @@ public class SnapshotIOperator {
         resultJson["Data"] = jsonData;
 
         StringBuilder sb = new StringBuilder();
-        foreach(var key in typeDescDict.Keys)
+        foreach (var key in typeDescDict.Keys)
         {
-            sb.Append("[[" + key + "]:" + typeDescDict[key]+ "],");
+            sb.Append("[[" + key + "]:" + typeDescDict[key] + "],");
         }
         resultJson["TypeDescs"] = sb.ToString();
-        sb.Remove(0,sb.Length);
+        sb.Remove(0, sb.Length);
 
         foreach (var key in instanceNameDict.Keys)
         {
@@ -172,7 +165,7 @@ public class SnapshotIOperator {
         return resultJson.ToJson();
     }
 
-    public bool saveSnapshotJson(int fileName, PackedMemorySnapshot snapshot)
+    private bool _saveSnapshotJson(int fileName, CrawledMemorySnapshot unpacked)
     {
         try
         {
@@ -182,7 +175,7 @@ public class SnapshotIOperator {
                 jsonDir.Create();
 
             string jsonFile = Path.Combine(jsonPath, fileName + ".json");
-            return savePackedInfoByJson(jsonFile,snapshot);
+            return savePackedInfoByJson(jsonFile, unpacked);
         }
         catch (Exception ex)
         {
@@ -191,11 +184,12 @@ public class SnapshotIOperator {
         }
     }
 
-    public void refreshRecordTime() {
+    public void refreshRecordTime()
+    {
         _now = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", new System.Globalization.DateTimeFormatInfo());
     }
 
-    public bool saveSnapshot(PackedMemorySnapshot snapshot,int sessionIndex,eProfilerMode profilerMode, string ip = null)
+    public bool saveSnapshotSessions(PackedMemorySnapshot snapshot, int sessionIndex, eProfilerMode profilerMode, string ip = null)
     {
         try
         {
@@ -205,7 +199,6 @@ public class SnapshotIOperator {
             string fileName = Path.Combine(_basePath, string.Format("{0}.memsnap", sessionIndex));
             if (!File.Exists(fileName))
             {
-                saveSnapshotJson(sessionIndex, snapshot);
                 System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 using (Stream stream = File.Open(fileName, FileMode.Create))
                 {
@@ -217,6 +210,24 @@ public class SnapshotIOperator {
         catch (Exception ex)
         {
             Debug.LogError(string.Format("save snapshot error ! msg ={0}", ex.Message));
+            Debug.LogException(ex);
+            return false;
+        }
+    }
+
+    public bool saveSnapshotJsonFile(CrawledMemorySnapshot unpacked, int sessionIndex, eProfilerMode profilerMode, string ip = null)
+    {
+        try
+        {
+            _basePath = combineBasepath(profilerMode, ip);
+            if (!Directory.Exists(_basePath))
+                Directory.CreateDirectory(_basePath);
+            _saveSnapshotJson(sessionIndex, unpacked);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("save snapshot json error ! msg ={0}", ex.Message));
             Debug.LogException(ex);
             return false;
         }

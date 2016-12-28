@@ -52,7 +52,7 @@ namespace MemoryProfilerWindow
             yield return new WaitForSeconds(2f);
             hostWindow.connectEditor();
         }
-    
+
     }
 
     public class MemoryProfilerWindow : EditorWindow
@@ -80,15 +80,15 @@ namespace MemoryProfilerWindow
         static List<MemSnapshotInfo> _SnapshotSessions = new List<MemSnapshotInfo>();
         static int _selectedSnapshot = Invalid_Int;
 
-        static string[] _ConnectedOptions = new string[] { "Editor", "Remote","Load"};
+        static string[] _ConnectedOptions = new string[] { "Editor", "Remote", "Load" };
 
         SnapshotIOperator _snapshotIOperator = new SnapshotIOperator();
 
         bool _isRemoteConnected = false;
 
-        eProfilerMode _selectedProfilerMode =eProfilerMode.Editor;
+        eProfilerMode _selectedProfilerMode = eProfilerMode.Editor;
 
-        const string ipDefaultTextField = "<ip>"; 
+        const string ipDefaultTextField = "<ip>";
 
         [SerializeField]
         string lastLoginIP = ipDefaultTextField;
@@ -117,7 +117,7 @@ namespace MemoryProfilerWindow
 
             if (_tableBrowser == null)
                 _tableBrowser = new MemTableBrowser(this);
-            
+
             var savedProfilerIP = EditorPrefs.GetString("ConnectIP");
             if (!string.IsNullOrEmpty(savedProfilerIP))
             {
@@ -127,12 +127,13 @@ namespace MemoryProfilerWindow
             if (PANetDrv.Instance == null)
             {
                 PANetDrv.Instance = new PANetDrv();
-            }            
-            
+            }
+
             clearSnapshotChunk();
         }
 
-        void disConnect() {
+        void disConnect()
+        {
             ProfilerDriver.connectedProfiler = -1;
             NetManager.Instance.Disconnect();
         }
@@ -162,7 +163,8 @@ namespace MemoryProfilerWindow
         }
 
 
-        public void connectIP(string ip) {
+        public void connectIP(string ip)
+        {
             if (!isValidateIPAddress(ip))
             {
                 ShowNotification(new GUIContent(string.Format("Invaild IP = {0}!", ip)));
@@ -200,7 +202,8 @@ namespace MemoryProfilerWindow
         }
 
 
-        public void connectEditor() {
+        public void connectEditor()
+        {
             ProfilerDriver.connectedProfiler = -1;
             if (NetManager.Instance.IsConnected)
                 NetManager.Instance.Disconnect();
@@ -237,19 +240,6 @@ namespace MemoryProfilerWindow
 
             _selectedSnapshot = _SnapshotSessions.Count - 1;
 
-            if(_autoSaveToggle)
-            {
-                if (_snapshotIOperator.saveSnapshot(snapshot,_selectedSnapshot, _selectedProfilerMode, lastLoginIP))
-                {
-                    var content = new GUIContent(string.Format("Save snapshots Succeeded!"));
-                    ShowNotification(content);
-                }
-                else
-                {
-                    var content = new GUIContent(string.Format("Save snapshots Failed!"));
-                    ShowNotification(content);
-                }
-            }
             showSnapshotInfo(snapshot);
         }
 
@@ -288,11 +278,13 @@ namespace MemoryProfilerWindow
             }
         }
 
-        public bool switchProfilerModeDialog() {
+        public bool switchProfilerModeDialog()
+        {
             return EditorUtility.DisplayDialog("Switch Profiler Mode", "Warning ! \n\nSwitch Profiler Mode Will Lost Current Snapshots.", "Continue", "Cancel");
         }
 
-        public void clearSnapshotChunk(){
+        public void clearSnapshotChunk()
+        {
             _SnapshotOptions.Clear();
             _SnapshotSessions.Clear();
             _tableBrowser.clearTableData();
@@ -300,59 +292,60 @@ namespace MemoryProfilerWindow
             ProfilerDriver.connectedProfiler = -1;
             if (NetManager.Instance.IsConnected)
                 NetManager.Instance.Disconnect();
-         }
+        }
 
-        void drawProfilerModeGUI() {
+        void drawProfilerModeGUI()
+        {
             switch (_selectedProfilerMode)
             {
                 case eProfilerMode.Editor:
-                {
-                    takeSnapshotBtn();
-                    drawSnapshotChunksGrid(320,780);
-                    GUILayout.FlexibleSpace();
-                    saveSessionBtn();
-                }
-                break;
+                    {
+                        takeSnapshotBtn();
+                        drawSnapshotChunksGrid(320, 780);
+                        GUILayout.FlexibleSpace();
+                        saveSessionBtn();
+                    }
+                    break;
                 case eProfilerMode.Remote:
-                {
-                    GUI.SetNextControlName("LoginIPTextField");
-                    var currentStr = GUILayout.TextField(lastLoginIP, GUILayout.Width(80));
-                    if (!lastLoginIP.Equals(currentStr))
                     {
-                        lastLoginIP = currentStr;
-                        _isRemoteConnected = false;
-                    }
+                        GUI.SetNextControlName("LoginIPTextField");
+                        var currentStr = GUILayout.TextField(lastLoginIP, GUILayout.Width(80));
+                        if (!lastLoginIP.Equals(currentStr))
+                        {
+                            lastLoginIP = currentStr;
+                            _isRemoteConnected = false;
+                        }
 
-                    if (GUI.GetNameOfFocusedControl().Equals("LoginIPTextField") && lastLoginIP.Equals(ipDefaultTextField))
-                    {
-                        lastLoginIP = "";
-                    }
+                        if (GUI.GetNameOfFocusedControl().Equals("LoginIPTextField") && lastLoginIP.Equals(ipDefaultTextField))
+                        {
+                            lastLoginIP = "";
+                        }
 
-                    bool savedState = GUI.enabled;
-                    if (_isRemoteConnected)
-                    {
-                        GUI.enabled = false;
-                    }
+                        bool savedState = GUI.enabled;
+                        if (_isRemoteConnected)
+                        {
+                            GUI.enabled = false;
+                        }
 
-                    if (GUILayout.Button("Connect", GUILayout.Width(60)))
-                    {
-                        GameObject connectObj = new GameObject();
-                        connectObj.AddComponent<ProfilerConnector>();
-                        var pc = connectObj.GetComponent("ProfilerConnector") as ProfilerConnector;
-                        pc.IP = lastLoginIP;
-                        pc.HostWindow = this;
-                        pc.StartCoroutine("ConnectIP");
-                    }
-                    GUI.enabled = savedState;
+                        if (GUILayout.Button("Connect", GUILayout.Width(60)))
+                        {
+                            GameObject connectObj = new GameObject();
+                            connectObj.AddComponent<ProfilerConnector>();
+                            var pc = connectObj.GetComponent("ProfilerConnector") as ProfilerConnector;
+                            pc.IP = lastLoginIP;
+                            pc.HostWindow = this;
+                            pc.StartCoroutine("ConnectIP");
+                        }
+                        GUI.enabled = savedState;
 
-                    takeSnapshotBtn();
-                    drawSnapshotChunksGrid(470,630);
-                    GUILayout.FlexibleSpace();
-                    saveSessionBtn();
-                }        
-                break;
+                        takeSnapshotBtn();
+                        drawSnapshotChunksGrid(470, 630);
+                        GUILayout.FlexibleSpace();
+                        saveSessionBtn();
+                    }
+                    break;
                 case eProfilerMode.Saved:
-                    drawSnapshotChunksGrid(210,930);
+                    drawSnapshotChunksGrid(210, 930);
                     GUILayout.FlexibleSpace();
                     loadSessionBtn();
                     break;
@@ -361,7 +354,7 @@ namespace MemoryProfilerWindow
             }
         }
 
-        private void drawSnapshotChunksGrid(int startPosX,int width)
+        private void drawSnapshotChunksGrid(int startPosX, int width)
         {
             var snapShotOptArray = _SnapshotOptions.ToArray();
             var currentIndex = GUI.SelectionGrid(new Rect(startPosX, 0, 30 * snapShotOptArray.Length, 20), _selectedSnapshot, snapShotOptArray
@@ -373,7 +366,7 @@ namespace MemoryProfilerWindow
             }
         }
 
-        private  void takeSnapshotBtn()
+        private void takeSnapshotBtn()
         {
             bool savedState = GUI.enabled;
             if (_selectedProfilerMode == eProfilerMode.Remote && ProfilerDriver.connectedProfiler != PLAYER_DIRECT_IP_CONNECT_GUID)
@@ -530,10 +523,10 @@ namespace MemoryProfilerWindow
             }
         }
 
-        void showSnapshotInfo(PackedMemorySnapshot packed=null) 
+        void showSnapshotInfo(PackedMemorySnapshot packed = null)
         {
             var currentSession = _SnapshotSessions[_selectedSnapshot];
-            if (currentSession.unPacked == null && packed!=null)
+            if (currentSession.unPacked == null && packed != null)
             {
                 MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
                 var packedCrawled = new Crawler().Crawl(packed);
@@ -541,9 +534,25 @@ namespace MemoryProfilerWindow
 
                 currentSession.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
                 MemUtil.LoadSnapshotProgress(1.0f, "done");
+
+                if (_autoSaveToggle)
+                {
+                    if (_snapshotIOperator.saveSnapshotSessions(packed, _selectedSnapshot, _selectedProfilerMode, lastLoginIP) &&
+                        _snapshotIOperator.saveSnapshotJsonFile(currentSession.unPacked, _selectedSnapshot, _selectedProfilerMode, lastLoginIP)
+                        )
+                    {
+                        var content = new GUIContent(string.Format("Save Snapshots Sessions And Json Succeeded!"));
+                        ShowNotification(content);
+                    }
+                    else
+                    {
+                        var content = new GUIContent(string.Format("Save Snapshots Sessions And Json Failed!"));
+                        ShowNotification(content);
+                    }
+                }
             }
 
-            _unpackedCrawl =currentSession.unPacked;
+            _unpackedCrawl = currentSession.unPacked;
 
             if (_selectedSnapshot >= 1)
             {
@@ -556,15 +565,15 @@ namespace MemoryProfilerWindow
                 _preUnpackedCrawl = null;
             }
             _inspector = new Inspector(this, _unpackedCrawl);
-            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse,Handle_QueryStacksResponse);
+            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
             RefreshCurrentView();
             Repaint();
         }
 
         private bool Handle_QueryStacksResponse(eNetCmd cmd, UsCmd c)
         {
-            var stackInfo= c.ReadString();
-            if(string.IsNullOrEmpty(stackInfo))
+            var stackInfo = c.ReadString();
+            if (string.IsNullOrEmpty(stackInfo))
                 return false;
 
             _stackInfoObj.writeStackInfo(stackInfo);
