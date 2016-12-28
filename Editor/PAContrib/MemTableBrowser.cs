@@ -69,7 +69,27 @@ public class MemObject
 
             if (mo != null && mo.typeDescription.name == "System.String")
             {
-                InstanceName = StringTools.ReadString(unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation), unpacked.virtualMachineInformation);
+                try
+                {
+                    InstanceName = StringTools.ReadString(unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation), unpacked.virtualMachineInformation);
+                }
+                catch (System.Exception ex)
+                {
+                    //UnityEngine.Debug.LogErrorFormat("StringTools.ReadString happens error .things caption = {0} ,ex ={1} ", thing.caption, ex.ToString());
+                    var bo =unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation);
+                    if (bo.bytes == null)
+                    {
+                        InstanceName = string.Format("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption,mo.address, ex.ToString());
+                        UnityEngine.Debug.LogErrorFormat("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
+                    }
+                    else {
+                        var lengthPointer = bo.Add(unpacked.virtualMachineInformation.objectHeaderSize);
+                        var length = lengthPointer.ReadInt32();
+                        var firstChar = lengthPointer.Add(4);
+                        InstanceName = string.Format("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
+                        UnityEngine.Debug.LogErrorFormat("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
+                    }
+                }
             }
             else
             {
@@ -326,6 +346,7 @@ public class MemTableBrowser
         resetDiffDicts();
         _categories.Clear();
         _staticDetailInfo.clear();
+        MemUtil.LoadSnapshotProgress(0.1f, "refresh data init");
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
             string typeName = MemUtil.GetGroupName(thingInMemory);
@@ -343,7 +364,6 @@ public class MemTableBrowser
             theCategory.Size += item.Size;
             theCategory.Count++;
         }
-
         calculateCategoryInfo();
 
         MemUtil.LoadSnapshotProgress(0.4f, "unpack all objs");
@@ -354,6 +374,7 @@ public class MemTableBrowser
         List<ThingInMemory> unchangedList;
         List<ThingInMemory> removedList;
         getDiffDict(_unpackedInfos._unpackedThingsDict, _unpackedInfos._preunpackedThingsDict, out addedList, out removedList, out unchangedList);
+        MemUtil.LoadSnapshotProgress(0.5f, "get diff objs");
         foreach (var thing in addedList)
             _handleDiffObj(thing, sDiffType.AdditiveType, _unpacked);
         foreach (var thing in removedList)
@@ -436,43 +457,44 @@ public class MemTableBrowser
 
     void _handleDiffObj(ThingInMemory thing, string diffType, CrawledMemorySnapshot resultPacked)
     {
-        var theType = _checkNewTypes(thing, diffType);
-        if (theType == null)
-            return;
-        string TypeName = MemUtil.GetGroupName(thing);
+            var theType = _checkNewTypes(thing, diffType);
+            if (theType == null)
+                return;
+            string TypeName = MemUtil.GetGroupName(thing);
 
-        ThingInMemory newThings =null;
-        if (thing is NativeUnityEngineObject)
-        {
-            var nat = thing as NativeUnityEngineObject;
-            var newNat = new NativeUnityEngineObject();
-            newNat.caption = thing.caption;
-            newNat.classID = nat.classID;
-            newNat.className = TypeName + diffType;
-            newNat.instanceID = nat.instanceID;
-            newNat.isManager = false;
-            newNat.size = thing.size;
-            newNat.hideFlags = nat.hideFlags;
-            newNat.isPersistent = nat.isPersistent;
-            newNat.name = nat.name;
-            newNat.referencedBy = thing.referencedBy;
-            newNat.references = thing.references;
-            newNat.isDontDestroyOnLoad = nat.isDontDestroyOnLoad;
-            newThings = newNat;
-        }
-        else {
-            var mao = thing as ManagedObject;
-            var newMao = new ManagedObject();
-            newMao.caption = TypeName + diffType;
-            newMao.address = mao.address;
-            newMao.referencedBy = mao.referencedBy;
-            newMao.references = mao.references;
-            newMao.size = mao.size;
-            newMao.typeDescription = mao.typeDescription;
-            newThings = newMao;
-        }
-        MemObject item = new MemObject(newThings, resultPacked);
-        theType.AddObject(item);
+            ThingInMemory newThings = null;
+            if (thing is NativeUnityEngineObject)
+            {
+                var nat = thing as NativeUnityEngineObject;
+                var newNat = new NativeUnityEngineObject();
+                newNat.caption = thing.caption;
+                newNat.classID = nat.classID;
+                newNat.className = TypeName + diffType;
+                newNat.instanceID = nat.instanceID;
+                newNat.isManager = false;
+                newNat.size = thing.size;
+                newNat.hideFlags = nat.hideFlags;
+                newNat.isPersistent = nat.isPersistent;
+                newNat.name = nat.name;
+                newNat.referencedBy = thing.referencedBy;
+                newNat.references = thing.references;
+                newNat.isDontDestroyOnLoad = nat.isDontDestroyOnLoad;
+                newThings = newNat;
+            }
+            else
+            {
+                var mao = thing as ManagedObject;
+                var newMao = new ManagedObject();
+                newMao.caption = TypeName + diffType;
+                newMao.address = mao.address;
+                newMao.referencedBy = mao.referencedBy;
+                newMao.references = mao.references;
+                newMao.size = mao.size;
+                newMao.typeDescription = mao.typeDescription;
+                newThings = newMao;
+            }
+            MemObject item = new MemObject(newThings, resultPacked);
+            theType.AddObject(item);
     }
 
     Dictionary<string, MemType> _getDictByDiffType(string diffType) 

@@ -341,7 +341,7 @@ namespace MemoryProfilerWindow
                         var pc = connectObj.GetComponent("ProfilerConnector") as ProfilerConnector;
                         pc.IP = lastLoginIP;
                         pc.HostWindow = this;
-                        pc.StartCoroutine("Connect");
+                        pc.StartCoroutine("ConnectIP");
                     }
                     GUI.enabled = savedState;
 
