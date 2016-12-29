@@ -14,7 +14,7 @@ public enum eProfilerMode
 {
     Editor,
     Remote,
-    Saved,
+    Loaded,
 }
 
 namespace MemoryProfilerWindow
@@ -77,7 +77,12 @@ namespace MemoryProfilerWindow
         eShowType m_selectedView = 0;
 
         static List<string> _SnapshotOptions = new List<string>();
-        static List<MemSnapshotInfo> _SnapshotSessions = new List<MemSnapshotInfo>();
+
+        static List<MemSnapshotInfo> _nativeSnapshotSessions = new List<MemSnapshotInfo>();
+        static List<MemSnapshotInfo> _remoteSnapshotSessions = new List<MemSnapshotInfo>();
+        static List<MemSnapshotInfo> _loadSnapshotSessions = new List<MemSnapshotInfo>();
+
+
         static int _selectedSnapshot = Invalid_Int;
 
         static string[] _ConnectedOptions = new string[] { "Editor", "Remote", "Load" };
@@ -129,7 +134,7 @@ namespace MemoryProfilerWindow
                 PANetDrv.Instance = new PANetDrv();
             }
 
-            clearSnapshotChunk();
+            clearSnapshotSessions();
         }
 
         void disConnect()
@@ -212,6 +217,7 @@ namespace MemoryProfilerWindow
             //ShowNotification(content);
         }
 
+
         void OnDisable()
         {
             if (_registered)
@@ -230,16 +236,27 @@ namespace MemoryProfilerWindow
             }
         }
 
+        void freshCurrentSnapshotOptions() 
+        {
+            var snapshotSession = getCurrentSnapshotSessionList();
+            _SnapshotOptions.Clear();
+            for (int i = 0; i < snapshotSession.Count;i++)
+            {
+                _SnapshotOptions.Add(i.ToString());
+            }
+        }
+
         void OnSnapshotReceived(PackedMemorySnapshot snapshot)
         {
             var snapshotInfo = new MemSnapshotInfo();
             snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
 
-            _SnapshotOptions.Add(_SnapshotSessions.Count.ToString());
-            _SnapshotSessions.Add(snapshotInfo);
+            var snapshotSession = getCurrentSnapshotSessionList();
 
-            _selectedSnapshot = _SnapshotSessions.Count - 1;
+            snapshotSession.Add(snapshotInfo);
+            freshCurrentSnapshotOptions();
 
+            _selectedSnapshot = snapshotSession.Count - 1;
             showSnapshotInfo(snapshot);
         }
 
@@ -278,15 +295,12 @@ namespace MemoryProfilerWindow
             }
         }
 
-        public bool switchProfilerModeDialog()
-        {
-            return EditorUtility.DisplayDialog("Switch Profiler Mode", "Warning ! \n\nSwitch Profiler Mode Will Lost Current Snapshots.", "Continue", "Cancel");
-        }
-
-        public void clearSnapshotChunk()
+        public void clearSnapshotSessions()
         {
             _SnapshotOptions.Clear();
-            _SnapshotSessions.Clear();
+            var currentSnapshotSessions = getCurrentSnapshotSessionList();
+            if (currentSnapshotSessions!=null)
+                currentSnapshotSessions.Clear();
             _tableBrowser.clearTableData();
             _snapshotIOperator.refreshRecordTime();
             ProfilerDriver.connectedProfiler = -1;
@@ -344,7 +358,7 @@ namespace MemoryProfilerWindow
                         saveSessionBtn();
                     }
                     break;
-                case eProfilerMode.Saved:
+                case eProfilerMode.Loaded:
                     drawSnapshotChunksGrid(210, 930);
                     GUILayout.FlexibleSpace();
                     loadSessionBtn();
@@ -391,24 +405,37 @@ namespace MemoryProfilerWindow
             {
                 _isRemoteConnected = false;
 
-                if (_SnapshotSessions.Count > 0
-                    //&& !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)
-                    && !switchProfilerModeDialog())
-                {
-                }
-                else
-                {
-                    clearSnapshotChunk();
-                    _selectedProfilerMode = (eProfilerMode)connectedIndex;
+                _selectedProfilerMode = (eProfilerMode)connectedIndex;
 
-                    if (_selectedProfilerMode == (int)eProfilerMode.Editor)
-                        connectEditor();
-                }
+                if (_selectedProfilerMode == (int)eProfilerMode.Editor)
+                    connectEditor();
+
+                freshCurrentSnapshotOptions();
+                //if (//_SnapshotSessions.Count > 0
+                //    //&& !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)&& 
+                //    !switchProfilerModeDialog())
+                //{
+                //}
+                //else
+                //{
+                //    clearSnapshotChunk();
+                //    _selectedProfilerMode = (eProfilerMode)connectedIndex;
+
+                //    if (_selectedProfilerMode == (int)eProfilerMode.Editor)
+                //        connectEditor();
+                //}
             }
 
             GUILayout.Space(200);
             drawProfilerModeGUI();
-            if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(100)))
+
+            if (GUILayout.Button("Clear Sessions", GUILayout.MaxWidth(100)))
+            {
+                if (EditorUtility.DisplayDialog("Clear Sessions", "Warning ! \n\nClear Sessions Will Lost Current Snapshots.", "Continue", "Cancel")) 
+                    clearSnapshotSessions();
+            }
+
+            if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(80)))
             {
                 EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
             }
@@ -462,11 +489,11 @@ namespace MemoryProfilerWindow
                 }
                 else
                 {
-                    clearSnapshotChunk();
+                    clearSnapshotSessions();
                     ShowNotification(new GUIContent("load snapshots succeeded!"));
+                    var curSessionList = getCurrentSnapshotSessionList();
                     foreach (var obj in packeds)
                     {
-                        _SnapshotOptions.Add(_SnapshotSessions.Count.ToString());
                         MemSnapshotInfo memInfo = new MemSnapshotInfo();
 
                         var packed = obj as PackedMemorySnapshot;
@@ -476,9 +503,10 @@ namespace MemoryProfilerWindow
                         memInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
                         MemUtil.LoadSnapshotProgress(1.0f, "done");
 
-                        _SnapshotSessions.Add(memInfo);
+                        curSessionList.Add(memInfo);
                     }
                     _selectedSnapshot = 0;
+                    freshCurrentSnapshotOptions(); 
                     showSnapshotInfo();
                 }
             }
@@ -536,7 +564,7 @@ namespace MemoryProfilerWindow
 
         void showSnapshotInfo(PackedMemorySnapshot packed = null)
         {
-            var currentSession = _SnapshotSessions[_selectedSnapshot];
+            var currentSession = getCurrentSnapshotSessionList()[_selectedSnapshot];
             if (currentSession.unPacked == null && packed != null)
             {
                 MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
@@ -571,7 +599,7 @@ namespace MemoryProfilerWindow
 
             if (_selectedSnapshot >= 1)
             {
-                MemSnapshotInfo preSnapShotChunk = _SnapshotSessions[_selectedSnapshot - 1];
+                MemSnapshotInfo preSnapShotChunk = getCurrentSnapshotSessionList()[_selectedSnapshot - 1];
                 if (preSnapShotChunk != null)
                     _preUnpackedCrawl = preSnapShotChunk.unPacked;
             }
@@ -596,6 +624,25 @@ namespace MemoryProfilerWindow
             return true;
         }
 
+        List<MemSnapshotInfo> getCurrentSnapshotSessionList(){
+            switch (_selectedProfilerMode)
+            {
+                case eProfilerMode.Editor:
+                    {
+                        return _nativeSnapshotSessions;
+                    }
+                case eProfilerMode.Remote:
+                    {
+                        return _remoteSnapshotSessions;
+                    }
+                case eProfilerMode.Loaded:
+                    {
+                        return _loadSnapshotSessions;
+                    }
+            }
+            return null;
+        }
+
         public void RefreshCurrentView()
         {
             if (_unpackedCrawl == null)
@@ -605,7 +652,7 @@ namespace MemoryProfilerWindow
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        if (_tableBrowser._showdiffToggle && _SnapshotSessions.Count >= 2)
+                        if (_tableBrowser._showdiffToggle && getCurrentSnapshotSessionList().Count >= 2)
                             _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
                         else
                             _tableBrowser.RefreshData(_unpackedCrawl);
