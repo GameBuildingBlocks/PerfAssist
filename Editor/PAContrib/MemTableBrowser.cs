@@ -684,8 +684,12 @@ public class MemTableBrowser
         }
         GUILayout.FlexibleSpace();
 
+        if (GUILayout.Button("Show Type Stats"))
+        {
+            MemStats.ShowTypeStats(_typeTable.GetSelected() as MemType);
+        }
 
-        if (GUILayout.Button("DetailInfo", GUILayout.MinWidth(80)))
+        if (GUILayout.Button("Static Detail"))
         {
             _staticDetailInfo.showInfos();
         }
