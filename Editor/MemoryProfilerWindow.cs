@@ -322,7 +322,7 @@ namespace MemoryProfilerWindow
                         }
 
                         bool savedState = GUI.enabled;
-                        if (_isRemoteConnected)
+                        if (_isRemoteConnected && ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID)
                         {
                             GUI.enabled = false;
                         }
@@ -392,7 +392,7 @@ namespace MemoryProfilerWindow
                 _isRemoteConnected = false;
 
                 if (_SnapshotSessions.Count > 0
-                    && !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)
+                    //&& !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)
                     && !switchProfilerModeDialog())
                 {
                 }
@@ -467,8 +467,19 @@ namespace MemoryProfilerWindow
                     foreach (var obj in packeds)
                     {
                         _SnapshotOptions.Add(_SnapshotSessions.Count.ToString());
-                        _SnapshotSessions.Add(obj as MemSnapshotInfo);
+                        MemSnapshotInfo memInfo = new MemSnapshotInfo();
+
+                        var packed = obj as PackedMemorySnapshot;
+                        MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
+                        var packedCrawled = new Crawler().Crawl(packed);
+                        MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+                        memInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
+                        MemUtil.LoadSnapshotProgress(1.0f, "done");
+
+                        _SnapshotSessions.Add(memInfo);
                     }
+                    _selectedSnapshot = 0;
+                    showSnapshotInfo();
                 }
             }
         }
@@ -537,9 +548,12 @@ namespace MemoryProfilerWindow
 
                 if (_autoSaveToggle)
                 {
-                    if (_snapshotIOperator.saveSnapshotSessions(packed, _selectedSnapshot, _selectedProfilerMode, lastLoginIP) &&
-                        _snapshotIOperator.saveSnapshotJsonFile(currentSession.unPacked, _selectedSnapshot, _selectedProfilerMode, lastLoginIP)
-                        )
+                    MemUtil.LoadSnapshotProgress(0.01f, "auto save session and json");
+                    bool saveSessionSuc = _snapshotIOperator.saveSnapshotSessions(packed, _selectedSnapshot, _selectedProfilerMode, lastLoginIP);
+                    MemUtil.LoadSnapshotProgress(0.7f, "save session successed");
+                    bool saveJsonSuc =_snapshotIOperator.saveSnapshotJsonFile(currentSession.unPacked, _selectedSnapshot, _selectedProfilerMode, lastLoginIP);
+                    MemUtil.LoadSnapshotProgress(0.9f, "save json successed");
+                    if (saveSessionSuc && saveJsonSuc)
                     {
                         var content = new GUIContent(string.Format("Save Snapshots Sessions And Json Succeeded!"));
                         ShowNotification(content);
@@ -549,6 +563,7 @@ namespace MemoryProfilerWindow
                         var content = new GUIContent(string.Format("Save Snapshots Sessions And Json Failed!"));
                         ShowNotification(content);
                     }
+                    MemUtil.LoadSnapshotProgress(1.0f, "done");
                 }
             }
 
