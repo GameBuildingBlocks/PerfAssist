@@ -18,7 +18,7 @@ public class TableViewAppr
 
     public GUIStyle GetTitleStyle(bool selected)
     {
-        if (_styleTitle == null)
+        if (_styleTitle == null || _titleOrdinary == null || _titleSelected ==null)
         {
             _styleTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
             _styleTitle.alignment = TextAnchor.MiddleCenter;

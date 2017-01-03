@@ -42,14 +42,15 @@ public class PAEditorUtil
     public static Texture2D getColorTexture(Color c)
     {
         Texture2D tex = null;
-        if (s_colorTextures.TryGetValue(c, out tex))
-            return tex;
+        s_colorTextures.TryGetValue(c, out tex);
+        if(tex ==null) //Texture2D对象在游戏结束时为null
+        {
+            tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            tex.SetPixel(0, 0, c);
+            tex.Apply();
 
-        tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-        tex.SetPixel(0, 0, c);
-        tex.Apply();
-
-        s_colorTextures[c] = tex;
+            s_colorTextures[c] = tex;
+        }
         return tex;
     }
 
