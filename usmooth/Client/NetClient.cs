@@ -120,6 +120,8 @@ public class NetClient : IDisposable
                             NetUtil.Log("net unknown cmd: {0}.", new UsCmd(buffer).ReadNetCmd());
                             break;
                     }
+
+                    len++; // warning CS0219: The variable `len' is assigned but its value is never used
                 }
             }
         }
