@@ -52,7 +52,6 @@ public class ResourceTracker : IDisposable
     private bool _enableTracking = false;    
 
     private StreamWriter _logWriter = null;
-    private string _logPath = "";
     private int _reqSeq = 0;
 
     public ResourceTracker(bool enableTracking)
@@ -84,7 +83,6 @@ public class ResourceTracker : IDisposable
 
             _logWriter = new FileInfo(logPath).CreateText();
             _logWriter.AutoFlush = true;
-            _logPath = logPath;
 
             _enableTracking = true;
             UnityEngine.Debug.LogFormat("[ResourceTracker] tracking enabled: {0} ", logPath);
@@ -100,7 +98,6 @@ public class ResourceTracker : IDisposable
             }
 
             _enableTracking = false;
-            _logPath = "";
         }
     }
 
