@@ -689,7 +689,7 @@ public class MemTableBrowser
             MemStats.ShowTypeStats(_typeTable.GetSelected() as MemType);
         }
 
-        if (GUILayout.Button("Static Detail"))
+        if (GUILayout.Button("DetailInfo", GUILayout.MinWidth(80)))
         {
             _staticDetailInfo.showInfos();
         }

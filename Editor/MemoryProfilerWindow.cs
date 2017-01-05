@@ -102,7 +102,6 @@ namespace MemoryProfilerWindow
 
         bool _autoSaveToggle = true;
 
-
         [MenuItem(PAEditorConst.MenuPath + "/ResourceTracker")]
         static void Create()
         {
@@ -398,6 +397,7 @@ namespace MemoryProfilerWindow
         void OnGUI()
         {
             handleCommandEvent();
+
             // main bar
             GUILayout.BeginHorizontal();
             int connectedIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)_selectedProfilerMode, _ConnectedOptions, _ConnectedOptions.Length, MemStyles.ToolbarButton);
@@ -429,7 +429,7 @@ namespace MemoryProfilerWindow
             GUILayout.Space(200);
             drawProfilerModeGUI();
 
-            if (GUILayout.Button("Clear Sessions", GUILayout.MaxWidth(100)))
+            if (GUILayout.Button("Clear Snapshots", GUILayout.MaxWidth(100)))
             {
                 if (EditorUtility.DisplayDialog("Clear Sessions", "Warning ! \n\nClear Sessions Will Lost Current Snapshots.", "Continue", "Cancel")) 
                     clearSnapshotSessions();
