@@ -202,7 +202,10 @@ namespace MemoryProfilerWindow
                 _isRemoteConnected = false;
                 if (NetManager.Instance.IsConnected)
                     NetManager.Instance.Disconnect();
+                return;
             }
+
+            UsNet.Instance.CmdExecutor.RegisterHandler(eNetCmd.CL_RequestStackData, NetHandle_RequestStackData);
         }
 
 
@@ -612,6 +615,25 @@ namespace MemoryProfilerWindow
             RefreshCurrentView();
             Repaint();
         }
+
+        private bool NetHandle_RequestStackData(eNetCmd cmd, UsCmd c)
+        {
+            int instanceID = c.ReadInt32();
+            string className = c.ReadString();
+            UnityEngine.Debug.Log(string.Format("NetHandle_RequestStackData instanceID={0} className={1}", instanceID, className));
+
+            ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(instanceID, className);
+
+            UsCmd pkt = new UsCmd();
+            pkt.WriteNetCmd(eNetCmd.SV_QueryStacksResponse);
+            if (requestInfo == null)
+                pkt.WriteString("<no_callstack_available>");
+            else
+                pkt.WriteString(ResourceTracker.Instance.GetStackTrace(requestInfo));
+            UsNet.Instance.SendCommand(pkt);
+            return true;
+        }
+
 
         private bool Handle_QueryStacksResponse(eNetCmd cmd, UsCmd c)
         {
