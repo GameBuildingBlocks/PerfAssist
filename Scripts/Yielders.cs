@@ -57,12 +57,8 @@ public static class Yielders
             return new WaitForSeconds(seconds);
 
         WaitForSeconds wfs;
-
-        // it is always better to use TryGetValue() method instead of dict.Contains(key) + dict[key] 
-        // since it performs what you want with a single 'pass' through hashtable.
         if (!_waitForSecondsYielders.TryGetValue(seconds, out wfs))
             _waitForSecondsYielders.Add(seconds, wfs = new WaitForSeconds(seconds));
-
         return wfs;
     }
 
