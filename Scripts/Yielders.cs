@@ -14,19 +14,28 @@ public static class Yielders
 
     public static int _internalCounter = 0; // counts how many times the app yields
 
-    // dictionary with a key of ValueType will box the value to perform comparison / hash code calculation while scanning the hashtable.
-    // here we implement IEqualityComparer<float> and pass it to your dictionary to avoid that GC
-    class FloatComparer : IEqualityComparer<float>
-    {
-        bool IEqualityComparer<float>.Equals(float x, float y)
-        {
-            return x == y;
-        }
-        int IEqualityComparer<float>.GetHashCode(float obj)
-        {
-            return obj.GetHashCode();
-        }
-    }
+    // WARNING: 
+    //      (Gu Lu) The comments below are incorrect in Unity 5.5.0
+    //          - float DOES NOT needs customized IEqualityComparer (but enums and structs does)
+    //      however all these lines are kept to help later reader to share this knowledge (for education purpose only). 
+    //------------------------------------------------------------------
+    ///////////////////// obsoleted code begins \\\\\\\\\\\\\\\\\\\\\\\\
+    //
+    //// dictionary with a key of ValueType will box the value to perform comparison / hash code calculation while scanning the hashtable.
+    //// here we implement IEqualityComparer<float> and pass it to your dictionary to avoid that GC
+    //class FloatComparer : IEqualityComparer<float>
+    //{
+    //    bool IEqualityComparer<float>.Equals(float x, float y)
+    //    {
+    //        return x == y;
+    //    }
+    //    int IEqualityComparer<float>.GetHashCode(float obj)
+    //    {
+    //        return obj.GetHashCode();
+    //    }
+    //}
+    //\\\\\\\\\\\\\\\\\\\\\\\\ obsoleted code ends /////////////////////
+    //------------------------------------------------------------------
 
     static WaitForEndOfFrame _endOfFrame = new WaitForEndOfFrame();
     public static WaitForEndOfFrame EndOfFrame
@@ -62,5 +71,5 @@ public static class Yielders
         _waitForSecondsYielders.Clear();
     }
 
-    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100, new FloatComparer());
+    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100/*, new FloatComparer()*/); // FloatComparer is not needed  
 }
