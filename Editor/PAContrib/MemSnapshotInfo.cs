@@ -5,7 +5,6 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditor.MemoryProfiler;
 
-[System.Serializable]
 public class MemSnapshotInfo 
 {
     public CrawledMemorySnapshot unPacked=null;

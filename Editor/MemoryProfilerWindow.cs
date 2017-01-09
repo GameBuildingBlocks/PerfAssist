@@ -1,9 +1,13 @@
 using System;
-using System.IO;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEditor;
-using UnityEngine;
 using UnityEditor.MemoryProfiler;
+using UnityEditorInternal;
+using UnityEngine;
+using Group = Assets.Editor.Treemap.Group;
+
 
 enum eShowType
 {
@@ -14,20 +18,11 @@ public enum eProfilerMode
 {
     Editor,
     Remote,
-    Loaded,
+    File,
 }
 
 namespace MemoryProfilerWindow
 {
-    using Item = Assets.Editor.Treemap.Item;
-    using Group = Assets.Editor.Treemap.Group;
-    using UnityEditorInternal;
-    using System.Text.RegularExpressions;
-    using System.ComponentModel;
-    using System.Runtime.Remoting.Messaging;
-    using System.Threading;
-    using System.Collections;
-
     public class ProfilerConnector : MonoBehaviour
     {
         private string connectIP;
@@ -102,11 +97,17 @@ namespace MemoryProfilerWindow
 
         bool _autoSaveToggle = true;
 
+        TrackerModeManager _modeMgr = new TrackerModeManager();
 
         [MenuItem(PAEditorConst.MenuPath + "/ResourceTracker")]
         static void Create()
         {
             EditorWindow.GetWindow<MemoryProfilerWindow>();
+        }
+
+        MemoryProfilerWindow()
+        {
+            _modeMgr.SetSelectionChanged(OnSnapshotSelectionChanged);
         }
 
         void OnEnable()
@@ -358,11 +359,11 @@ namespace MemoryProfilerWindow
                         saveSessionBtn();
                     }
                     break;
-                case eProfilerMode.Loaded:
-                    drawSnapshotChunksGrid(210, 930);
-                    GUILayout.FlexibleSpace();
-                    loadSessionBtn();
+
+                case eProfilerMode.File:
+                    _modeMgr.OnGUI();
                     break;
+
                 default:
                     break;
             }
@@ -476,40 +477,6 @@ namespace MemoryProfilerWindow
 
             if (_inspector != null)
                 _inspector.Draw();
-        }
-
-        private void loadSessionBtn()
-        {
-            if (GUILayout.Button("Load Session", GUILayout.MaxWidth(100)))
-            {
-                List<object> packeds = _snapshotIOperator.loadSnapshotMemPacked();
-                if (packeds.Count == 0)
-                {
-                    ShowNotification(new GUIContent("Load Snapshots Failed!"));
-                }
-                else
-                {
-                    clearSnapshotSessions();
-                    ShowNotification(new GUIContent("load snapshots succeeded!"));
-                    var curSessionList = getCurrentSnapshotSessionList();
-                    foreach (var obj in packeds)
-                    {
-                        MemSnapshotInfo memInfo = new MemSnapshotInfo();
-
-                        var packed = obj as PackedMemorySnapshot;
-                        MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-                        var packedCrawled = new Crawler().Crawl(packed);
-                        MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-                        memInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
-                        MemUtil.LoadSnapshotProgress(1.0f, "done");
-
-                        curSessionList.Add(memInfo);
-                    }
-                    _selectedSnapshot = 0;
-                    freshCurrentSnapshotOptions(); 
-                    showSnapshotInfo();
-                }
-            }
         }
 
         private void saveSessionBtn()
@@ -635,7 +602,7 @@ namespace MemoryProfilerWindow
                     {
                         return _remoteSnapshotSessions;
                     }
-                case eProfilerMode.Loaded:
+                case eProfilerMode.File:
                     {
                         return _loadSnapshotSessions;
                     }
@@ -664,6 +631,17 @@ namespace MemoryProfilerWindow
                 default:
                     break;
             }
+        }
+
+        private void OnSnapshotSelectionChanged()
+        {
+            _unpackedCrawl = _modeMgr.SelectedUnpacked;
+            _preUnpackedCrawl = _modeMgr.PrevUnpacked;
+            _inspector = new Inspector(this, _unpackedCrawl);
+
+            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
+            RefreshCurrentView();
+            Repaint();
         }
     }
 }

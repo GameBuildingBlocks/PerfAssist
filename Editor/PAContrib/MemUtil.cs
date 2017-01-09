@@ -8,6 +8,13 @@ using UnityEngine;
 
 public class MemUtil 
 {
+    public static void NotifyError(string format, params object[] args)
+    {
+        string content = string.Format(format, args);
+        Debug.LogError(content);
+        EditorWindow.focusedWindow.ShowNotification(new GUIContent(content));
+    }
+
     public static string SnapshotsDir = string.Format("{0}/mem_snapshots", Application.persistentDataPath);
 
     public static string GetFullpath(string filename)

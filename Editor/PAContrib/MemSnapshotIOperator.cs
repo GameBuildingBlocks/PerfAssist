@@ -232,37 +232,4 @@ public class SnapshotIOperator
             return false;
         }
     }
-
-
-    public List<object> loadSnapshotMemPacked()
-    {
-        try
-        {
-            string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");
-            DirectoryInfo TheFolder = new DirectoryInfo(pathName);
-            if (!TheFolder.Exists)
-                throw new Exception(string.Format("bad path: {0}", TheFolder.ToString()));
-
-            List<object> result = new List<object>();
-            System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-            foreach (var file in TheFolder.GetFiles())
-            {
-                var fileName = file.FullName;
-                if (fileName.EndsWith(".memsnap"))
-                {
-                    using (Stream stream = File.Open(fileName, FileMode.Open))
-                    {
-                        result.Add(bf.Deserialize(stream));
-                    }
-                }
-            }
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError(string.Format("load snapshot error ! msg ={0}", ex.Message));
-            return new List<object>();
-        }
-    }
-
 }
