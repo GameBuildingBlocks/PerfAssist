@@ -3,6 +3,8 @@ using System.Collections;
 
 public class PAEditorConst
 {
+    public const int BAD_ID = -1;
+
     public readonly static Color TitleColor = (Color)new Color32(38, 158, 111, 255);        // basically green
     public readonly static Color TitleColorSelected = (Color)new Color32(19, 80, 60, 255);  // dark green
 
