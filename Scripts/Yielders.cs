@@ -67,5 +67,5 @@ public static class Yielders
         _waitForSecondsYielders.Clear();
     }
 
-    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100/*, new FloatComparer()*/); // FloatComparer is not needed  
+    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100, new FloatComparer());
 }
