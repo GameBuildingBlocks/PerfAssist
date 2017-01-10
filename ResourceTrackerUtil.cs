@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
+using LitJson;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -32,6 +32,8 @@ public class SceneGraphExtractor
     public static List<string> MemCategories = new List<string>() { "Texture2D", "AnimationClip", "Mesh", "Font", "ParticleSystem", "Camera" };
 
     public Dictionary<string, List<int>> MemObjectIDs = new Dictionary<string, List<int>>();
+    Dictionary<string, string> shaderPropertyDict = null;
+
 
     void CountMemObject(UnityEngine.Object obj)
     {
@@ -56,6 +58,25 @@ public class SceneGraphExtractor
     {
         m_root = root;
 
+        readShaderPropertyJson();
+
+        if(shaderPropertyDict==null)
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
+                string jsonStr = sr.ReadToEnd();
+                sr.Close();
+                var jsonData = new JsonReader(jsonStr);
+                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+            }
+            catch (System.Exception ex)
+            {
+                UnityEngine.Debug.LogErrorFormat("write json file error,errMsg = {0}", ex.Message);
+            }
+        }
+
+
         foreach (var item in MemCategories)
             MemObjectIDs[item] = new List<int>();
 
@@ -63,6 +84,8 @@ public class SceneGraphExtractor
         if (go != null)
         {
             ProcessRecursively(go);
+
+            ExtractComponentIDs<Camera>(go);
 
 #if UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
@@ -78,25 +101,8 @@ public class SceneGraphExtractor
                     }
                 }
             }
-
-            Component[] cameras = go.GetComponentsInChildren(typeof(Camera), true);
-            foreach (Camera camera in cameras)
-            {
-                List<int> ids = null;
-                if (camera != null && MemObjectIDs.TryGetValue("Camera", out ids))
-                {
-                    if (ids != null && !ids.Contains(camera.GetInstanceID()))
-                        ids.Add(camera.GetInstanceID());
-                }
-            }
 #else
-            foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
-            {
-                Mesh mesh = meshFilter.sharedMesh;
-                CountMemObject(mesh);
-            }
-
-            //foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
+            // foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
             //{
             //    Material mat = w.material;
             //    if (mat != null)
@@ -110,6 +116,12 @@ public class SceneGraphExtractor
             //    }
             //}
 
+            foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
+            {
+                Mesh mesh = meshFilter.sharedMesh;
+                CountMemObject(mesh);
+            }
+
             foreach (Renderer renderer in go.GetComponentsInChildren(typeof(Renderer), true))
             {
                 Material mat = renderer.sharedMaterial;
@@ -117,17 +129,57 @@ public class SceneGraphExtractor
                 {
                     CountMemObject(mat);
 
-                    if (mat.mainTexture is Texture2D)
+                    Shader shader = mat.shader;
+                    if (shader != null)
                     {
-                        CountMemObject(mat.mainTexture);
+                        if (shaderPropertyDict == null || !shaderPropertyDict.ContainsKey(shader.name))
+                            continue;
+
+                        string propertyNameStrs;
+                        shaderPropertyDict.TryGetValue(shader.name, out propertyNameStrs);
+                        char[] tokens = new char[] { ResourceTrackerConst.shaderPropertyNameJsonToken };
+                        var propertyNameList = propertyNameStrs.Split(tokens);
+                        foreach (var propertyName in propertyNameList)
+                        {
+                            Texture2D tex = mat.GetTexture(propertyName) as Texture2D;
+                            if (tex != null)
+                            {
+                                CountMemObject(tex);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (mat.mainTexture is Texture2D)
+                        {
+                            CountMemObject(mat.mainTexture);
+                        }
                     }
                 }
             }
 
             ExtractComponentIDs<Animator>(go);
             ExtractComponentIDs<ParticleSystem>(go);
-            ExtractComponentIDs<Camera>(go);
 #endif
+        }
+    }
+
+    private void readShaderPropertyJson()
+    {
+        if (shaderPropertyDict == null)
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(new FileStream(Path.Combine(Path.Combine(Application.persistentDataPath, "TestTools"), "ShaderPropertyNameRecord.json"), FileMode.Open));
+                string jsonStr = sr.ReadToEnd();
+                sr.Close();
+                var jsonData = new JsonReader(jsonStr);
+                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+            }
+            catch (System.Exception ex)
+            {
+                UnityEngine.Debug.LogErrorFormat("write json file error,errMsg = {0}", ex.Message);
+            }
         }
     }
 

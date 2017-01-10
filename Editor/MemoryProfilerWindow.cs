@@ -134,12 +134,15 @@ namespace MemoryProfilerWindow
             }
 
             clearSnapshotSessions();
+            if (NetManager.Instance!=null)
+                NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
         }
 
         void disConnect()
         {
             ProfilerDriver.connectedProfiler = -1;
             NetManager.Instance.Disconnect();
+            _isRemoteConnected = false;
         }
 
         private void handleCommandEvent()
@@ -204,8 +207,6 @@ namespace MemoryProfilerWindow
                     NetManager.Instance.Disconnect();
                 return;
             }
-
-            UsNet.Instance.CmdExecutor.RegisterHandler(eNetCmd.CL_RequestStackData, NetHandle_RequestStackData);
         }
 
 
@@ -414,19 +415,6 @@ namespace MemoryProfilerWindow
                     connectEditor();
 
                 freshCurrentSnapshotOptions();
-                //if (//_SnapshotSessions.Count > 0
-                //    //&& !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)&& 
-                //    !switchProfilerModeDialog())
-                //{
-                //}
-                //else
-                //{
-                //    clearSnapshotChunk();
-                //    _selectedProfilerMode = (eProfilerMode)connectedIndex;
-
-                //    if (_selectedProfilerMode == (int)eProfilerMode.Editor)
-                //        connectEditor();
-                //}
             }
 
             GUILayout.Space(200);
@@ -611,29 +599,9 @@ namespace MemoryProfilerWindow
                 _preUnpackedCrawl = null;
             }
             _inspector = new Inspector(this, _unpackedCrawl);
-            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
             RefreshCurrentView();
             Repaint();
         }
-
-        private bool NetHandle_RequestStackData(eNetCmd cmd, UsCmd c)
-        {
-            int instanceID = c.ReadInt32();
-            string className = c.ReadString();
-            UnityEngine.Debug.Log(string.Format("NetHandle_RequestStackData instanceID={0} className={1}", instanceID, className));
-
-            ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(instanceID, className);
-
-            UsCmd pkt = new UsCmd();
-            pkt.WriteNetCmd(eNetCmd.SV_QueryStacksResponse);
-            if (requestInfo == null)
-                pkt.WriteString("<no_callstack_available>");
-            else
-                pkt.WriteString(ResourceTracker.Instance.GetStackTrace(requestInfo));
-            UsNet.Instance.SendCommand(pkt);
-            return true;
-        }
-
 
         private bool Handle_QueryStacksResponse(eNetCmd cmd, UsCmd c)
         {
