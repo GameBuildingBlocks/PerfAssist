@@ -14,4 +14,5 @@ public class PAEditorConst
 
     public const string MenuPath = "Window/PerfAssist";
     public const string DemoTestPath = MenuPath + "/Demos and Tests";
+    public const string DevCommandPath = MenuPath + "/Dev Command";
 }

@@ -5,10 +5,14 @@ public class UsDefaultServer : MonoBehaviour
     public bool LogRemotely = true;
     public bool LogIntoFile = false;
     public bool InGameGui = false;
+    void Awake()
+    {
+        _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
+    }
 
 	void Start() 
     {
-        _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
+        //        _usmooth = new UsMain(LogRemotely, LogIntoFile, InGameGui);
     }
 
     void Update()
