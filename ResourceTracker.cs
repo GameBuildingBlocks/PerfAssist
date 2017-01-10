@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using LitJson;
 
 public enum ResourceRequestType
 {
@@ -55,6 +56,8 @@ public class ResourceTracker : IDisposable
     //private string _logPath = "";
     private int _reqSeq = 0;
 
+    public static Dictionary<string, string> shaderPropertyDict = null;
+
     public ResourceTracker(bool enableTracking)
     {
         if (enableTracking)
@@ -67,9 +70,31 @@ public class ResourceTracker : IDisposable
                     UsNet.Instance.CmdExecutor.RegisterHandler(eNetCmd.CL_RequestStackData, NetHandle_RequestStackData);
                 else
                     UnityEngine.Debug.LogError("UsNet not available");
+
+                readShaderPropertyJson();
             }
         }
     }
+
+    private void readShaderPropertyJson()
+    {
+        if (shaderPropertyDict == null)
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
+                string jsonStr = sr.ReadToEnd();
+                sr.Close();
+                var jsonData = new JsonReader(jsonStr);
+                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+            }
+            catch (System.Exception)
+            {
+                UnityEngine.Debug.Log("no ShaderPropertyNameRecord.json");
+            }
+        }
+    }
+
 
     public void Open()
     {

@@ -32,8 +32,6 @@ public class SceneGraphExtractor
     public static List<string> MemCategories = new List<string>() { "Texture2D", "AnimationClip", "Mesh", "Font", "ParticleSystem", "Camera" };
 
     public Dictionary<string, List<int>> MemObjectIDs = new Dictionary<string, List<int>>();
-    Dictionary<string, string> shaderPropertyDict = null;
-
 
     void CountMemObject(UnityEngine.Object obj)
     {
@@ -58,25 +56,6 @@ public class SceneGraphExtractor
     {
         m_root = root;
 
-        readShaderPropertyJson();
-
-        if(shaderPropertyDict==null)
-        {
-            try
-            {
-                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
-                string jsonStr = sr.ReadToEnd();
-                sr.Close();
-                var jsonData = new JsonReader(jsonStr);
-                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
-            }
-            catch (System.Exception ex)
-            {
-                UnityEngine.Debug.LogErrorFormat("write json file error,errMsg = {0}", ex.Message);
-            }
-        }
-
-
         foreach (var item in MemCategories)
             MemObjectIDs[item] = new List<int>();
 
@@ -87,7 +66,7 @@ public class SceneGraphExtractor
 
             ExtractComponentIDs<Camera>(go);
 
-#if UNITY_EDITOR
+#if !UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
             foreach (Renderer renderer in renderers)
             {
@@ -116,6 +95,7 @@ public class SceneGraphExtractor
             //    }
             //}
 
+            var shaderPropertyDict =ResourceTracker.shaderPropertyDict;
             foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
             {
                 Mesh mesh = meshFilter.sharedMesh;
@@ -161,25 +141,6 @@ public class SceneGraphExtractor
             ExtractComponentIDs<Animator>(go);
             ExtractComponentIDs<ParticleSystem>(go);
 #endif
-        }
-    }
-
-    private void readShaderPropertyJson()
-    {
-        if (shaderPropertyDict == null)
-        {
-            try
-            {
-                StreamReader sr = new StreamReader(new FileStream(Path.Combine(Path.Combine(Application.persistentDataPath, "TestTools"), "ShaderPropertyNameRecord.json"), FileMode.Open));
-                string jsonStr = sr.ReadToEnd();
-                sr.Close();
-                var jsonData = new JsonReader(jsonStr);
-                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
-            }
-            catch (System.Exception ex)
-            {
-                UnityEngine.Debug.LogErrorFormat("write json file error,errMsg = {0}", ex.Message);
-            }
         }
     }
 
