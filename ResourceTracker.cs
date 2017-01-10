@@ -56,7 +56,11 @@ public class ResourceTracker : IDisposable
     //private string _logPath = "";
     private int _reqSeq = 0;
 
-    public static Dictionary<string, string> shaderPropertyDict = null;
+    public Dictionary<string, string> ShaderPropertyDict
+    {
+        get { return _shaderPropertyDict;}
+    }
+    private Dictionary<string, string> _shaderPropertyDict = null;
 
     public ResourceTracker(bool enableTracking)
     {
@@ -78,7 +82,7 @@ public class ResourceTracker : IDisposable
 
     private void readShaderPropertyJson()
     {
-        if (shaderPropertyDict == null)
+        if (_shaderPropertyDict == null)
         {
             try
             {
@@ -86,7 +90,7 @@ public class ResourceTracker : IDisposable
                 string jsonStr = sr.ReadToEnd();
                 sr.Close();
                 var jsonData = new JsonReader(jsonStr);
-                shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+                _shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
             }
             catch (System.Exception)
             {

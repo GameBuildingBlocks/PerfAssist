@@ -95,7 +95,7 @@ public class SceneGraphExtractor
             //    }
             //}
 
-            var shaderPropertyDict =ResourceTracker.shaderPropertyDict;
+            var shaderPropertyDict =ResourceTracker.Instance.ShaderPropertyDict;
             foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
             {
                 Mesh mesh = meshFilter.sharedMesh;
@@ -110,11 +110,8 @@ public class SceneGraphExtractor
                     CountMemObject(mat);
 
                     Shader shader = mat.shader;
-                    if (shader != null)
+                    if (shader != null && shaderPropertyDict != null && shaderPropertyDict.ContainsKey(shader.name))
                     {
-                        if (shaderPropertyDict == null || !shaderPropertyDict.ContainsKey(shader.name))
-                            continue;
-
                         string propertyNameStrs;
                         shaderPropertyDict.TryGetValue(shader.name, out propertyNameStrs);
                         char[] tokens = new char[] { ResourceTrackerConst.shaderPropertyNameJsonToken };
