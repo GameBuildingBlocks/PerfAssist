@@ -102,7 +102,7 @@ public class SceneGraphExtractor
                 }
             }
 #else
-            // foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
+            //foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
             //{
             //    Material mat = w.material;
             //    if (mat != null)
