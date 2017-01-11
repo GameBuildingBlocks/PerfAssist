@@ -7,7 +7,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditorInternal;
 using MemoryProfilerWindow;
-using LitJson;
+using PerfAssist.LitJson;
 using System.Text;
 public class SnapshotIOperator
 {
