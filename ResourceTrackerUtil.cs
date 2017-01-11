@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-
+using LitJson;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -64,7 +64,9 @@ public class SceneGraphExtractor
         {
             ProcessRecursively(go);
 
-#if UNITY_EDITOR
+            ExtractComponentIDs<Camera>(go);
+
+#if !UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
             foreach (Renderer renderer in renderers)
             {
@@ -78,24 +80,7 @@ public class SceneGraphExtractor
                     }
                 }
             }
-
-            Component[] cameras = go.GetComponentsInChildren(typeof(Camera), true);
-            foreach (Camera camera in cameras)
-            {
-                List<int> ids = null;
-                if (camera != null && MemObjectIDs.TryGetValue("Camera", out ids))
-                {
-                    if (ids != null && !ids.Contains(camera.GetInstanceID()))
-                        ids.Add(camera.GetInstanceID());
-                }
-            }
 #else
-            foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
-            {
-                Mesh mesh = meshFilter.sharedMesh;
-                CountMemObject(mesh);
-            }
-
             //foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
             //{
             //    Material mat = w.material;
@@ -110,6 +95,13 @@ public class SceneGraphExtractor
             //    }
             //}
 
+            var shaderPropertyDict =ResourceTracker.Instance.ShaderPropertyDict;
+            foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
+            {
+                Mesh mesh = meshFilter.sharedMesh;
+                CountMemObject(mesh);
+            }
+
             foreach (Renderer renderer in go.GetComponentsInChildren(typeof(Renderer), true))
             {
                 Material mat = renderer.sharedMaterial;
@@ -117,16 +109,34 @@ public class SceneGraphExtractor
                 {
                     CountMemObject(mat);
 
-                    if (mat.mainTexture is Texture2D)
+                    Shader shader = mat.shader;
+                    if (shader != null && shaderPropertyDict != null && shaderPropertyDict.ContainsKey(shader.name))
                     {
-                        CountMemObject(mat.mainTexture);
+                        string propertyNameStrs;
+                        shaderPropertyDict.TryGetValue(shader.name, out propertyNameStrs);
+                        char[] tokens = new char[] { ResourceTrackerConst.shaderPropertyNameJsonToken };
+                        var propertyNameList = propertyNameStrs.Split(tokens);
+                        foreach (var propertyName in propertyNameList)
+                        {
+                            Texture2D tex = mat.GetTexture(propertyName) as Texture2D;
+                            if (tex != null)
+                            {
+                                CountMemObject(tex);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (mat.mainTexture is Texture2D)
+                        {
+                            CountMemObject(mat.mainTexture);
+                        }
                     }
                 }
             }
 
             ExtractComponentIDs<Animator>(go);
             ExtractComponentIDs<ParticleSystem>(go);
-            ExtractComponentIDs<Camera>(go);
 #endif
         }
     }

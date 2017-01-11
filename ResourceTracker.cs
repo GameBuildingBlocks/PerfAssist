@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using LitJson;
 
 public enum ResourceRequestType
 {
@@ -52,15 +53,52 @@ public class ResourceTracker : IDisposable
     private bool _enableTracking = false;    
 
     private StreamWriter _logWriter = null;
+    //private string _logPath = "";
     private int _reqSeq = 0;
+
+    public Dictionary<string, string> ShaderPropertyDict
+    {
+        get { return _shaderPropertyDict;}
+    }
+    private Dictionary<string, string> _shaderPropertyDict = null;
 
     public ResourceTracker(bool enableTracking)
     {
         if (enableTracking)
         {
-            Open();            
+            Open();
+
+            if (_enableTracking)
+            {
+                if (UsNet.Instance != null && UsNet.Instance.CmdExecutor != null)
+                    UsNet.Instance.CmdExecutor.RegisterHandler(eNetCmd.CL_RequestStackData, NetHandle_RequestStackData);
+                else
+                    UnityEngine.Debug.LogError("UsNet not available");
+
+                readShaderPropertyJson();
+            }
         }
     }
+
+    private void readShaderPropertyJson()
+    {
+        if (_shaderPropertyDict == null)
+        {
+            try
+            {
+                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
+                string jsonStr = sr.ReadToEnd();
+                sr.Close();
+                var jsonData = new JsonReader(jsonStr);
+                _shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+            }
+            catch (System.Exception)
+            {
+                UnityEngine.Debug.Log("no ShaderPropertyNameRecord.json");
+            }
+        }
+    }
+
 
     public void Open()
     {
@@ -83,6 +121,7 @@ public class ResourceTracker : IDisposable
 
             _logWriter = new FileInfo(logPath).CreateText();
             _logWriter.AutoFlush = true;
+            //_logPath = logPath;
 
             _enableTracking = true;
             UnityEngine.Debug.LogFormat("[ResourceTracker] tracking enabled: {0} ", logPath);
@@ -98,6 +137,7 @@ public class ResourceTracker : IDisposable
             }
 
             _enableTracking = false;
+            //_logPath = "";
         }
     }
 
@@ -305,6 +345,25 @@ public class ResourceTracker : IDisposable
             }
         }
     }
+
+    public bool NetHandle_RequestStackData(eNetCmd cmd, UsCmd c)
+    {
+        int instanceID = c.ReadInt32();
+        string className = c.ReadString();
+        UnityEngine.Debug.Log(string.Format("NetHandle_RequestStackData instanceID={0} className={1}", instanceID, className));
+
+        ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(instanceID, className);
+
+        UsCmd pkt = new UsCmd();
+        pkt.WriteNetCmd(eNetCmd.SV_QueryStacksResponse);
+        if (requestInfo == null)
+            pkt.WriteString("<no_callstack_available>");
+        else
+            pkt.WriteString(ResourceTracker.Instance.GetStackTrace(requestInfo));
+        UsNet.Instance.SendCommand(pkt);
+        return true;
+    }
+
 
     private void TrackRequestWithObject(ResourceRequestInfo req, UnityEngine.Object obj)
     {

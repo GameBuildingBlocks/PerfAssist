@@ -136,12 +136,15 @@ namespace MemoryProfilerWindow
             }
 
             clearSnapshotSessions();
+            if (NetManager.Instance!=null)
+                NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
         }
 
         void disConnect()
         {
             ProfilerDriver.connectedProfiler = -1;
             NetManager.Instance.Disconnect();
+            _isRemoteConnected = false;
         }
 
         private void handleCommandEvent()
@@ -204,6 +207,7 @@ namespace MemoryProfilerWindow
                 _isRemoteConnected = false;
                 if (NetManager.Instance.IsConnected)
                     NetManager.Instance.Disconnect();
+                return;
             }
         }
 
@@ -399,6 +403,7 @@ namespace MemoryProfilerWindow
         void OnGUI()
         {
             handleCommandEvent();
+
             // main bar
             GUILayout.BeginHorizontal();
             int connectedIndex = GUI.SelectionGrid(new Rect(0, 0, 180, 20), (int)_selectedProfilerMode, _ConnectedOptions, _ConnectedOptions.Length, MemStyles.ToolbarButton);
@@ -412,25 +417,12 @@ namespace MemoryProfilerWindow
                     connectEditor();
 
                 freshCurrentSnapshotOptions();
-                //if (//_SnapshotSessions.Count > 0
-                //    //&& !_snapshotIOperator.isSaved(_SnapshotSessions.Count, _selectedProfilerMode, lastLoginIP)&& 
-                //    !switchProfilerModeDialog())
-                //{
-                //}
-                //else
-                //{
-                //    clearSnapshotChunk();
-                //    _selectedProfilerMode = (eProfilerMode)connectedIndex;
-
-                //    if (_selectedProfilerMode == (int)eProfilerMode.Editor)
-                //        connectEditor();
-                //}
             }
 
             GUILayout.Space(200);
             drawProfilerModeGUI();
 
-            if (GUILayout.Button("Clear Sessions", GUILayout.MaxWidth(100)))
+            if (GUILayout.Button("Clear Snapshots", GUILayout.MaxWidth(100)))
             {
                 if (EditorUtility.DisplayDialog("Clear Sessions", "Warning ! \n\nClear Sessions Will Lost Current Snapshots.", "Continue", "Cancel")) 
                     clearSnapshotSessions();
@@ -575,7 +567,6 @@ namespace MemoryProfilerWindow
                 _preUnpackedCrawl = null;
             }
             _inspector = new Inspector(this, _unpackedCrawl);
-            NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_QueryStacksResponse, Handle_QueryStacksResponse);
             RefreshCurrentView();
             Repaint();
         }
