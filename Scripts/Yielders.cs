@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions.Comparers;
 
 // Usage:
 //    yield return new WaitForEndOfFrame();     =>      yield return Yielders.EndOfFrame;
@@ -67,5 +68,5 @@ public static class Yielders
         _waitForSecondsYielders.Clear();
     }
 
-    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100/*, new FloatComparer()*/); // FloatComparer is not needed  
+    static Dictionary<float, WaitForSeconds> _waitForSecondsYielders = new Dictionary<float, WaitForSeconds>(100, new FloatComparer());
 }
