@@ -1,11 +1,8 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Diagnostics;
-using LitJson;
+using System.IO;
+using UnityEngine;
 
 public enum ResourceRequestType
 {
@@ -86,11 +83,12 @@ public class ResourceTracker : IDisposable
         {
             try
             {
-                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
-                string jsonStr = sr.ReadToEnd();
-                sr.Close();
-                var jsonData = new JsonReader(jsonStr);
-                _shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
+                // 临时注掉，这里考虑用 UnityEngine.JsonUtility
+                //StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
+                //string jsonStr = sr.ReadToEnd();
+                //sr.Close();
+                //var jsonData = new JsonReader(jsonStr);
+                //_shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
             }
             catch (System.Exception)
             {

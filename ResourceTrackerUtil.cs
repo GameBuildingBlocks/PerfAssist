@@ -1,12 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using LitJson;
+using UnityEngine;
 #if UNITY_EDITOR
-using UnityEditor;
 #endif
 
 public class SysUtil

@@ -4,7 +4,7 @@ using UnityEditor;
 #endif
 using System.Collections.Generic;
 using System.Text;
-using LitJson;
+using PerfAssist.LitJson;
 using System.IO;
 
 public class ShaderComponnentScanner

@@ -1,13 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using LitJson;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
+﻿using System.IO;
+using UnityEngine;
 
 public class ResourceTrackerConst
 {
