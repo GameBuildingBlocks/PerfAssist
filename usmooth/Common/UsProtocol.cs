@@ -50,6 +50,7 @@ public enum eNetCmd
     CL_StartAnalysePixels,
 
     CL_RequestStackData,
+    CL_RequestStackSummary,
 
     CL_CmdEnd,
 
@@ -73,7 +74,8 @@ public enum eNetCmd
     SV_QuerySlidersResponse,
     SV_QueryStacksResponse,
 
-
+    SV_QueryStackSummaryResponse,
+    
     SV_StressTestNames,
     SV_StressTestResult,
 
