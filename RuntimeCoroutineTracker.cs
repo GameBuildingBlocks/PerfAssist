@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-#if UNITY_5_5
+#if UNITY_5_5_OR_NEWER
 using UnityEngine.Profiling;
 #endif
 
