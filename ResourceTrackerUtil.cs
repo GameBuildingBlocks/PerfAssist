@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 
 public class SysUtil
@@ -17,14 +18,15 @@ public class SysUtil
     }
 }
 
+public delegate List<UnityEngine.Object> AdditionalMemObjectExtractor(GameObject go);
+
 public class SceneGraphExtractor
 {
     public UnityEngine.Object m_root;
     public List<int> GameObjectIDs = new List<int>();
-    public List<int> TextureIDs = new List<int>();
-    public List<int> AnimationClipIDs = new List<int>();
 
     public static List<string> MemCategories = new List<string>() { "Texture2D", "AnimationClip", "Mesh", "Font", "ParticleSystem", "Camera" };
+    public static AdditionalMemObjectExtractor UIWidgetExtractor;
 
     public Dictionary<string, List<int>> MemObjectIDs = new Dictionary<string, List<int>>();
 
@@ -61,7 +63,7 @@ public class SceneGraphExtractor
 
             ExtractComponentIDs<Camera>(go);
 
-#if !UNITY_EDITOR
+#if UNITY_EDITOR
             Component[] renderers = go.GetComponentsInChildren(typeof(Renderer), true);
             foreach (Renderer renderer in renderers)
             {
@@ -76,19 +78,14 @@ public class SceneGraphExtractor
                 }
             }
 #else
-            //foreach (UIWidget w in go.GetComponentsInChildren(typeof(UIWidget), true))
-            //{
-            //    Material mat = w.material;
-            //    if (mat != null)
-            //    {
-            //        CountMemObject(mat);
-            //    }
-            //    Texture2D t = w.mainTexture as Texture2D;
-            //    if (t != null)
-            //    {
-            //        CountMemObject(t);
-            //    }
-            //}
+            if (UIWidgetExtractor != null)
+            {
+                List<UnityEngine.Object> objs = UIWidgetExtractor(go);
+                foreach (var obj in objs)
+                {
+                    CountMemObject(obj);
+                }
+            }
 
             var shaderPropertyDict =ResourceTracker.Instance.ShaderPropertyDict;
             foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
