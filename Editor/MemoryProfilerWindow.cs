@@ -56,6 +56,11 @@ namespace MemoryProfilerWindow
 
         [NonSerialized]
         CrawledMemorySnapshot _unpackedCrawl;
+        public CrawledMemorySnapshot UnpackedCrawl
+        {
+            get { return _unpackedCrawl; }
+        }
+
         CrawledMemorySnapshot _preUnpackedCrawl;
 
         [NonSerialized]

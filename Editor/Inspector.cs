@@ -1,5 +1,4 @@
 using System;
-using Assets.Editor.Treemap;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.MemoryProfiler;
@@ -59,7 +58,7 @@ namespace MemoryProfilerWindow
             Instance.OnObjSelected(thing);
 
             if (NetManager.Instance != null && NetManager.Instance.IsConnected)
-                requestRemoteDebugInfo();
+                requestStackDataInfo();
         }
 
         public void Draw()
@@ -429,14 +428,14 @@ namespace MemoryProfilerWindow
             if (obj == null || ResourceTracker.Instance == null || !ResourceTracker.Instance.EnableTracking)
                 return "";
 
-            ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(obj.instanceID, obj.className);
+            ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(obj.instanceID);
             if (requestInfo == null)
                 return "";
 
             return string.Format("{0}\n\nStackTrace:\n{1}", requestInfo.ToString(), ResourceTracker.Instance.GetStackTrace(requestInfo));
         }
 
-        private void requestRemoteDebugInfo()
+        private void requestStackDataInfo()
         {
             var selectNat = _selectedThing as NativeUnityEngineObject;
             if (selectNat == null)
