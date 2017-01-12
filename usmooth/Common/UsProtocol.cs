@@ -74,8 +74,7 @@ public enum eNetCmd
     SV_QuerySlidersResponse,
     SV_QueryStacksResponse,
 
-    SV_QueryStackSummaryResponse,
-    
+
     SV_StressTestNames,
     SV_StressTestResult,
 
