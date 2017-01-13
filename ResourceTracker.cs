@@ -104,13 +104,10 @@ public class ResourceTracker : IDisposable
         {
             try
             {
-                // 临时注掉，这里考虑用 UnityEngine.JsonUtility
-                //StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
-                //string jsonStr = sr.ReadToEnd();
-                //sr.Close();
-                //var jsonData = new JsonReader(jsonStr);
-                //_shaderPropertyDict = JsonMapper.ToObject<Dictionary<string, string>>(jsonData);
-            }
+                StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
+                string jsonStr = sr.ReadToEnd();
+                sr.Close();
+                _shaderPropertyDict = JsonUtility.FromJson<Serialization<string, string>>(jsonStr).ToDictionary();            }
             catch (System.Exception)
             {
                 UnityEngine.Debug.Log("no ShaderPropertyNameRecord.json");
