@@ -16,6 +16,7 @@ public class SnapshotIOperator
     private string _basePath;
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
     Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
+    const string UPLOAD_HTTP_URL = "http://10.20.80.59:88/ramPush";
 
     public bool isSaved(int snapshotCount, eProfilerMode profilerMode, string ip = null)
     {
@@ -133,7 +134,7 @@ public class SnapshotIOperator
                     instanceNameDict.Add(instanceNameHash, memObj.InstanceName);
                 }
 
-                dataInfo = memObj.RefCount + "," + memObj.Size + "," + instanceNameDict[instanceNameHash];
+                dataInfo = memObj.RefCount + "," + memObj.Size + "," + instanceNameHash;
                 if (type.Value.Category == 2)
                 {
                     var manged = memObj._thing as ManagedObject;
@@ -172,12 +173,10 @@ public class SnapshotIOperator
     private bool uploadJson(string jsonContent) {
         try
         {
-            string uploadHttpURL = "http://10.20.80.59:88/ramPush";
-
             WebClient wc = new WebClient();
             wc.Headers.Add("Content-Type", "application/json");
             byte[] bs = System.Text.Encoding.UTF8.GetBytes(jsonContent);
-            wc.UploadData(uploadHttpURL, "POST", bs);
+            wc.UploadData(UPLOAD_HTTP_URL, "POST", bs);
         }
         catch (Exception ex)
         {
@@ -221,7 +220,7 @@ public class SnapshotIOperator
                 Directory.CreateDirectory(_basePath);
             string fileName = Path.Combine(_basePath, string.Format("{0}.memsnap", sessionIndex));
             if (!File.Exists(fileName))
-            {
+            { 
                 System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 using (Stream stream = File.Open(fileName, FileMode.Create))
                 {
