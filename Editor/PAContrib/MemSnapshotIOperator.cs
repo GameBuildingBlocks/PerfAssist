@@ -9,6 +9,7 @@ using UnityEditorInternal;
 using MemoryProfilerWindow;
 using PerfAssist.LitJson;
 using System.Text;
+using System.Net;
 public class SnapshotIOperator
 {
     private string _now;
@@ -56,6 +57,9 @@ public class SnapshotIOperator
             if (string.IsNullOrEmpty(resolveJson))
                 throw new Exception("Resolve Json Data Failed");
 
+            if (uploadJson(resolveJson))
+                UnityEngine.Debug.Log("upload Json successed");
+     
             StreamWriter sw;
             FileInfo fileInfo = new FileInfo(output);
             sw = fileInfo.CreateText();
@@ -105,8 +109,8 @@ public class SnapshotIOperator
         //协议格式:
         //Data:
         //"obj" = "TypeName,Category,Count,size"
-        //"info" ="RefCount,size,InstanceName,address,typeDescriptionIndex"
-        //TypeDescs:
+        //"info" ="RefCount,size,InstanceName(hashCode),address,typeDescriptionIndex(hashCode)"
+        //typeDescription:
         //InstanceNames:
 
         Dictionary<int, string> typeDescDict = new Dictionary<int, string>();
@@ -164,6 +168,25 @@ public class SnapshotIOperator
         resultJson["InstanceNames"] = sb.ToString();
         return resultJson.ToJson();
     }
+
+    private bool uploadJson(string jsonContent) {
+        try
+        {
+            string uploadHttpURL = "http://10.20.80.59:88/ramPush";
+
+            WebClient wc = new WebClient();
+            wc.Headers.Add("Content-Type", "application/json");
+            byte[] bs = System.Text.Encoding.UTF8.GetBytes(jsonContent);
+            wc.UploadData(uploadHttpURL, "POST", bs);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("upload snapshot json err:" + ex.Message);
+            return false;
+        }
+        return true;
+    }
+
 
     private bool _saveSnapshotJson(int fileName, CrawledMemorySnapshot unpacked)
     {
