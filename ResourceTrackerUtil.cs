@@ -96,37 +96,17 @@ public class SceneGraphExtractor
 
             foreach (Renderer renderer in go.GetComponentsInChildren(typeof(Renderer), true))
             {
-                Material mat = renderer.sharedMaterial;
-                if (mat != null)
+                if(renderer.sharedMaterial!=null)
                 {
-                    CountMemObject(mat);
+                    CountMemObject(renderer.sharedMaterial);
 
-                    Shader shader = mat.shader;
-                    if (shader != null && shaderPropertyDict != null && shaderPropertyDict.ContainsKey(shader.name))
+                    var txtures = ResourceTracker.Instance.GetTexture2DObjsFromMaterial(renderer.sharedMaterial);
+                    foreach (var txture in txtures)
                     {
-                        string propertyNameStrs;
-                        shaderPropertyDict.TryGetValue(shader.name, out propertyNameStrs);
-                        char[] tokens = new char[] { ResourceTrackerConst.shaderPropertyNameJsonToken };
-                        var propertyNameList = propertyNameStrs.Split(tokens);
-                        foreach (var propertyName in propertyNameList)
-                        {
-                            Texture2D tex = mat.GetTexture(propertyName) as Texture2D;
-                            if (tex != null)
-                            {
-                                CountMemObject(tex);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (mat.mainTexture is Texture2D)
-                        {
-                            CountMemObject(mat.mainTexture);
-                        }
+                        CountMemObject(txture);
                     }
                 }
             }
-
             ExtractComponentIDs<Animator>(go);
             ExtractComponentIDs<ParticleSystem>(go);
 #endif

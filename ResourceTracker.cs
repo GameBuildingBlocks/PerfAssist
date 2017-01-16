@@ -426,7 +426,39 @@ public class ResourceTracker : IDisposable
         }
         return true;
     }
+    public List<Texture2D> GetTexture2DObjsFromMaterial(Material mat)
+    {
+        var shaderPropertyDict = ResourceTracker.Instance.ShaderPropertyDict;
+        List<Texture2D> result = new List<Texture2D>();
+        if (mat != null)
+        {
+            Shader shader = mat.shader;
+            if (shader != null && shaderPropertyDict != null && shaderPropertyDict.ContainsKey(shader.name))
+            {
+                string propertyNameStrs;
+                shaderPropertyDict.TryGetValue(shader.name, out propertyNameStrs);
+                char[] tokens = new char[] { ResourceTrackerConst.shaderPropertyNameJsonToken };
+                var propertyNameList = propertyNameStrs.Split(tokens);
+                foreach (var propertyName in propertyNameList)
+                {
+                    Texture2D tex = mat.GetTexture(propertyName) as Texture2D;
+                    if (tex != null)
+                    {
+                        result.Add(tex);
+                        //UnityEngine.Debug.Log(string.Format("catch UIWidget shader texture2D ,textureName = {0}", tex.name));
+                    }
+                }
+            }
 
+            var mainTexture2D = mat.mainTexture as Texture2D;
+            if (mainTexture2D!=null && !result.Contains(mainTexture2D))
+            {
+                result.Add(mainTexture2D);
+                //UnityEngine.Debug.Log(string.Format("catch UIWidget shader texture2D ,textureName = {0}", mat.mainTexture.name));
+            }
+        }
+        return result;
+    }
     public bool NetHandle_RequestStackData(eNetCmd cmd, UsCmd c)
     {
         int instanceID = c.ReadInt32();
