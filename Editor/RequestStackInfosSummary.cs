@@ -27,6 +27,8 @@ public class RequestStackInfosSummary
     static void RequestStackSummary()
     {
 #if UNITY_EDITOR
+        if (NetManager.Instance == null)
+            return;
         MemoryProfilerWindow.MemoryProfilerWindow w = EditorWindow.GetWindow<MemoryProfilerWindow.MemoryProfilerWindow>("MemoryProfilerWindow");
         if (w.GetType().Name == "MemoryProfilerWindow")
         {

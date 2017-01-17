@@ -16,7 +16,7 @@ public class SnapshotIOperator
     private string _basePath;
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
     Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
-    const string UPLOAD_HTTP_URL = "http://10.20.80.59:88/ramPush";
+    const string UPLOAD_HTTP_URL = "http://jx3ml.rdev.kingsoft.net:88/ramPush";
 
     public bool isSaved(int snapshotCount, eProfilerMode profilerMode, string ip = null)
     {
