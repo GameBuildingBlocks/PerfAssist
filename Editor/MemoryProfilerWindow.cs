@@ -214,6 +214,8 @@ namespace MemoryProfilerWindow
                     NetManager.Instance.Disconnect();
                 return;
             }
+
+            EditorPrefs.SetString("ConnectIP",ip);
         }
 
 
