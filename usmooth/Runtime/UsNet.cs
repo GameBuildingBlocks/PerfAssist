@@ -41,8 +41,9 @@ public class UsNet : IDisposable {
 	private TcpClient _tcpClient;
 
 	public UsCmdParsing CmdExecutor { get { return _cmdExec; } }
-	private UsCmdParsing _cmdExec = new UsCmdParsing(); 
-	
+	private UsCmdParsing _cmdExec = new UsCmdParsing();
+    public bool IsListening { get { return _isListening; } }
+    bool _isListening = false;
 	// QOTD server constructor
 	public UsNet()
     {
@@ -57,6 +58,8 @@ public class UsNet : IDisposable {
 			_tcpListener.BeginAcceptTcpClient(OnAcceptTcpClient, _tcpListener);
 
             AddToLog("usmooth listening started at: {0}.", UsConst.ServerPort);
+
+            _isListening = true;
         }
         catch (Exception e)
         {
@@ -86,6 +89,7 @@ public class UsNet : IDisposable {
 		if (_tcpListener != null) {
 			_tcpListener.Stop();
 			_tcpListener = null;
+            _isListening = false;
 		}
 	}
 	

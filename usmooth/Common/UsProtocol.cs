@@ -50,7 +50,6 @@ public enum eNetCmd
     CL_StartAnalysePixels,
 
     CL_RequestStackData,
-    CL_RequestStackSummary,
 
     CL_CmdEnd,
 
@@ -81,6 +80,9 @@ public enum eNetCmd
     SV_StartAnalysePixels,
 
     SV_CmdEnd,
+
+    SV_SendLuaProfilerMsg,
+    SV_StartLuaProfilerMsg,
 }
 
 public enum eSubCmd_TransmitStage
