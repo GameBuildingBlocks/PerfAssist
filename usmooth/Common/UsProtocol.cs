@@ -47,6 +47,7 @@ public enum eNetCmd
     CL_QuerySwitches,
     CL_QuerySliders,
 
+    CL_RequestStackSummary,
     CL_StartAnalysePixels,
 
     CL_RequestStackData,
