@@ -33,6 +33,18 @@ public class TrackerMode_Base
         return unpacked;
     }
 
+    protected void RefreshIndices()
+    {
+        if (_snapshots != null && _snapshots.Count > 0)
+        {
+            _indices = new string[_snapshots.Count];
+            for (int i = 0; i < _snapshots.Count; i++)
+            {
+                _indices[i] = i.ToString();
+            }
+        }
+    }
+
     protected List<MemSnapshotInfo> _snapshots = new List<MemSnapshotInfo>();
     protected string[] _indices = null;
     protected int _selected = PAEditorConst.BAD_ID;

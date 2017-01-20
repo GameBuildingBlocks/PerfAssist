@@ -12,7 +12,7 @@ public class PANetDrv : IDisposable
         NetUtil.LogErrorHandler = Debug.LogErrorFormat;
 
         NetManager.Instance = new NetManager();
-        NetManager.Instance.Client.RegisterCmdHandler(eNetCmd.SV_App_Logging, Handle_ServerLogging);
+        NetManager.Instance.RegisterCmdHandler(eNetCmd.SV_App_Logging, Handle_ServerLogging);
     }
 
     private bool Handle_ServerLogging(eNetCmd cmd, UsCmd c)

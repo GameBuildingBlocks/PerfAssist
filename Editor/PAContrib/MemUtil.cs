@@ -2,12 +2,28 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.MemoryProfiler;
 using UnityEngine;
+using UnityEditorInternal;
 
 public class MemUtil 
 {
+    private static Regex _ipReg = new Regex(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
+    public static bool ValidateIPString(string ip)
+    {
+        return !string.IsNullOrEmpty(ip) && _ipReg.IsMatch(ip);
+    }
+
+    public static bool IsLocalhostIP(string ip)
+    {
+        return ip == MemConst.LocalhostIP;
+    }
+
+    public const int PLAYER_DIRECT_IP_CONNECT_GUID = 65261;
+    public static bool IsProfilerConnectedRemotely { get { return ProfilerDriver.connectedProfiler == PLAYER_DIRECT_IP_CONNECT_GUID; } }
+
     public static void NotifyError(string format, params object[] args)
     {
         string content = string.Format(format, args);

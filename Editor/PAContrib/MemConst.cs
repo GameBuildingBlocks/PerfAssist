@@ -9,6 +9,7 @@ public class MemConst
 
     public static string[] MemTypeCategories = new string[] { "All", "Native", "Managed", "Others" };
     public static string[] MemTypeLimitations = new string[] { "All", "n >= 1MB", "1MB > n >= 1KB", "n < 1KB" };
+    public static string[] ConnectionOptions = new string[] { "Editor", "Remote", "Load" };
 
     public static int TableBorder = 10;
     public static float SplitterRatio = 0.4f;
@@ -17,6 +18,9 @@ public class MemConst
     public static int _1MB = _1KB * _1KB;
 
     public static readonly string SearchResultTypeString = "{search_result}";
+    public static readonly string RemoteIPDefaultText = "<remote_ip>";
+
+    public static readonly string LocalhostIP = "127.0.0.1";
 }
 
 public class MemStyles
