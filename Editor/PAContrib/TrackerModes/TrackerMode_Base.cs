@@ -12,6 +12,9 @@ public class TrackerMode_Base
 
     public SelectionChangeHandler SelectionChanged;
 
+    public virtual void OnEnter() { }
+    public virtual void OnLeave() { }
+
     public virtual void OnGUI() { }
 
     protected void Clear()
