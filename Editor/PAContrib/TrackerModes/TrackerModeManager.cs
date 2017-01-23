@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
-using MemoryProfilerWindow;
+﻿using MemoryProfilerWindow;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public enum TrackerMode
 {
@@ -11,19 +11,40 @@ public enum TrackerMode
     File,
 }
 
-public class TrackerModeManager
+public class TrackerModeManager 
 {
     public TrackerMode CurrentMode { get { return _currentMode; } }
-    TrackerMode _currentMode;
+    TrackerMode _currentMode = TrackerMode.Editor;
 
     public CrawledMemorySnapshot SelectedUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.SelectedUnpacked : null ; } }
     public CrawledMemorySnapshot PrevUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.PrevUnpacked : null; } }
 
     public void OnGUI()
     {
-        var curMode = GetCurrentMode();
-        if (curMode != null)
-            curMode.OnGUI();
+        try
+        {
+            GUILayout.BeginHorizontal(MemStyles.Toolbar);
+            int gridWidth = 250;
+            int selMode = GUI.SelectionGrid(new Rect(0, 0, gridWidth, 20), (int)_currentMode,
+                TrackerModeConsts.Modes, TrackerModeConsts.Modes.Length, MemStyles.ToolbarButton);
+            if (selMode != (int)_currentMode)
+            {
+                SwitchTo((TrackerMode)selMode);
+            }
+            GUILayout.Space(gridWidth + 30);
+            GUILayout.Label(TrackerModeConsts.ModesDesc[selMode]);
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            var curMode = GetCurrentMode();
+            if (curMode != null)
+                curMode.OnGUI();
+            GUILayout.EndHorizontal();
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+        }
     }
 
     public void SetSelectionChanged(SelectionChangeHandler handler)

@@ -3,13 +3,12 @@ using System.Collections;
 
 public class MemConst 
 {
-    public static float TopBarHeight = 25;
+    public static float TopBarHeight = 60;
     public static int InspectorWidth = 400;
     public static string[] ShowTypes = new string[] { "Table View", "TreeMap View" };
 
     public static string[] MemTypeCategories = new string[] { "All", "Native", "Managed", "Others" };
     public static string[] MemTypeLimitations = new string[] { "All", "n >= 1MB", "1MB > n >= 1KB", "n < 1KB" };
-    public static string[] ConnectionOptions = new string[] { "Editor", "Remote", "Load" };
 
     public static int TableBorder = 10;
     public static float SplitterRatio = 0.4f;

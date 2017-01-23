@@ -11,16 +11,7 @@ public class TrackerMode_File : TrackerMode_Base
 {
     public override void OnGUI()
     {
-        if (_indices != null)
-        {
-            var newIndex = GUI.SelectionGrid(new Rect(210, 0, 30 * _indices.Length, 20), _selected, _indices, _indices.Length, MemStyles.ToolbarButton);
-            if (newIndex != _selected)
-            {
-                _selected = newIndex;
-
-                SelectionChanged();
-            }
-        }
+        GUILayout.Space(DrawIndicesGrid(0, 20));
 
         GUILayout.FlexibleSpace();
 
