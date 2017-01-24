@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEditor.MemoryProfiler;
 using UnityEditorInternal;
@@ -11,12 +12,6 @@ enum eShowType
 {
     InTable,
     InTreemap,
-}
-public enum eProfilerMode
-{
-    Editor,
-    Remote,
-    File,
 }
 
 namespace MemoryProfilerWindow
@@ -103,6 +98,9 @@ namespace MemoryProfilerWindow
                 MemUtil.LoadSnapshotProgress(1.0f, "done");
 
                 curMode.AddSnapshot(snapshotInfo);
+
+                if (!curMode.SaveSessionInfo(packed, snapshotInfo.unPacked))
+                    Debug.LogErrorFormat("Save Session Info Failed!");
             }
         }
 

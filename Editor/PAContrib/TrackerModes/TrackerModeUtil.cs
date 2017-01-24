@@ -3,6 +3,13 @@ using System.Collections;
 using UnityEditorInternal;
 using System;
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
+using System.IO;
+using MemoryProfilerWindow;
+using System.Net;
+using System.Collections.Generic;
+using PerfAssist.LitJson;
+using System.Text;
 
 public static class TrackerModeConsts
 {
@@ -51,13 +58,89 @@ public static class TrackerModeUtil
         return true;
     }
 
-    public static bool SaveBin(string filePath, object obj)
+    public static bool SaveSnapshotBin(string saveFilePath,PackedMemorySnapshot snapshot)
     {
+        try
+        {
+            if (!File.Exists(saveFilePath))
+            {
+                System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                using (Stream stream = File.Open(saveFilePath, FileMode.Create))
+                {
+                    bf.Serialize(stream, snapshot);
+                }
+            }
+            UnityEngine.Debug.LogFormat("save snapshot bin successed. filename = {0}", saveFilePath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("save snapshot error ! msg ={0}", ex.Message));
+            Debug.LogException(ex);
+            return false;
+        }
+    }
+
+    public static bool SaveJson(string saveFilePath,string jsonContent)
+    {
+        try
+        {
+            SaveText(saveFilePath, jsonContent);
+            UnityEngine.Debug.LogFormat("save json successed. filename = {0}", saveFilePath);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("save snapshot json error ! msg ={0}", ex.Message));
+            Debug.LogException(ex);
+            return false;
+        }
+    }
+
+    public static bool SaveSnapshotBin(string binFilePath, string binFileName,PackedMemorySnapshot packed)
+    {
+        if (!Directory.Exists(binFilePath))
+            Directory.CreateDirectory(binFilePath);
+        string fullName = Path.Combine(binFilePath, binFileName);
+        if (!TrackerModeUtil.SaveSnapshotBin(fullName, packed))
+            return false;
         return true;
     }
 
-    public static bool SaveJson(string filePath, object obj)
+    public static bool SaveSnapshotJson(string jsonFilePath, string jsonFileName, CrawledMemorySnapshot unpacked)
     {
+        string jsonContent = TrackerModeUtil.ResolvePackedForJson(unpacked);
+        if (string.IsNullOrEmpty(jsonContent))
+        {
+            Debug.LogError("Resolve Json Data Failed");
+            return false;
+        }
+        if (!Directory.Exists(jsonFilePath))
+            Directory.CreateDirectory(jsonFilePath);
+        string jsonFile = Path.Combine(jsonFilePath, jsonFileName);
+        if (!TrackerModeUtil.SaveJson(jsonFile, jsonContent))
+            return false;
+        return true;
+    }
+
+    public static bool SaveText(string filePath,string content)
+    {
+        try
+        {
+            StreamWriter sw;
+            FileInfo fileInfo = new FileInfo(filePath);
+            sw = fileInfo.CreateText();
+            sw.Write(content);
+            sw.Close();
+            sw.Dispose();
+            Debug.LogFormat("write text file successed. path ={0}",filePath);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("save text error ! msg ={0}", ex.Message));
+            Debug.LogException(ex);
+            return false;
+        }
         return true;
     }
 
@@ -97,4 +180,98 @@ public static class TrackerModeUtil
                 NetManager.Instance.Disconnect();
         }
     }
+
+    public static string ResolvePackedForJson(CrawledMemorySnapshot packed)
+    {
+        if (packed == null)
+            return null;
+        var _unpacked = packed;
+        Dictionary<string, MemType> types = new Dictionary<string, MemType>();
+
+        foreach (ThingInMemory thingInMemory in packed.allObjects)
+        {
+            string typeName = MemUtil.GetGroupName(thingInMemory);
+            if (typeName.Length == 0)
+                continue;
+            int category = MemUtil.GetCategory(thingInMemory);
+            MemObject item = new MemObject(thingInMemory, _unpacked);
+            MemType theType;
+            if (!types.ContainsKey(typeName))
+            {
+                theType = new MemType();
+                theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
+                theType.Category = category;
+                theType.Objects = new List<object>();
+                types.Add(typeName, theType);
+            }
+            else
+            {
+                theType = types[typeName];
+            }
+            theType.AddObject(item);
+        }
+
+        //协议格式:
+        //Data:
+        //"obj" = "TypeName,Category,Count,size"
+        //"info" ="RefCount,size,InstanceName(hashCode),address,typeDescriptionIndex(hashCode)"
+        //typeDescription:
+        //InstanceNames:
+
+        Dictionary<int, string> typeDescDict = new Dictionary<int, string>();
+        Dictionary<int, string> instanceNameDict = new Dictionary<int, string>();
+        var jsonData = new JsonData();
+        foreach (var type in types)
+        {
+            var typeData = new JsonData();
+            typeData["Obj"] = type.Key + "," + type.Value.Category + "," + type.Value.Count + "," + type.Value.Size;
+
+            var objectDatas = new JsonData();
+            foreach (var obj in type.Value.Objects)
+            {
+                var objectData = new JsonData();
+                var memObj = obj as MemObject;
+                string dataInfo;
+                var instanceNameHash = memObj.InstanceName.GetHashCode();
+                if (!instanceNameDict.ContainsKey(instanceNameHash))
+                {
+                    instanceNameDict.Add(instanceNameHash, memObj.InstanceName);
+                }
+
+                dataInfo = memObj.RefCount + "," + memObj.Size + "," + instanceNameHash;
+                if (type.Value.Category == 2)
+                {
+                    var manged = memObj._thing as ManagedObject;
+                    var typeDescriptionHash = manged.typeDescription.name.GetHashCode();
+                    if (!typeDescDict.ContainsKey(typeDescriptionHash))
+                    {
+                        typeDescDict.Add(typeDescriptionHash, manged.typeDescription.name);
+                    }
+                    dataInfo += "," + Convert.ToString((int)manged.address, 16) + "," + typeDescriptionHash;
+                }
+                objectData["info"] = dataInfo;
+                objectDatas.Add(objectData);
+            }
+            typeData["memObj"] = objectDatas;
+            jsonData.Add(typeData);
+        }
+        var resultJson = new JsonData();
+        resultJson["Data"] = jsonData;
+
+        StringBuilder sb = new StringBuilder();
+        foreach (var key in typeDescDict.Keys)
+        {
+            sb.Append("[[" + key + "]:" + typeDescDict[key] + "],");
+        }
+        resultJson["TypeDescs"] = sb.ToString();
+        sb.Remove(0, sb.Length);
+
+        foreach (var key in instanceNameDict.Keys)
+        {
+            sb.Append("[[" + key + "]:" + instanceNameDict[key] + "],");
+        }
+        resultJson["InstanceNames"] = sb.ToString();
+        return resultJson.ToJson();
+    }
+
 }

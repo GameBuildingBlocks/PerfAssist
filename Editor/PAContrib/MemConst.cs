@@ -20,6 +20,15 @@ public class MemConst
     public static readonly string RemoteIPDefaultText = "<remote_ip>";
 
     public static readonly string LocalhostIP = "127.0.0.1";
+
+    public static readonly string UPLOAD_HTTP_URL ="http://10.20.80.59:88/ramPush";
+        //"http://jx3ml.rdev.kingsoft.net:88/ramPush";
+
+    public static readonly string RemoteFolderStrFlag = "-Remote-";
+    public static readonly string EditorFolderStrFlag = "-Editor";
+
+    public static readonly string SnapshotBinFileNameFormatter = "{0}.memsnap";
+    public static readonly string SnapshotJsonFileNameFormatter = "{0}.json";
 }
 
 public class MemStyles

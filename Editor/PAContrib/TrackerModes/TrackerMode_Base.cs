@@ -5,6 +5,8 @@ using MemoryProfilerWindow;
 using UnityEditorInternal;
 using System;
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
+using System.IO;
 
 public delegate void SelectionChangeHandler();
 
@@ -28,6 +30,8 @@ public class TrackerMode_Base
     public virtual void OnAppStarted() { }
 
     public virtual void OnGUI() { }
+
+    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}
 
     protected void Clear()
     {
@@ -88,5 +92,4 @@ public class TrackerMode_Base
     protected int _selected = PAEditorConst.BAD_ID;
 
     protected bool _saveIncomingSnapshot = false;
-    protected SnapshotIOperator _snapshotIOperator = new SnapshotIOperator();
 }
