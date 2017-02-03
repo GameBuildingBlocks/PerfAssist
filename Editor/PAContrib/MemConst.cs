@@ -23,12 +23,6 @@ public class MemConst
 
     public static readonly string UPLOAD_HTTP_URL ="http://10.20.80.59:88/ramPush";
         //"http://jx3ml.rdev.kingsoft.net:88/ramPush";
-
-    public static readonly string RemoteFolderStrFlag = "-Remote-";
-    public static readonly string EditorFolderStrFlag = "-Editor";
-
-    public static readonly string SnapshotBinPostfix = ".memsnap";
-    public static readonly string SnapshotJsonPostfix = ".json";
 }
 
 public class MemStyles

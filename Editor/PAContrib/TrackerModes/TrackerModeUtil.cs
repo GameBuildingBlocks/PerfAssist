@@ -21,6 +21,13 @@ public static class TrackerModeConsts
         "Mode 'Daemon': opens a server for a remote device to connect in, and request for snapshots on-demand.",
         "Mode 'File': opens a saved session from local file system."
     };
+
+    public static readonly string RemoteTag = "-Remote-";
+    public static readonly string EditorTag = "-Editor";
+    public static readonly string DaemonTag = "-Daemon";
+
+    public static readonly string SnapshotBinPostfix = ".memsnap";
+    public static readonly string SnapshotJsonPostfix = ".json";
 }
 
 public static class TrackerModeUtil
@@ -64,9 +71,9 @@ public static class TrackerModeUtil
         if (!Directory.Exists(targetDir))
             Directory.CreateDirectory(targetDir);
 
-        if (!TrackerModeUtil.SaveSnapshotBin(targetDir, targetName + MemConst.SnapshotBinPostfix, packed))
+        if (!TrackerModeUtil.SaveSnapshotBin(targetDir, targetName + TrackerModeConsts.SnapshotBinPostfix, packed))
             return false;
-        if (!TrackerModeUtil.SaveSnapshotJson(targetDir, targetName + MemConst.SnapshotJsonPostfix, unpacked))
+        if (!TrackerModeUtil.SaveSnapshotJson(targetDir, targetName + TrackerModeConsts.SnapshotJsonPostfix, unpacked))
             return false;
 
         Debug.LogFormat("Snapshot saved successfully. (dir: {0}, name: {1})", targetDir, targetName);

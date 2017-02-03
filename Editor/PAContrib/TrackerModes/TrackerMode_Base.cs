@@ -23,6 +23,7 @@ public class TrackerMode_Base
         _selected = _snapshots.Count - 1;
 
         SelectionChanged();
+        RefreshIndices();
     }
 
     public virtual void OnEnter() { }

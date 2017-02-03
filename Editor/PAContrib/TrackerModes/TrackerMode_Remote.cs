@@ -63,7 +63,7 @@ public class TrackerMode_Remote : TrackerMode_Base
         if (!_autoSaveToggle)
             return false;
 
-        string sessionName = _sessionTimeStr + MemConst.RemoteFolderStrFlag + _IPField;
+        string sessionName = _sessionTimeStr + TrackerModeConsts.RemoteTag + _IPField;
         return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed, unpacked);
     }
 }

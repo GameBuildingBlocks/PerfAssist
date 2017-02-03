@@ -21,8 +21,6 @@ public class TrackerMode_Editor : TrackerMode_Base
         if (GUILayout.Button("Take Snapshot", GUILayout.Width(100)))
         {
             MemorySnapshot.RequestNewSnapshot();
-
-            RefreshIndices();
         }
 
         GUILayout.Space(DrawIndicesGrid(120, 20));
@@ -46,7 +44,7 @@ public class TrackerMode_Editor : TrackerMode_Base
         if (!_autoSaveToggle)
             return false;
 
-        string sessionName = _sessionTimeStr + MemConst.EditorFolderStrFlag;
+        string sessionName = _sessionTimeStr + TrackerModeConsts.EditorTag;
         return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed, unpacked);
     }
 }
