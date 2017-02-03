@@ -63,25 +63,7 @@ public class TrackerMode_Remote : TrackerMode_Base
         if (!_autoSaveToggle)
             return false;
 
-        string recordTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss", new System.Globalization.DateTimeFormatInfo());
-        string snapshotFilePath = Path.Combine(MemUtil.SnapshotsDir, recordTime + MemConst.RemoteFolderStrFlag+ _IPField);
-        string snapshotFileName = Path.Combine(snapshotFilePath, string.Format(MemConst.SnapshotBinFileNameFormatter, _selected));
-
-        if (!TrackerModeUtil.SaveSnapshotBin(snapshotFilePath, snapshotFileName, packed))
-        {
-            Debug.LogErrorFormat("Save Snapshot Bin Failed! recordTime = {0}", recordTime);
-            return false;
-        }
-        Debug.LogFormat("Save Snapshot Bin Suc! recordTime = {0}", recordTime);
-
-        string jsonFilePath = Path.Combine(snapshotFilePath, "json");
-        string jsonFileName = Path.Combine(jsonFilePath, string.Format(MemConst.SnapshotJsonFileNameFormatter, _selected));
-        if (!TrackerModeUtil.SaveSnapshotJson(jsonFilePath, jsonFileName, unpacked))
-        {
-            Debug.LogErrorFormat("Save Snapshot Json Failed! recordTime = {0}", recordTime);
-            return false;
-        }
-        Debug.LogFormat("Save Snapshot Json Suc! recordTime = {0}", recordTime);
-        return true;
+        string sessionName = _sessionTimeStr + MemConst.RemoteFolderStrFlag + _IPField;
+        return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed, unpacked);
     }
 }

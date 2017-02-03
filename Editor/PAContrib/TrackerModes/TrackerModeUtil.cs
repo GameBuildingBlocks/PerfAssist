@@ -58,19 +58,34 @@ public static class TrackerModeUtil
         return true;
     }
 
-    public static bool SaveSnapshotBin(string saveFilePath,PackedMemorySnapshot snapshot)
+    public static bool SaveSnapshotFiles(string targetSession, string targetName, PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked)
+    {
+        string targetDir = Path.Combine(MemUtil.SnapshotsDir, targetSession);
+        if (!Directory.Exists(targetDir))
+            Directory.CreateDirectory(targetDir);
+
+        if (!TrackerModeUtil.SaveSnapshotBin(targetDir, targetName + MemConst.SnapshotBinPostfix, packed))
+            return false;
+        if (!TrackerModeUtil.SaveSnapshotJson(targetDir, targetName + MemConst.SnapshotJsonPostfix, unpacked))
+            return false;
+
+        Debug.LogFormat("Snapshot saved successfully. (dir: {0}, name: {1})", targetDir, targetName);
+        return true;
+    }
+
+    public static bool SaveSnapshotBin(string binFilePath, string binFileName,PackedMemorySnapshot packed)
     {
         try
         {
-            if (!File.Exists(saveFilePath))
+            string fullName = Path.Combine(binFilePath, binFileName);
+            if (!File.Exists(fullName))
             {
                 System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                using (Stream stream = File.Open(saveFilePath, FileMode.Create))
+                using (Stream stream = File.Open(fullName, FileMode.Create))
                 {
-                    bf.Serialize(stream, snapshot);
+                    bf.Serialize(stream, packed);
                 }
             }
-            UnityEngine.Debug.LogFormat("save snapshot bin successed. filename = {0}", saveFilePath);
             return true;
         }
         catch (Exception ex)
@@ -81,59 +96,20 @@ public static class TrackerModeUtil
         }
     }
 
-    public static bool SaveJson(string saveFilePath,string jsonContent)
-    {
-        try
-        {
-            SaveText(saveFilePath, jsonContent);
-            UnityEngine.Debug.LogFormat("save json successed. filename = {0}", saveFilePath);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError(string.Format("save snapshot json error ! msg ={0}", ex.Message));
-            Debug.LogException(ex);
-            return false;
-        }
-    }
-
-    public static bool SaveSnapshotBin(string binFilePath, string binFileName,PackedMemorySnapshot packed)
-    {
-        if (!Directory.Exists(binFilePath))
-            Directory.CreateDirectory(binFilePath);
-        string fullName = Path.Combine(binFilePath, binFileName);
-        if (!TrackerModeUtil.SaveSnapshotBin(fullName, packed))
-            return false;
-        return true;
-    }
-
     public static bool SaveSnapshotJson(string jsonFilePath, string jsonFileName, CrawledMemorySnapshot unpacked)
     {
-        string jsonContent = TrackerModeUtil.ResolvePackedForJson(unpacked);
-        if (string.IsNullOrEmpty(jsonContent))
-        {
-            Debug.LogError("Resolve Json Data Failed");
-            return false;
-        }
-        if (!Directory.Exists(jsonFilePath))
-            Directory.CreateDirectory(jsonFilePath);
-        string jsonFile = Path.Combine(jsonFilePath, jsonFileName);
-        if (!TrackerModeUtil.SaveJson(jsonFile, jsonContent))
-            return false;
-        return true;
-    }
-
-    public static bool SaveText(string filePath,string content)
-    {
         try
         {
-            StreamWriter sw;
-            FileInfo fileInfo = new FileInfo(filePath);
-            sw = fileInfo.CreateText();
-            sw.Write(content);
+            string jsonContent = TrackerModeUtil.ResolvePackedForJson(unpacked);
+            if (string.IsNullOrEmpty(jsonContent))
+                throw new Exception("resolve failed.");
+
+            string jsonFile = Path.Combine(jsonFilePath, jsonFileName);
+            FileInfo fileInfo = new FileInfo(jsonFile);
+            StreamWriter sw = fileInfo.CreateText();
+            sw.Write(jsonContent);
             sw.Close();
             sw.Dispose();
-            Debug.LogFormat("write text file successed. path ={0}",filePath);
         }
         catch (Exception ex)
         {

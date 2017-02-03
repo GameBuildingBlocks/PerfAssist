@@ -38,9 +38,10 @@ public class TrackerMode_Base
         _snapshots.Clear();
         _indices = null;
         _selected = PAEditorConst.BAD_ID;
-    }
+        _sessionTimeStr = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+}
 
-    protected CrawledMemorySnapshot GetAt(int i)
+protected CrawledMemorySnapshot GetAt(int i)
     {
         CrawledMemorySnapshot unpacked = null;
 
@@ -92,4 +93,5 @@ public class TrackerMode_Base
     protected int _selected = PAEditorConst.BAD_ID;
 
     protected bool _saveIncomingSnapshot = false;
+    protected string _sessionTimeStr = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 }

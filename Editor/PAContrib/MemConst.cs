@@ -27,8 +27,8 @@ public class MemConst
     public static readonly string RemoteFolderStrFlag = "-Remote-";
     public static readonly string EditorFolderStrFlag = "-Editor";
 
-    public static readonly string SnapshotBinFileNameFormatter = "{0}.memsnap";
-    public static readonly string SnapshotJsonFileNameFormatter = "{0}.json";
+    public static readonly string SnapshotBinPostfix = ".memsnap";
+    public static readonly string SnapshotJsonPostfix = ".json";
 }
 
 public class MemStyles
