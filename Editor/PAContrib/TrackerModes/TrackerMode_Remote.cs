@@ -27,15 +27,15 @@ public class TrackerMode_Remote : TrackerMode_Base
         }
 
         bool savedState = GUI.enabled;
-        if (NetManager.Instance != null && NetManager.Instance.IsConnected && MemUtil.IsProfilerConnectedRemotely)
-        {
-            GUI.enabled = false;
-        }
 
+        bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected && MemUtil.IsProfilerConnectedRemotely;
+
+        GUI.enabled = !connected;
         if (GUILayout.Button("Connect", GUILayout.Width(60)))
         {
             TrackerModeUtil.Connect(_IPField);
         }
+        GUI.enabled = connected;
         if (GUILayout.Button("Take Snapshot", GUILayout.Width(100)))
         {
             MemorySnapshot.RequestNewSnapshot();
