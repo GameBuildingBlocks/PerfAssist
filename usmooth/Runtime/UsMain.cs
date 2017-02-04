@@ -27,7 +27,6 @@ public class UsMain : IDisposable
         }
 
 		UsNet.Instance = new UsNet();
-
         UsMain_NetHandlers.Instance = new UsMain_NetHandlers(UsNet.Instance.CmdExecutor);
         UsvConsole.Instance = new UsvConsole();
 
