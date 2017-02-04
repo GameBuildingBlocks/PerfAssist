@@ -106,6 +106,8 @@ namespace MemoryProfilerWindow
 
         void Update()
         {
+            _modeMgr.Update();
+
             // the selecting should be performed outside OnGUI() to prevent exception below:
             //      ArgumentException: control 1's position in group with only 1 control
             //  http://answers.unity3d.com/questions/240913/argumentexception-getting-control-1s-position-in-a.html

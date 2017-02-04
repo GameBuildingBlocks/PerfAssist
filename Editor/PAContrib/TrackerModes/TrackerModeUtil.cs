@@ -13,18 +13,16 @@ using System.Text;
 
 public static class TrackerModeConsts
 {
-    public static string[] Modes = new string[] { "Editor", "Remote", "Daemon", "File" };
+    public static string[] Modes = new string[] { "Editor", "Remote", "File" };
     public static string[] ModesDesc = new string[]
     {
         "Mode 'Editor': connects to the local in-editor game, and ONLY support 'Native' memory object type.",
         "Mode 'Remote': connects to the remote ip, and support all types if il2cpp is enabled.",
-        "Mode 'Daemon': opens a server for a remote device to connect in, and request for snapshots on-demand.",
         "Mode 'File': opens a saved session from local file system."
     };
 
     public static readonly string RemoteTag = "-Remote-";
     public static readonly string EditorTag = "-Editor";
-    public static readonly string DaemonTag = "-Daemon";
 
     public static readonly string SnapshotBinPostfix = ".memsnap";
     public static readonly string SnapshotJsonPostfix = ".json";

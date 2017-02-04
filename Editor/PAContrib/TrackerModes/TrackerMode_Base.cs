@@ -30,6 +30,7 @@ public class TrackerMode_Base
     public virtual void OnLeave() { }
     public virtual void OnAppStarted() { }
 
+    public virtual void Update() { }
     public virtual void OnGUI() { }
 
     public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}

@@ -7,7 +7,6 @@ public enum TrackerMode
 {
     Editor,
     Remote,
-    Daemon,
     File,
 }
 
@@ -18,6 +17,13 @@ public class TrackerModeManager
 
     public CrawledMemorySnapshot SelectedUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.SelectedUnpacked : null ; } }
     public CrawledMemorySnapshot PrevUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.PrevUnpacked : null; } }
+
+    public void Update()
+    {
+        var curMode = GetCurrentMode();
+        if (curMode != null)
+            curMode.Update();
+    }
 
     public void OnGUI()
     {
@@ -63,12 +69,14 @@ public class TrackerModeManager
 
     public void SwitchTo(TrackerMode newMode)
     {
+        if (_currentMode == newMode)
+            return;
+
         TrackerMode_Base mode = GetCurrentMode();
         if (mode != null)
             mode.OnLeave();
 
         _currentMode = newMode;
-
         mode = GetCurrentMode();
         if (mode != null)
             mode.OnEnter();
@@ -78,7 +86,6 @@ public class TrackerModeManager
     {
         { TrackerMode.Editor, new TrackerMode_Editor() },
         { TrackerMode.Remote, new TrackerMode_Remote() },
-        { TrackerMode.Daemon, new TrackerMode_Daemon() },
         { TrackerMode.File, new TrackerMode_File() },
     };
 }
