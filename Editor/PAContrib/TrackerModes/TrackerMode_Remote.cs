@@ -12,10 +12,21 @@ public class TrackerMode_Remote : TrackerMode_Base
     bool _autoSaveToggle = true;
     string _IPField = MemConst.RemoteIPDefaultText;
 
+    bool _connectPressed = false;
+
+    public override void Update()
+    {
+        if (_connectPressed)
+        {
+            TrackerModeUtil.Connect(_IPField);
+            _connectPressed = false;
+        }
+    }
+
     public override void OnGUI()
     {
         GUI.SetNextControlName("LoginIPTextField");
-        var currentStr = GUILayout.TextField(_IPField, GUILayout.Width(80));
+        var currentStr = GUILayout.TextField(_IPField, GUILayout.Width(100));
         if (!_IPField.Equals(currentStr))
         {
             _IPField = currentStr;
@@ -31,9 +42,9 @@ public class TrackerMode_Remote : TrackerMode_Base
         bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected && MemUtil.IsProfilerConnectedRemotely;
 
         GUI.enabled = !connected;
-        if (GUILayout.Button("Connect", GUILayout.Width(60)))
+        if (GUILayout.Button("Connect", GUILayout.Width(80)))
         {
-            TrackerModeUtil.Connect(_IPField);
+            _connectPressed = true;
         }
         GUI.enabled = connected;
         if (GUILayout.Button("Take Snapshot", GUILayout.Width(100)))
@@ -42,7 +53,7 @@ public class TrackerMode_Remote : TrackerMode_Base
         }
         GUI.enabled = savedState;
 
-        GUILayout.Space(DrawIndicesGrid(250, 20));
+        GUILayout.Space(DrawIndicesGrid(300, 20));
         GUILayout.FlexibleSpace();
 
         _autoSaveToggle = GUILayout.Toggle(_autoSaveToggle, new GUIContent("AutoSave"), GUILayout.MaxWidth(80));
