@@ -47,11 +47,6 @@ public class TrackerMode_Remote : TrackerMode_Base
 
         _autoSaveToggle = GUILayout.Toggle(_autoSaveToggle, new GUIContent("AutoSave"), GUILayout.MaxWidth(80));
 
-        if (GUILayout.Button("Clear Session", GUILayout.MaxWidth(100)))
-        {
-            Clear();
-        }
-
         if (GUILayout.Button("Open Dir", GUILayout.MaxWidth(80)))
         {
             EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);

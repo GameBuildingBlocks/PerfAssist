@@ -42,6 +42,7 @@ namespace MemoryProfilerWindow
         {
             MemorySnapshot.OnSnapshotReceived += OnSnapshotReceived;
             _modeMgr.SetSelectionChanged(OnSnapshotSelectionChanged);
+            _modeMgr.OnSessionSnapshotsCleared += OnSessionSnapshotsCleared;
         }
 
         void InitNet()
@@ -230,9 +231,6 @@ namespace MemoryProfilerWindow
 
         public void RefreshCurrentView()
         {
-            if (_unpackedCrawl == null)
-                return;
-
             switch (m_selectedView)
             {
                 case eShowType.InTable:
@@ -249,6 +247,16 @@ namespace MemoryProfilerWindow
                 default:
                     break;
             }
+        }
+
+        private void OnSessionSnapshotsCleared()
+        {
+            _unpackedCrawl = null;
+            _preUnpackedCrawl = null;
+            _inspector = null;
+
+            RefreshCurrentView();
+            Repaint();
         }
 
         private void OnSnapshotSelectionChanged()

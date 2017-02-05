@@ -293,6 +293,11 @@ public class MemTableBrowser
         resetDiffDicts();
         _categories.Clear();
         _staticDetailInfo.clear();
+        _typeTable.RefreshData(null);
+        _objectTable.RefreshData(null);
+        if (_unpacked == null)
+            return;
+
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
             string typeName = MemUtil.GetGroupName(thingInMemory);

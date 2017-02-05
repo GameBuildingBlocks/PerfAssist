@@ -1,6 +1,7 @@
 ﻿using MemoryProfilerWindow;
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public enum TrackerMode
@@ -10,8 +11,12 @@ public enum TrackerMode
     File,
 }
 
+public delegate void SessionClearHandler();
+
 public class TrackerModeManager 
 {
+    public event SessionClearHandler OnSessionSnapshotsCleared;
+
     public TrackerMode CurrentMode { get { return _currentMode; } }
     TrackerMode _currentMode = TrackerMode.Editor;
 
@@ -39,6 +44,23 @@ public class TrackerModeManager
             }
             GUILayout.Space(gridWidth + 30);
             GUILayout.Label(TrackerModeConsts.ModesDesc[selMode]);
+            GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button("Clear Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+            {
+                TrackerMode_Base mode = GetCurrentMode();
+                if (mode != null)
+                {
+                    mode.Clear();
+
+                    if (OnSessionSnapshotsCleared != null)
+                        OnSessionSnapshotsCleared();
+                }
+            }
+            if (GUILayout.Button("Open Dir", MemStyles.ToolbarButton, GUILayout.MaxWidth(80)))
+            {
+                EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
+            }
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();

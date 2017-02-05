@@ -35,15 +35,15 @@ public class TrackerMode_Base
 
     public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}
 
-    protected void Clear()
+    public void Clear()
     {
         _snapshots.Clear();
         _indices = null;
         _selected = PAEditorConst.BAD_ID;
         _sessionTimeStr = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-}
+    }
 
-protected CrawledMemorySnapshot GetAt(int i)
+    protected CrawledMemorySnapshot GetAt(int i)
     {
         CrawledMemorySnapshot unpacked = null;
 
