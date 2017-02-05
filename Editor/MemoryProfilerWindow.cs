@@ -74,6 +74,8 @@ namespace MemoryProfilerWindow
 
         void OnDestroy()
         {
+            _modeMgr.Clear();
+
             if (_treeMapView != null)
                 _treeMapView.CleanupMeshes();
 
@@ -100,8 +102,11 @@ namespace MemoryProfilerWindow
 
                 curMode.AddSnapshot(snapshotInfo);
 
-                if (!curMode.SaveSessionInfo(packed, snapshotInfo.unPacked))
-                    Debug.LogErrorFormat("Save Session Info Failed!");
+                if (_modeMgr.AutoSaveOnSnapshot)
+                {
+                    if (!curMode.SaveSessionInfo(packed, snapshotInfo.unPacked))
+                        Debug.LogErrorFormat("Save Session Info Failed!");
+                }
             }
         }
 

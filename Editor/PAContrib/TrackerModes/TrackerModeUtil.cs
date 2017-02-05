@@ -149,7 +149,7 @@ public static class TrackerModeUtil
                     throw new Exception("Bad Connect");
             }
 
-            EditorPrefs.SetString("ResourceTrackerLastConnectedIP", ip);
+            EditorPrefs.SetString(MemPrefs.LastConnectedIP, ip);
         }
         catch (Exception ex)
         {

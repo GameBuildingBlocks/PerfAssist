@@ -24,16 +24,41 @@ public class TrackerMode_Base
 
         SelectionChanged();
         RefreshIndices();
+
+        // automatically compare the last two, when new snapshot comes
+        if (_snapshots.Count > 1)
+        {
+            _1st = _selected - 1;
+            _2nd = _selected;
+            UpdateMarkButtonTexts();
+        }
     }
 
-    public virtual void OnEnter() { }
-    public virtual void OnLeave() { }
-    public virtual void OnAppStarted() { }
+    public void OnGUI()
+    {
+        Do_GUI();
 
-    public virtual void Update() { }
-    public virtual void OnGUI() { }
+        GUILayout.FlexibleSpace();
 
-    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}
+        bool savedState = GUI.enabled;
+        GUI.enabled = _snapshots.Count > 1 && _1st != _selected && _2nd != _selected;
+        if (GUILayout.Button(_1stMarkText, EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
+        {
+            _1st = _selected;
+            UpdateMarkButtonTexts();
+        }
+        if (GUILayout.Button(_2ndMarkText, EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
+        {
+            _2nd = _selected;
+            UpdateMarkButtonTexts();
+        }
+        GUI.enabled = _1st != PAEditorConst.BAD_ID && _2nd != PAEditorConst.BAD_ID;
+        if (GUILayout.Button("Diff", EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
+        {
+            Debug.LogFormat("diff {0} & {1}...", _1st, _2nd);
+        }
+        GUI.enabled = savedState;
+    }
 
     public void Clear()
     {
@@ -42,6 +67,16 @@ public class TrackerMode_Base
         _selected = PAEditorConst.BAD_ID;
         _sessionTimeStr = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
     }
+
+    public virtual void OnEnter() { }
+    public virtual void OnLeave() { }
+    public virtual void OnAppStarted() { }
+
+    public virtual void Update() { }
+
+    protected virtual void Do_GUI() { }
+
+    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}
 
     protected CrawledMemorySnapshot GetAt(int i)
     {
@@ -63,12 +98,14 @@ public class TrackerMode_Base
             return;
         }
 
-        if (_indices == null || _indices.Length != _snapshots.Count)
+        _indices = new string[_snapshots.Count];
+        for (int i = 0; i < _snapshots.Count; i++)
         {
-            _indices = new string[_snapshots.Count];
-            for (int i = 0; i < _snapshots.Count; i++)
+            _indices[i] = i.ToString();
+
+            if (i == _1st || i == _2nd)
             {
-                _indices[i] = i.ToString();
+                _indices[i] += "*";
             }
         }
     }
@@ -93,7 +130,33 @@ public class TrackerMode_Base
     protected List<MemSnapshotInfo> _snapshots = new List<MemSnapshotInfo>();
     protected string[] _indices = null;
     protected int _selected = PAEditorConst.BAD_ID;
+    protected int _1st = PAEditorConst.BAD_ID;
+    protected int _2nd = PAEditorConst.BAD_ID;
+    protected string _1stMarkText = MemConst.DiffMarkText_1st;
+    protected string _2ndMarkText = MemConst.DiffMarkText_2nd;
 
     protected bool _saveIncomingSnapshot = false;
     protected string _sessionTimeStr = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+
+    protected void UpdateMarkButtonTexts()
+    {
+        if (_1st != PAEditorConst.BAD_ID)
+        {
+            _1stMarkText = string.Format("{0} ({1})", MemConst.DiffMarkText_1st, _1st);
+        }
+        else
+        {
+            _1stMarkText = MemConst.DiffMarkText_1st;
+        }
+        if (_2nd != PAEditorConst.BAD_ID)
+        {
+            _2ndMarkText = string.Format("{0} ({1})", MemConst.DiffMarkText_2nd, _2nd);
+        }
+        else
+        {
+            _2ndMarkText = MemConst.DiffMarkText_2nd;
+        }
+
+        RefreshIndices();
+    }
 }

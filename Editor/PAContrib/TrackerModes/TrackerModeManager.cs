@@ -17,6 +17,8 @@ public class TrackerModeManager
 {
     public event SessionClearHandler OnSessionSnapshotsCleared;
 
+    public bool AutoSaveOnSnapshot { get { return _configWindow.AutoSaveOnSnapshot; } }
+
     public TrackerMode CurrentMode { get { return _currentMode; } }
     TrackerMode _currentMode = TrackerMode.Editor;
 
@@ -30,10 +32,20 @@ public class TrackerModeManager
             curMode.Update();
     }
 
+    public void Clear()
+    {
+        foreach (var t in _modes.Values)
+            t.Clear();
+    }
+
+    private MemConfigPopup _configWindow = new MemConfigPopup();
+    private Rect _optionPopupRect;
+
     public void OnGUI()
     {
         try
         {
+            // shared functionalities
             GUILayout.BeginHorizontal(MemStyles.Toolbar);
             int gridWidth = 250;
             int selMode = GUI.SelectionGrid(new Rect(0, 0, gridWidth, 20), (int)_currentMode,
@@ -57,12 +69,29 @@ public class TrackerModeManager
                         OnSessionSnapshotsCleared();
                 }
             }
-            if (GUILayout.Button("Open Dir", MemStyles.ToolbarButton, GUILayout.MaxWidth(80)))
+            if (GUILayout.Button("Open Dir", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
             {
                 EditorUtility.RevealInFinder(MemUtil.SnapshotsDir);
             }
+            if (GUILayout.Button("Options", EditorStyles.toolbarDropDown, GUILayout.Width(100)))
+            {
+                try
+                {
+                    PopupWindow.Show(_optionPopupRect, _configWindow);
+                }
+                catch (ExitGUIException)
+                {
+                    // have no idea why Unity throws ExitGUIException() in GUIUtility.ExitGUI()
+                    // so we silently ignore the exception 
+                }
+            }
+            if (Event.current.type == EventType.Repaint)
+                _optionPopupRect = GUILayoutUtility.GetLastRect();
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(10);
+
+            // mode-specific controls
             GUILayout.BeginHorizontal();
             var curMode = GetCurrentMode();
             if (curMode != null)

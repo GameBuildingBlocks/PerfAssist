@@ -9,7 +9,7 @@ using MemoryProfilerWindow;
 
 public class TrackerMode_File : TrackerMode_Base
 {
-    public override void OnGUI()
+    protected override void Do_GUI()
     {
         GUILayout.Space(DrawIndicesGrid(0, 20));
 
