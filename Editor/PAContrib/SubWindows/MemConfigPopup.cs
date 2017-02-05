@@ -7,13 +7,17 @@ public class MemConfigPopup : PopupWindowContent
     public bool AutoSaveOnSnapshot { get { return _autoSaveOnSnapshot; } }
     bool _autoSaveOnSnapshot = true;
 
-    public bool HideIdenticalInDiff { get { return _hideIdenticalInDiff; } }
-    bool _hideIdenticalInDiff = true;
+    public bool DiffHideIdentical { get { return _diffHideIdentical; } }
+    bool _diffHideIdentical = true;
+
+    public bool DiffHideRemoved { get { return _diffHideRemoved; } }
+    bool _diffHideRemoved = true;
 
     public MemConfigPopup()
     {
         _autoSaveOnSnapshot = EditorPrefs.GetBool(MemPrefs.AutoSaveOnSnapshot);
-        _hideIdenticalInDiff = EditorPrefs.GetBool(MemPrefs.HideIdenticalInDiff);
+        _diffHideIdentical = EditorPrefs.GetBool(MemPrefs.Diff_HideIdentical);
+        _diffHideRemoved = EditorPrefs.GetBool(MemPrefs.Diff_HideRemoved);
     }
 
     public override Vector2 GetWindowSize()
@@ -26,7 +30,8 @@ public class MemConfigPopup : PopupWindowContent
         EditorGUILayout.BeginVertical();
         GUILayout.Space(5);
         ShowConfigBool(ref _autoSaveOnSnapshot, "Auto-Save on snapshot", MemPrefs.AutoSaveOnSnapshot);
-        ShowConfigBool(ref _hideIdenticalInDiff, "Hide Identical In Diff", MemPrefs.HideIdenticalInDiff);
+        ShowConfigBool(ref _diffHideIdentical, "Diff - Hide Identical", MemPrefs.Diff_HideIdentical);
+        ShowConfigBool(ref _diffHideRemoved, "Diff - Hide Removed", MemPrefs.Diff_HideRemoved);
         EditorGUILayout.EndVertical();
     }
 

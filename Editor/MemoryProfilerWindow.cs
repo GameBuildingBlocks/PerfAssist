@@ -41,8 +41,11 @@ namespace MemoryProfilerWindow
         MemoryProfilerWindow()
         {
             MemorySnapshot.OnSnapshotReceived += OnSnapshotReceived;
-            _modeMgr.SetSelectionChanged(OnSnapshotSelectionChanged);
-            _modeMgr.OnSessionSnapshotsCleared += OnSessionSnapshotsCleared;
+
+            _modeMgr.OnSnapshotSelectionChanged += RefreshViewSingle;
+            _modeMgr.OnSnapshotsCleared += RefreshViewSingle;
+            _modeMgr.OnSnapshotDiffBegin += RefreshViewDiff;
+            _modeMgr.OnSnapshotDiffEnd += RefreshViewSingle;
         }
 
         void InitNet()
@@ -169,7 +172,7 @@ namespace MemoryProfilerWindow
                 if (m_selectedView != (eShowType)selected)
                 {
                     m_selectedView = (eShowType)selected;
-                    RefreshCurrentView();
+                    RefreshViewSingle();
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.EndArea();
@@ -234,16 +237,17 @@ namespace MemoryProfilerWindow
             return true;
         }
 
-        public void RefreshCurrentView()
+        public void RefreshViewSingle()
         {
+            _unpackedCrawl = _modeMgr.Selected;
+            _preUnpackedCrawl = null;
+            _inspector = _unpackedCrawl != null ? new Inspector(this, _unpackedCrawl) : null;
+
             switch (m_selectedView)
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        if (_tableBrowser._showdiffToggle && _preUnpackedCrawl != null)
-                            _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
-                        else
-                            _tableBrowser.RefreshData(_unpackedCrawl);
+                        _tableBrowser.RefreshData(_unpackedCrawl);
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
@@ -252,26 +256,30 @@ namespace MemoryProfilerWindow
                 default:
                     break;
             }
-        }
 
-        private void OnSessionSnapshotsCleared()
-        {
-            _unpackedCrawl = null;
-            _preUnpackedCrawl = null;
-            _inspector = null;
-
-            RefreshCurrentView();
             Repaint();
         }
 
-        private void OnSnapshotSelectionChanged()
+        public void RefreshViewDiff()
         {
-            _unpackedCrawl = _modeMgr.SelectedUnpacked;
-            _preUnpackedCrawl = _modeMgr.PrevUnpacked;
+            _unpackedCrawl = _modeMgr.Diff_2nd;
+            _preUnpackedCrawl = _modeMgr.Diff_1st;
+            _inspector = _unpackedCrawl != null ? new Inspector(this, _unpackedCrawl) : null;
 
-            _inspector = new Inspector(this, _unpackedCrawl);
+            switch (m_selectedView)
+            {
+                case eShowType.InTable:
+                    if (_tableBrowser != null)
+                        _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
+                    break;
+                case eShowType.InTreemap:
+                    if (_treeMapView != null)
+                        _treeMapView.Setup(this, _unpackedCrawl);
+                    break;
+                default:
+                    break;
+            }
 
-            RefreshCurrentView();
             Repaint();
         }
     }

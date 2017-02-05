@@ -19,7 +19,8 @@ public class TrackerMode_File : TrackerMode_Base
         {
             LoadSession();
 
-            SelectionChanged();
+            if (_owner != null)
+                _owner.ChangeSnapshotSelection();
         }
     }
 

@@ -31,7 +31,8 @@ public class MemConst
 public class MemPrefs
 {
     public static readonly string AutoSaveOnSnapshot = "Mem_AutoSaveOnSnapshot";
-    public static readonly string HideIdenticalInDiff = "Mem_HideIdenticalInDiff";
+    public static readonly string Diff_HideIdentical = "Mem_Diff_HideIdentical";
+    public static readonly string Diff_HideRemoved = "Mem_Diff_HideRemoved";
     public static readonly string LastConnectedIP = "Mem_LastConnectedIP";
 }
 

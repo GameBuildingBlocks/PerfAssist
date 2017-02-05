@@ -11,19 +11,22 @@ public enum TrackerMode
     File,
 }
 
-public delegate void SessionClearHandler();
-
-public class TrackerModeManager 
+public class TrackerModeManager : TrackerModeOwner
 {
-    public event SessionClearHandler OnSessionSnapshotsCleared;
-
     public bool AutoSaveOnSnapshot { get { return _configWindow.AutoSaveOnSnapshot; } }
 
     public TrackerMode CurrentMode { get { return _currentMode; } }
     TrackerMode _currentMode = TrackerMode.Editor;
 
-    public CrawledMemorySnapshot SelectedUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.SelectedUnpacked : null ; } }
-    public CrawledMemorySnapshot PrevUnpacked { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.PrevUnpacked : null; } }
+    public CrawledMemorySnapshot Selected { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Selected : null; } }
+    public CrawledMemorySnapshot Diff_1st { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_1st : null ; } }
+    public CrawledMemorySnapshot Diff_2nd { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_2nd : null; } }
+
+    public TrackerModeManager()
+    {
+        foreach (var t in _modes.Values)
+            t.SetOwner(this);
+    }
 
     public void Update()
     {
@@ -64,9 +67,6 @@ public class TrackerModeManager
                 if (mode != null)
                 {
                     mode.Clear();
-
-                    if (OnSessionSnapshotsCleared != null)
-                        OnSessionSnapshotsCleared();
                 }
             }
             if (GUILayout.Button("Open Dir", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
@@ -102,12 +102,6 @@ public class TrackerModeManager
         {
             Debug.LogException(ex);
         }
-    }
-
-    public void SetSelectionChanged(SelectionChangeHandler handler)
-    {
-        foreach (var t in _modes.Values)
-            t.SelectionChanged = handler;
     }
 
     public TrackerMode_Base GetCurrentMode()

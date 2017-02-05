@@ -667,13 +667,13 @@ public class MemTableBrowser
 
         // categories
         {
-            var  tempToggle = GUILayout.Toggle(_showdiffToggle, new GUIContent("show diff"), GUILayout.MaxWidth(80));
-            if(tempToggle!=_showdiffToggle)
-            {
-               _showdiffToggle = tempToggle;
-               var hostWindow = _hostWindow as MemoryProfilerWindow.MemoryProfilerWindow;
-               hostWindow.RefreshCurrentView();            
-            }
+            //var  tempToggle = GUILayout.Toggle(_showdiffToggle, new GUIContent("show diff"), GUILayout.MaxWidth(80));
+            //if(tempToggle!=_showdiffToggle)
+            //{
+            //   _showdiffToggle = tempToggle;
+            //   var hostWindow = _hostWindow as MemoryProfilerWindow.MemoryProfilerWindow;
+            //   hostWindow.RefreshCurrentView();            
+            //}
 
 
             GUILayout.Label("Category: ", GUILayout.MinWidth(120));
