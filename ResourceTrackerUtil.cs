@@ -87,7 +87,6 @@ public class SceneGraphExtractor
                 }
             }
 
-            var shaderPropertyDict =ResourceTracker.Instance.ShaderPropertyDict;
             foreach (MeshFilter meshFilter in go.GetComponentsInChildren(typeof(MeshFilter), true))
             {
                 Mesh mesh = meshFilter.sharedMesh;
