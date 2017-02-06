@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public enum TrackerMode
@@ -60,6 +61,19 @@ public class TrackerModeManager : TrackerModeOwner
             GUILayout.Space(gridWidth + 30);
             GUILayout.Label(TrackerModeConsts.ModesDesc[selMode]);
             GUILayout.FlexibleSpace();
+
+            if (_currentMode == TrackerMode.File)
+            {
+                if (GUILayout.Button("Load Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+                {
+                    TrackerMode_File mode = GetCurrentMode() as TrackerMode_File;
+                    if (mode != null)
+                    {
+                        mode.LoadSession();
+                        ChangeSnapshotSelection();
+                    }
+                }
+            }
 
             if (GUILayout.Button("Clear Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
             {

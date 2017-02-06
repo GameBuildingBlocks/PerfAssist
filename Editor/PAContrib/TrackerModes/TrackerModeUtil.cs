@@ -16,9 +16,9 @@ public static class TrackerModeConsts
     public static string[] Modes = new string[] { "Editor", "Remote", "File" };
     public static string[] ModesDesc = new string[]
     {
-        "Mode 'Editor': connects to the local in-editor game, and ONLY support 'Native' memory object type.",
-        "Mode 'Remote': connects to the remote ip, and support all types if il2cpp is enabled.",
-        "Mode 'File': opens a saved session from local file system."
+        "'Editor': connects to the local in-editor game (Native types only).",
+        "'Remote': connects to the remote device (C# types if il2cpp is enabled).",
+        "'File': opens a saved session from local file system."
     };
 
     public static readonly string RemoteTag = "-Remote-";

@@ -12,16 +12,6 @@ public class TrackerMode_File : TrackerMode_Base
     protected override void Do_GUI()
     {
         GUILayout.Space(DrawIndicesGrid(0, 20));
-
-        GUILayout.FlexibleSpace();
-
-        if (GUILayout.Button("Load Session", GUILayout.MaxWidth(100)))
-        {
-            LoadSession();
-
-            if (_owner != null)
-                _owner.ChangeSnapshotSelection();
-        }
     }
 
     public void LoadSession()

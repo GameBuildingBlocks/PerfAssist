@@ -247,7 +247,7 @@ namespace MemoryProfilerWindow
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        _tableBrowser.RefreshData(_unpackedCrawl);
+                        _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
@@ -270,7 +270,7 @@ namespace MemoryProfilerWindow
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        _tableBrowser.RefreshDiffData(_unpackedCrawl, _preUnpackedCrawl);
+                        _tableBrowser.ShowDiffedSnapshots(_preUnpackedCrawl, _unpackedCrawl);
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
