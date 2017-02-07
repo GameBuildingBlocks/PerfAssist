@@ -146,20 +146,19 @@ namespace MemoryProfilerWindow
                 _modeMgr.OnGUI();
 
                 // view bar
-                GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
-                GUILayout.BeginHorizontal(MemStyles.Toolbar);
-                int selected = GUILayout.SelectionGrid((int)m_selectedView, MemConst.ShowTypes, MemConst.ShowTypes.Length, MemStyles.ToolbarButton);
-                if (m_selectedView != (eShowType)selected)
-                {
-                    m_selectedView = (eShowType)selected;
-                    RefreshViewSingle();
-                }
-                GUILayout.EndHorizontal();
-                GUILayout.EndArea();
+                //GUILayout.BeginArea(new Rect(0, MemConst.TopBarHeight, position.width - MemConst.InspectorWidth, 30));
+                //GUILayout.BeginHorizontal(MemStyles.Toolbar);
+                //int selected = GUILayout.SelectionGrid((int)m_selectedView, MemConst.ShowTypes, MemConst.ShowTypes.Length, MemStyles.ToolbarButton);
+                //if (m_selectedView != (eShowType)selected)
+                //{
+                //    m_selectedView = (eShowType)selected;
+                //    RefreshView();
+                //}
+                //GUILayout.EndHorizontal();
+                //GUILayout.EndArea();
 
                 // selected views
-                float TabHeight = 30;
-                float yoffset = MemConst.TopBarHeight + TabHeight;
+                float yoffset = MemConst.TopBarHeight;
                 Rect view = new Rect(0f, yoffset, position.width - MemConst.InspectorWidth, position.height - yoffset);
                 switch (m_selectedView)
                 {

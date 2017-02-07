@@ -179,4 +179,7 @@ public class MemUtil
         if (progress >= 1.0f)
             EditorUtility.ClearProgressBar();
     }
+
+    public static string IntStrWithSign(int val) { return val.ToString("+#;-#;0"); }
+    public static string GetSign(int val) { return val >= 0 ? "+" : "-"; }
 }

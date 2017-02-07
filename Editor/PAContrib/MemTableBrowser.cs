@@ -115,7 +115,6 @@ public class MemTableBrowser
     
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
     
-    private Dictionary<int, MemCategory> _categories = new Dictionary<int, MemCategory>();
     private string[] _categoryLiterals = new string[MemConst.MemTypeCategories.Length];
 
     private int _memTypeCategory = 0;
@@ -151,16 +150,22 @@ public class MemTableBrowser
         _objectTable.OnSelected += OnObjectSelected;
     }
 
-    public void ShowSingleSnapshot(CrawledMemorySnapshot unpacked)
+    public void ClearTable()
     {
         _types.Clear();
-        _categories.Clear();
         _typeTable.RefreshData(null);
         _objectTable.RefreshData(null);
+    }
 
+    public void ShowSingleSnapshot(CrawledMemorySnapshot unpacked)
+    {
+        ClearTable();
         _unpacked = unpacked;
         if (_unpacked == null)
             return;
+
+        var categories = SnapshotUtil.PopulateCategories(_unpacked);
+        _categoryLiterals = SnapshotUtil.FormulateCategoryLiterals(categories);
 
         foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
         {
@@ -168,41 +173,35 @@ public class MemTableBrowser
             if (typeName.Length == 0)
                 continue;
 
-            int category = MemUtil.GetCategory(thingInMemory);
-
-            MemObject item = new MemObject(thingInMemory, _unpacked);
-
             MemType theType;
             if (!_types.TryGetValue(typeName, out theType))
             {
                 theType = new MemType();
                 theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
-                theType.Category = category;
+                theType.Category = MemUtil.GetCategory(thingInMemory);
                 theType.Objects = new List<object>();
                 _types.Add(typeName, theType);
             }
+
+            MemObject item = new MemObject(thingInMemory, _unpacked);
             theType.Size += item.Size;
             theType.Count++;
             theType.Objects.Add(item);
-
-            MemCategory theCategory;
-            if (!_categories.TryGetValue(category, out theCategory))
-            {
-                theCategory = new MemCategory();
-                theCategory.Category = category;
-                _categories.Add(category, theCategory);
-            }
-            theCategory.Size += item.Size;
-            theCategory.Count++;
         }
 
-        RefreshCategories();
         RefreshTables();
     }
 
     public void ShowDiffedSnapshots(CrawledMemorySnapshot diff1st, CrawledMemorySnapshot diff2nd)
     {
+        ClearTable();
+        _unpacked = diff2nd;
+        if (_unpacked == null)
+            return;
 
+        var categories1st = SnapshotUtil.PopulateCategories(diff1st);
+        var categories2nd = SnapshotUtil.PopulateCategories(diff2nd);
+        _categoryLiterals = SnapshotUtil.FormulateCategoryLiteralsDiffed(categories1st, categories2nd);
     }
 
     private Dictionary<object, Color> getSpecialColorDict(List<object> objs){
@@ -231,38 +230,6 @@ public class MemTableBrowser
                     }
         }
         return resultDict;
-    }
-
-    public void RefreshCategories()
-    {
-        int[] sizes = new int[MemConst.MemTypeCategories.Length];
-        int[] counts = new int[MemConst.MemTypeCategories.Length];
-        foreach (var item in _categories)
-        {
-            sizes[0] += item.Value.Size;
-            counts[0] += item.Value.Count;
-
-            if (item.Key == 1)
-            {
-                sizes[1] += item.Value.Size;
-                counts[1] += item.Value.Count;
-            }
-            else if (item.Key == 2)
-            {
-                sizes[2] += item.Value.Size;
-                counts[2] += item.Value.Count;
-            }
-            else
-            {
-                sizes[3] += item.Value.Size;
-                counts[3] += item.Value.Count;
-            }
-        }
-
-        for (int i = 0; i < _categoryLiterals.Length; i++)
-        {
-            _categoryLiterals[i] = string.Format("{0} ({1}, {2})", MemConst.MemTypeCategories[i], counts[i], EditorUtility.FormatBytes(sizes[i]));
-        }
     }
 
     public void RefreshTables()

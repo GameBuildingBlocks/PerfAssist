@@ -35,11 +35,13 @@ public class TrackerMode_Base
 
     public void OnGUI()
     {
+        bool savedState = GUI.enabled;
+
+        GUI.enabled = !_isDiffing;
         Do_GUI();
 
         GUILayout.FlexibleSpace();
 
-        bool savedState = GUI.enabled;
         GUI.enabled = _snapshots.Count > 1 && _1st != _selected && _2nd != _selected;
         if (GUILayout.Button(_1stMarkText, EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
         {
@@ -121,16 +123,14 @@ public class TrackerMode_Base
         {
             bool isSelectedForDiff = i == _1st || i == _2nd;
 
-            string sign = "-";
             string delta = "-";
             if (i > 0)
             {
                 int deltaInBytes = _snapshots[i].TotalSize - _snapshots[i - 1].TotalSize;
-                sign = deltaInBytes >= 0 ? "+" : "-";
-                delta = EditorUtility.FormatBytes(Mathf.Abs(deltaInBytes));
+                delta = MemUtil.GetSign(deltaInBytes) + EditorUtility.FormatBytes(Mathf.Abs(deltaInBytes));
             }
 
-            _indices[i] = string.Format("{0}{1} ({2}{3})", i.ToString(), isSelectedForDiff ? "*" : "", sign, delta);
+            _indices[i] = string.Format("{0}{1} ({2})", i.ToString(), isSelectedForDiff ? "*" : "", delta);
         }
     }
 
