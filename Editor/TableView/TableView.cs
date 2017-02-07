@@ -103,6 +103,9 @@ public partial class TableView : IDisposable
     public void SetSelected(object obj)
     {
         m_selected = obj;
+
+        if (OnSelected != null)
+            OnSelected(obj, 0);
     }
 
     public object GetSelected()
