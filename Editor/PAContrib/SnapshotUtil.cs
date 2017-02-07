@@ -6,6 +6,82 @@ using UnityEditor;
 
 public class SnapshotUtil
 {
+    public static Dictionary<string, MemType> PopulateTypes(CrawledMemorySnapshot snapshot)
+    {
+        var types = new Dictionary<string, MemType>();
+        foreach (ThingInMemory thingInMemory in snapshot.allObjects)
+        {
+            string typeName = MemUtil.GetGroupName(thingInMemory);
+            if (typeName.Length == 0)
+                continue;
+
+            MemType theType;
+            if (!types.TryGetValue(typeName, out theType))
+            {
+                theType = new MemType();
+                theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
+                theType.Category = MemUtil.GetCategory(thingInMemory);
+                theType.Objects = new List<object>();
+                types.Add(typeName, theType);
+            }
+
+            MemObject item = new MemObject(thingInMemory, snapshot);
+            theType.Size += item.Size;
+            theType.Count++;
+            theType.Objects.Add(item);
+        }
+        return types;
+    }
+
+    public static Dictionary<string, MemType> DiffTypes(Dictionary<string, MemType> types1st, Dictionary<string, MemType> types2nd)
+    {
+        Dictionary<string, int> unifiedKeys = new Dictionary<string, int>();
+
+        foreach (var p in types1st)
+            if (!unifiedKeys.ContainsKey(p.Key))
+                unifiedKeys.Add(p.Key, p.Value.Category);
+
+        foreach (var p in types2nd)
+            if (!unifiedKeys.ContainsKey(p.Key))
+                unifiedKeys.Add(p.Key, p.Value.Category);
+
+        var retTypes = new Dictionary<string, MemType>();
+        foreach (var p in unifiedKeys)
+        {
+            var dummyType = new MemType();
+            dummyType.TypeName = p.Key;
+            dummyType.Category = p.Value;
+            dummyType.Objects = new List<object>();
+            dummyType.Size = 0;
+            dummyType.Count = 0;
+
+            // add the dummy one if not exists in either 1st or 2nd
+            if (!types1st.ContainsKey(p.Key))
+            {
+                types1st.Add(p.Key, dummyType);   
+            }
+            if (!types2nd.ContainsKey(p.Key))
+            {
+                types2nd.Add(p.Key, dummyType);
+            }
+
+            var t1 = types1st[p.Key];
+            var t2 = types2nd[p.Key];
+
+            // here we reuse the dummy type for the combined output type
+            var diffedType = dummyType;
+            diffedType.Size = t2.Size - t1.Size;
+            diffedType.Count = t2.Count - t1.Count;
+            if (diffedType.Size == 0 && diffedType.Count == 0)
+                continue;
+
+            diffedType.Objects = MemObjectInfoSet.Diff(t1.Objects, t2.Objects);
+
+            retTypes[p.Key] = diffedType;
+        }
+        return retTypes;
+    }
+
     public static Dictionary<int, MemCategory> PopulateCategories(CrawledMemorySnapshot snapshot)
     {
         var categories = new Dictionary<int, MemCategory>();

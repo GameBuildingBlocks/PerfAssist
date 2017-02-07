@@ -1,23 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using MemoryProfilerWindow;
 using System.Collections.Generic;
 using UnityEditor;
-using MemoryProfilerWindow;
-using Assets.Editor.Treemap;
-using UnityEditorInternal;
-
-using System.IO;
-using System.Text;
-using PerfAssist.LitJson;
-using System.Diagnostics;
-
-
-public struct sDiffDictKey
-{
-    public static readonly string addedDict = "added";
-    public static readonly string unchangedDict = "unchanged";
-    public static readonly string removedDict = "removed";
-}
+using UnityEngine;
 
 public struct sDiffType
 {
@@ -163,30 +147,10 @@ public class MemTableBrowser
         if (_unpacked == null)
             return;
 
+        _types = SnapshotUtil.PopulateTypes(_unpacked);
+
         var categories = SnapshotUtil.PopulateCategories(_unpacked);
         _categoryLiterals = SnapshotUtil.FormulateCategoryLiterals(categories);
-
-        foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
-        {
-            string typeName = MemUtil.GetGroupName(thingInMemory);
-            if (typeName.Length == 0)
-                continue;
-
-            MemType theType;
-            if (!_types.TryGetValue(typeName, out theType))
-            {
-                theType = new MemType();
-                theType.TypeName = MemUtil.GetCategoryLiteral(thingInMemory) + typeName;
-                theType.Category = MemUtil.GetCategory(thingInMemory);
-                theType.Objects = new List<object>();
-                _types.Add(typeName, theType);
-            }
-
-            MemObject item = new MemObject(thingInMemory, _unpacked);
-            theType.Size += item.Size;
-            theType.Count++;
-            theType.Objects.Add(item);
-        }
 
         RefreshTables();
     }
@@ -198,9 +162,15 @@ public class MemTableBrowser
         if (_unpacked == null)
             return;
 
+        var types1st = SnapshotUtil.PopulateTypes(diff1st);
+        var types2nd = SnapshotUtil.PopulateTypes(diff2nd);
+        _types = SnapshotUtil.DiffTypes(types1st, types2nd);
+
         var categories1st = SnapshotUtil.PopulateCategories(diff1st);
         var categories2nd = SnapshotUtil.PopulateCategories(diff2nd);
         _categoryLiterals = SnapshotUtil.FormulateCategoryLiteralsDiffed(categories1st, categories2nd);
+
+        RefreshTables();
     }
 
     private Dictionary<object, Color> getSpecialColorDict(List<object> objs){
