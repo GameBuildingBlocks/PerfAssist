@@ -122,7 +122,6 @@ public class MemTableBrowser
 
     string _searchInstanceString = "";
     string _searchTypeString = "";
-    MemType _searchResultType;
 
     public MemTableBrowser(EditorWindow hostWindow)
     {
@@ -241,37 +240,28 @@ public class MemTableBrowser
             return;
         }
 
-        _searchResultType = null;
+        MemType searchResultType = null;
         List<object> qualified = new List<object>();
         if (!string.IsNullOrEmpty(_searchInstanceString))
         {
             // search for instances
             _types.Remove(MemConst.SearchResultTypeString);
-            _searchResultType = new MemType();
-            _searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchInstanceString;
-            _searchResultType.Category = 0;
-            _searchResultType.Objects = new List<object>();
+            searchResultType = new MemType();
+            searchResultType.TypeName = MemConst.SearchResultTypeString + " " + _searchInstanceString;
+            searchResultType.Category = 0;
+            searchResultType.Objects = new List<object>();
 
             string search = _searchInstanceString.ToLower();
             foreach (ThingInMemory thingInMemory in _unpacked.allObjects)
             {
                 if (thingInMemory.caption.ToLower().Contains(search))
                 {
-                    _searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
+                    searchResultType.AddObject(new MemObject(thingInMemory, _unpacked));
                 }
             }
 
-            qualified.Add(_searchResultType);
-            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
-        }
-        else if (!string.IsNullOrEmpty(_searchTypeString)) 
-        {
-            // search for types
-            foreach (var p in _types)
-            {
-                if (p.Key.ToLower().Contains(_searchTypeString.ToLower()))
-                    qualified.Add(p.Value);
-            }
+            qualified.Add(searchResultType);
+            _types.Add(MemConst.SearchResultTypeString, searchResultType);
         }
         else
         {
@@ -288,7 +278,8 @@ public class MemTableBrowser
                 {
                     if (MemUtil.MatchSizeLimit(mt.Size, _memTypeSizeLimiter))
                     {
-                        qualified.Add(mt);
+                        if (string.IsNullOrEmpty(_searchTypeString) || p.Key.ToLower().Contains(_searchTypeString.ToLower()))
+                            qualified.Add(mt);
                     }
                 }
             }
@@ -297,8 +288,8 @@ public class MemTableBrowser
         _typeTable.RefreshData(qualified, getSpecialColorDict(qualified));
         _objectTable.RefreshData(null);
 
-        if (_searchResultType != null)
-            _typeTable.SetSelected(_searchResultType);
+        if (searchResultType != null)
+            _typeTable.SetSelected(searchResultType);
     }
 
     public void Draw(Rect r)
@@ -350,7 +341,6 @@ public class MemTableBrowser
             }
             if (GUILayout.Button("", MemStyles.SearchCancelButton))
             {
-                _types.Remove(MemConst.SearchResultTypeString);
                 _searchTypeString = "";
                 GUI.FocusControl(null); // Remove focus if cleared
                 RefreshTables();

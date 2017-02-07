@@ -157,8 +157,8 @@ namespace MemoryProfilerWindow
                 //GUILayout.EndHorizontal();
                 //GUILayout.EndArea();
 
-                // selected views
-                float yoffset = MemConst.TopBarHeight;
+                // selected view
+                float yoffset = MemConst.TopBarHeight /*+ 30*/; // view bar is temporarily disabled
                 Rect view = new Rect(0f, yoffset, position.width - MemConst.InspectorWidth, position.height - yoffset);
                 switch (m_selectedView)
                 {
