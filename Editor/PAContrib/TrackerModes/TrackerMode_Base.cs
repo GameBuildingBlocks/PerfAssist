@@ -99,7 +99,7 @@ public class TrackerMode_Base
 
         if (i >= 0 && i < _snapshots.Count)
         {
-            unpacked = _snapshots[i].unPacked;
+            unpacked = _snapshots[i].Unpacked;
         }
 
         return unpacked;
@@ -116,12 +116,18 @@ public class TrackerMode_Base
         _indices = new string[_snapshots.Count];
         for (int i = 0; i < _snapshots.Count; i++)
         {
-            _indices[i] = i.ToString();
+            bool isSelectedForDiff = i == _1st || i == _2nd;
 
-            if (i == _1st || i == _2nd)
+            string sign = "-";
+            string delta = "-";
+            if (i > 0)
             {
-                _indices[i] += "*";
+                int deltaInBytes = _snapshots[i].TotalSize - _snapshots[i - 1].TotalSize;
+                sign = deltaInBytes >= 0 ? "+" : "-";
+                delta = EditorUtility.FormatBytes(Mathf.Abs(deltaInBytes));
             }
+
+            _indices[i] = string.Format("{0}{1} ({2}{3})", i.ToString(), isSelectedForDiff ? "*" : "", sign, delta);
         }
     }
 
@@ -130,7 +136,7 @@ public class TrackerMode_Base
         float totalWidth = 0.0f;
         if (_indices != null)
         {
-            totalWidth = 30 * _indices.Length;
+            totalWidth = 100 * _indices.Length;
             var newIndex = GUI.SelectionGrid(new Rect(initX, initY, totalWidth, 20), _selected, _indices, _indices.Length, MemStyles.ToolbarButton);
             if (newIndex != _selected)
             {

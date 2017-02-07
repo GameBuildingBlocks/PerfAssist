@@ -118,6 +118,25 @@ public class TrackerModeManager : TrackerModeOwner
         }
     }
 
+    public void AddSnapshot(PackedMemorySnapshot packed)
+    {
+        TrackerMode_Base curMode = GetCurrentMode();
+        if (curMode == null)
+            return;
+
+        var snapshotInfo = new MemSnapshotInfo();
+        if (!snapshotInfo.AcceptSnapshot(packed))
+            return;
+
+        curMode.AddSnapshot(snapshotInfo);
+
+        if (AutoSaveOnSnapshot)
+        {
+            if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
+                Debug.LogErrorFormat("Save Session Info Failed!");
+        }
+    }
+
     public TrackerMode_Base GetCurrentMode()
     {
         TrackerMode_Base mode;

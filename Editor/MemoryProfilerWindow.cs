@@ -91,26 +91,7 @@ namespace MemoryProfilerWindow
 
         void OnSnapshotReceived(PackedMemorySnapshot packed)
         {
-            TrackerMode_Base curMode = _modeMgr.GetCurrentMode();
-            if (curMode != null)
-            {
-                var snapshotInfo = new MemSnapshotInfo();
-                snapshotInfo.setSnapShotTime(Time.realtimeSinceStartup);
-
-                MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-                var packedCrawled = new Crawler().Crawl(packed);
-                MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-                snapshotInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
-                MemUtil.LoadSnapshotProgress(1.0f, "done");
-
-                curMode.AddSnapshot(snapshotInfo);
-
-                if (_modeMgr.AutoSaveOnSnapshot)
-                {
-                    if (!curMode.SaveSessionInfo(packed, snapshotInfo.unPacked))
-                        Debug.LogErrorFormat("Save Session Info Failed!");
-                }
-            }
+            _modeMgr.AddSnapshot(packed);
         }
 
         void Update()

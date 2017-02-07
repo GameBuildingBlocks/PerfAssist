@@ -271,7 +271,6 @@ public class MemTableBrowser
         }
 
         _searchResultType = null;
-
         List<object> qualified = new List<object>();
         if (!string.IsNullOrEmpty(_searchInstanceString))
         {
@@ -291,8 +290,8 @@ public class MemTableBrowser
                 }
             }
 
-            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
             qualified.Add(_searchResultType);
+            _types.Add(MemConst.SearchResultTypeString, _searchResultType);
         }
         else if (!string.IsNullOrEmpty(_searchTypeString)) 
         {
@@ -325,7 +324,10 @@ public class MemTableBrowser
         }
 
         _typeTable.RefreshData(qualified, getSpecialColorDict(qualified));
-        _objectTable.RefreshData(_searchResultType != null ? _searchResultType.Objects : null);
+        _objectTable.RefreshData(null);
+
+        if (_searchResultType != null)
+            _typeTable.SetSelected(_searchResultType);
     }
 
     public void Draw(Rect r)

@@ -57,15 +57,8 @@ public class TrackerMode_File : TrackerMode_Base
         foreach (var obj in packeds)
         {
             MemSnapshotInfo memInfo = new MemSnapshotInfo();
-
-            var packed = obj as PackedMemorySnapshot;
-            MemUtil.LoadSnapshotProgress(0.01f, "creating Crawler");
-            var packedCrawled = new Crawler().Crawl(packed);
-            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
-            memInfo.unPacked = CrawlDataUnpacker.Unpack(packedCrawled);
-            MemUtil.LoadSnapshotProgress(1.0f, "done");
-
-            _snapshots.Add(memInfo);
+            if (memInfo.AcceptSnapshot(obj as PackedMemorySnapshot))
+                _snapshots.Add(memInfo);
         }
 
         if (_snapshots.Count == 0)
