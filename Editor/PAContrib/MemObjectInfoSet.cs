@@ -52,9 +52,11 @@ public class MemObjectInfoSet
         MemObjectInfoSet set2nd = new MemObjectInfoSet(obj2nd);
 
         List<object> nativeOnes = DiffNative(set1st._nativeObjects, set2nd._nativeObjects);
+        List<object> managedOnes = DiffManaged(set1st._managedObjects, set2nd._managedObjects);
 
         List<object> ret = new List<object>();
         ret.AddRange(nativeOnes);
+        ret.AddRange(managedOnes);
         return ret;
     }
 
@@ -98,6 +100,55 @@ public class MemObjectInfoSet
                 ret.Add(mo);
             }
             else 
+            {
+                MarkStatus(mo, eDiffStatus.Increased);
+                ret.Add(mo);
+            }
+        }
+
+        return ret;
+    }
+
+    private static List<object> DiffManaged(Dictionary<UInt64, MemObject> managed1st, Dictionary<UInt64, MemObject> managed2nd)
+    {
+        HashSet<UInt64> both = Intersect(managed1st, managed2nd);
+
+        List<object> ret = new List<object>();
+
+        foreach (var p in managed1st)
+        {
+            if (!both.Contains(p.Key))
+            {
+                MarkStatus(p.Value, eDiffStatus.Removed);
+                ret.Add(p.Value);
+            }
+        }
+
+        foreach (var p in managed2nd)
+        {
+            if (!both.Contains(p.Key))
+            {
+                MarkStatus(p.Value, eDiffStatus.Added);
+                ret.Add(p.Value);
+            }
+        }
+
+        foreach (UInt64 i in both)
+        {
+            ManagedObject obj1 = managed1st[i]._thing as ManagedObject;
+            ManagedObject obj2 = managed2nd[i]._thing as ManagedObject;
+
+            MemObject mo = managed2nd[i];
+            if (obj1.size == obj2.size)
+            {
+                MarkStatus(mo, eDiffStatus.Unchanged);
+            }
+            else if (obj1.size > obj2.size)
+            {
+                MarkStatus(mo, eDiffStatus.Decreased);
+                ret.Add(mo);
+            }
+            else
             {
                 MarkStatus(mo, eDiffStatus.Increased);
                 ret.Add(mo);
