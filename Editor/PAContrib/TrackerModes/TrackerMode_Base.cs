@@ -12,6 +12,7 @@ public class TrackerMode_Base
     public CrawledMemorySnapshot Diff_1st { get { return _1st != PAEditorConst.BAD_ID ? GetAt(_1st) : null; } }
     public CrawledMemorySnapshot Diff_2nd { get { return _2nd != PAEditorConst.BAD_ID ? GetAt(_2nd) : null; } }
 
+    public bool IsDiffing { get { return _isDiffing; }  }
 
     public void AddSnapshot(MemSnapshotInfo snapshot)
     {
@@ -54,16 +55,18 @@ public class TrackerMode_Base
         GUI.enabled = _1st != PAEditorConst.BAD_ID && _2nd != PAEditorConst.BAD_ID && !_isDiffing;
         if (GUILayout.Button("Diff", EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
         {
+            _isDiffing = true;
+
             Debug.LogFormat("diff {0} & {1}...", _1st, _2nd);
             if (_owner != null)
                 _owner.BeginDiff();
-
-            _isDiffing = true;
         }
 
         GUI.enabled = _isDiffing;
         if (GUILayout.Button("End Diff", EditorStyles.toolbarButton, GUILayout.Width(120), GUILayout.Height(20)))
         {
+            _isDiffing = false;
+
             if (_owner != null)
                 _owner.EndDiff();
         }

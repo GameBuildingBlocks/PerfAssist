@@ -20,7 +20,6 @@ namespace MemoryProfilerWindow
     {
         public CrawledMemorySnapshot UnpackedCrawl { get { return _unpackedCrawl; } }
         CrawledMemorySnapshot _unpackedCrawl;
-        CrawledMemorySnapshot _preUnpackedCrawl;
 
         Inspector _inspector;
         TreeMapView _treeMapView;
@@ -42,10 +41,10 @@ namespace MemoryProfilerWindow
         {
             MemorySnapshot.OnSnapshotReceived += OnSnapshotReceived;
 
-            _modeMgr.OnSnapshotSelectionChanged += RefreshViewSingle;
-            _modeMgr.OnSnapshotsCleared += RefreshViewSingle;
-            _modeMgr.OnSnapshotDiffBegin += RefreshViewDiff;
-            _modeMgr.OnSnapshotDiffEnd += RefreshViewSingle;
+            _modeMgr.OnSnapshotSelectionChanged += RefreshView;
+            _modeMgr.OnSnapshotsCleared += RefreshView;
+            _modeMgr.OnSnapshotDiffBegin += RefreshView;
+            _modeMgr.OnSnapshotDiffEnd += RefreshView;
         }
 
         void InitNet()
@@ -218,40 +217,30 @@ namespace MemoryProfilerWindow
             return true;
         }
 
-        public void RefreshViewSingle()
+        public void RefreshView()
         {
-            _unpackedCrawl = _modeMgr.Selected;
-            _preUnpackedCrawl = null;
+            var mode = _modeMgr.GetCurrentMode();
+            if (mode == null)
+                return;
+
+            _unpackedCrawl = mode.IsDiffing ? _modeMgr.Diff_2nd : _modeMgr.Selected;
             _inspector = _unpackedCrawl != null ? new Inspector(this, _unpackedCrawl) : null;
 
             switch (m_selectedView)
             {
                 case eShowType.InTable:
                     if (_tableBrowser != null)
-                        _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
-                    break;
-                case eShowType.InTreemap:
-                    if (_treeMapView != null)
-                        _treeMapView.Setup(this, _unpackedCrawl);
-                    break;
-                default:
-                    break;
-            }
+                    {
+                        if (mode.IsDiffing)
+                        {
+                            _tableBrowser.ShowDiffedSnapshots(_modeMgr.Diff_1st, _unpackedCrawl);
+                        }
+                        else
+                        {
+                            _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
+                        }
 
-            Repaint();
-        }
-
-        public void RefreshViewDiff()
-        {
-            _unpackedCrawl = _modeMgr.Diff_2nd;
-            _preUnpackedCrawl = _modeMgr.Diff_1st;
-            _inspector = _unpackedCrawl != null ? new Inspector(this, _unpackedCrawl) : null;
-
-            switch (m_selectedView)
-            {
-                case eShowType.InTable:
-                    if (_tableBrowser != null)
-                        _tableBrowser.ShowDiffedSnapshots(_preUnpackedCrawl, _unpackedCrawl);
+                    }
                     break;
                 case eShowType.InTreemap:
                     if (_treeMapView != null)
