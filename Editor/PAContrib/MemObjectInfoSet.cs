@@ -15,7 +15,7 @@ public enum eDiffStatus
 
 public class MemObjectInfoSet
 {
-    public static readonly string[] Prefixes = { "{added}", "{increased}", "{unchanged}", "{decreased}", "{removed}" };
+    public static readonly string[] Prefixes = { "{added} ", "{increased} ", "{unchanged} ", "{decreased} ", "{removed} " };
 
     public MemObjectInfoSet(List<object> objList2nd)
     {
