@@ -26,7 +26,7 @@ public class LogUtil
         return string.Format("{0:00}-{1:00}-{2:00}", dt.Hour, dt.Minute, dt.Second);
     }
 
-    public static bool EnableInMemoryStorage = true;
+    public static bool EnableInMemoryStorage = false;
     public static int InMemoryItemMaxCount = 3;
 
     public static List<string> InMemoryExceptions = new List<string>();
