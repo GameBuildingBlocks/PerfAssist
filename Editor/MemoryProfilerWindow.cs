@@ -62,7 +62,7 @@ namespace MemoryProfilerWindow
 
         void Awake()
         {
-            InitNet();
+            //InitNet();
         }
 
         void OnEnable()

@@ -57,8 +57,8 @@ namespace MemoryProfilerWindow
             _shortestPath = _shortestPathToRootFinder.FindFor(thing);
             Instance.OnObjSelected(thing);
 
-            if (NetManager.Instance != null && NetManager.Instance.IsConnected)
-                requestStackDataInfo();
+            //if (NetManager.Instance != null && NetManager.Instance.IsConnected)
+            //    requestStackDataInfo();
         }
 
         public void Draw()
@@ -186,9 +186,9 @@ namespace MemoryProfilerWindow
                 }
             }
 
-            if (NetManager.Instance == null || !NetManager.Instance.IsConnected)
-                _stackInfo = GetNativeDebugInfo();
-            GUILayout.TextArea(_stackInfo, GUILayout.MinHeight(300f));
+            //if (NetManager.Instance == null || !NetManager.Instance.IsConnected)
+            //    _stackInfo = GetNativeDebugInfo();
+            //GUILayout.TextArea(_stackInfo, GUILayout.MinHeight(300f));
 
             GUILayout.EndScrollView();
             GUILayout.EndArea();

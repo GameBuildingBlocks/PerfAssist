@@ -47,7 +47,7 @@ public class TrackerMode_Remote : TrackerMode_Base
 
         bool savedState = GUI.enabled;
 
-        bool connected = NetManager.Instance != null && NetManager.Instance.IsConnected && MemUtil.IsProfilerConnectedRemotely;
+        bool connected = /*NetManager.Instance != null && NetManager.Instance.IsConnected &&*/ MemUtil.IsProfilerConnectedRemotely;
 
         GUI.enabled = !connected;
         if (GUILayout.Button("Connect", GUILayout.Width(80)))

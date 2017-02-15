@@ -127,20 +127,20 @@ public static class TrackerModeUtil
 
     public static void Connect(string ip)
     {
-        if (NetManager.Instance == null)
-            return;
+        //if (NetManager.Instance == null)
+        //    return;
 
         ProfilerDriver.connectedProfiler = -1;
-        if (NetManager.Instance.IsConnected)
-            NetManager.Instance.Disconnect();
+        //if (NetManager.Instance.IsConnected)
+        //    NetManager.Instance.Disconnect();
 
         try
         {
             if (!MemUtil.ValidateIPString(ip))
                 throw new Exception("Invaild IP");
 
-            if (!NetManager.Instance.Connect(ip))
-                throw new Exception("Bad Connect");
+            //if (!NetManager.Instance.Connect(ip))
+            //    throw new Exception("Bad Connect");
 
             if (!MemUtil.IsLocalhostIP(ip))
             {
@@ -157,8 +157,8 @@ public static class TrackerModeUtil
             Debug.LogException(ex);
 
             ProfilerDriver.connectedProfiler = -1;
-            if (NetManager.Instance.IsConnected)
-                NetManager.Instance.Disconnect();
+            //if (NetManager.Instance.IsConnected)
+            //    NetManager.Instance.Disconnect();
         }
     }
 
