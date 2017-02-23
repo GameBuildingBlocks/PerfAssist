@@ -75,6 +75,9 @@ public enum eNetCmd
     SV_QueryStacksResponse,
 
 
+    SV_VarTracerJsonParameter,
+
+
     SV_StressTestNames,
     SV_StressTestResult,
 
