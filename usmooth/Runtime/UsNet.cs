@@ -40,6 +40,8 @@ public class UsNet : IDisposable {
 
 	private TcpClient _tcpClient;
 
+    private readonly object _netLocker = new object();
+
 	public UsCmdParsing CmdExecutor { get { return _cmdExec; } }
 	private UsCmdParsing _cmdExec = new UsCmdParsing();
     public bool IsListening { get { return _isListening; } }
@@ -132,13 +134,16 @@ public class UsNet : IDisposable {
 	}
 
 	public void SendCommand(UsCmd cmd) {
-		if (_tcpClient == null || _tcpClient.GetStream() == null) {
-			return;				
-		}
-
-		byte[] cmdLenBytes = BitConverter.GetBytes ((ushort)cmd.WrittenLen);
-		_tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
-		_tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
+        if (_tcpClient == null || _tcpClient.GetStream() == null)
+        {
+            return;
+        }
+        lock (_netLocker)
+        {
+            byte[] cmdLenBytes = BitConverter.GetBytes((ushort)cmd.WrittenLen);
+            _tcpClient.GetStream().Write(cmdLenBytes, 0, cmdLenBytes.Length);
+            _tcpClient.GetStream().Write(cmd.Buffer, 0, cmd.WrittenLen);
+        }
 		//Debug.Log (string.Format("cmd written, len ({0})", cmd.WrittenLen));
 	}
 
