@@ -76,7 +76,12 @@ public partial class TableView
         }
 
         var desc = m_descArray[col];
-        var text = desc.FormatObject(obj);
+        string strPos = pos.ToString();
+        string text;
+        if (col == 0)
+            text = strPos + ". " + desc.FormatObject(obj);
+        else
+            text = desc.FormatObject(obj);
 
         // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
         // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
