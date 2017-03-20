@@ -38,7 +38,6 @@ public class UsMain_NetHandlers {
 		exec.RegisterHandler (eNetCmd.CL_Handshake, NetHandle_Handshake); 
 		exec.RegisterHandler (eNetCmd.CL_KeepAlive, NetHandle_KeepAlive); 
 		exec.RegisterHandler (eNetCmd.CL_ExecCommand, NetHandle_ExecCommand); 
-		exec.RegisterHandler (eNetCmd.CL_FlyToObject, NetHandle_FlyToObject); 
 		exec.RegisterHandler (eNetCmd.CL_RequestFrameData, NetHandle_RequestFrameData); 
 		exec.RegisterHandler (eNetCmd.CL_FrameV2_RequestMeshes, NetHandle_FrameV2_RequestMeshes);
         exec.RegisterHandler(eNetCmd.CL_FrameV2_RequestNames, NetHandle_FrameV2_RequestNames);
@@ -74,12 +73,6 @@ public class UsMain_NetHandlers {
 		reply.WriteNetCmd(eNetCmd.SV_ExecCommandResponse);
 		reply.WriteInt32 (ret ? 1 : 0);
 		UsNet.Instance.SendCommand(reply);
-		return true;
-	}
-
-	private bool NetHandle_FlyToObject(eNetCmd cmd, UsCmd c) {
-		int instID = c.ReadInt32 ();
-		UsEditorNotifer.Instance.PostMessage_FlyToObject (instID);
 		return true;
 	}
 

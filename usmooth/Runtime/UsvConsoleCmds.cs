@@ -127,6 +127,21 @@ public class UsvConsoleCmds
         return true;
     }
 
+    [ConsoleHandler("flyto")]
+    public bool FlyTo(string[] args)
+    {
+        try
+        {
+		    UsEditorNotifer.Instance.PostMessage_FlyToObject(int.Parse(args[1]));
+        }
+        catch (Exception ex)
+        {
+            Log.Exception(ex);
+            throw;
+        }
+        return true;
+    }
+
     public event SysPost.StdMulticastDelegation QueryEffectList;
     public event SysPost.StdMulticastDelegation RunEffectStressTest;
 

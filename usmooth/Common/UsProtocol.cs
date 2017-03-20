@@ -42,8 +42,6 @@ public enum eNetCmd
     CL_FrameV2_RequestMeshes,
     CL_FrameV2_RequestNames,
 
-    CL_FlyToObject,
-
     CL_QuerySwitches,
     CL_QuerySliders,
 
