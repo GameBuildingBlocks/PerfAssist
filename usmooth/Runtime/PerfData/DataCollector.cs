@@ -71,18 +71,18 @@ namespace usmooth
 
                             if (mat != null)
                             {
-                                if (Application.isEditor)
-                                {
-                                    List<Texture> textures = UsEditorQuery.GetAllTexturesOfMaterial(mat);
-                                    if (textures != null)
-                                    {
-                                        foreach (var texture in textures)
-                                        {
-                                            AddVisibleTexture(texture, mat);
-                                        }
-                                    }
-                                }
-                                else
+                                //if (Application.isEditor)
+                                //{
+                                //    List<Texture> textures = UsEditorQuery.GetAllTexturesOfMaterial(mat);
+                                //    if (textures != null)
+                                //    {
+                                //        foreach (var texture in textures)
+                                //        {
+                                //            AddVisibleTexture(texture, mat);
+                                //        }
+                                //    }
+                                //}
+                                //else
                                 {
                                     AddVisibleTexture(mat.mainTexture, mat);
                                 }
