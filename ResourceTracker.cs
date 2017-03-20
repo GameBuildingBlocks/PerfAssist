@@ -30,7 +30,7 @@ public class ResourceRequestInfo
     public override string ToString()
     {
         return string.Format("#{0} ({1:0.000}) {2} {3} {4} +{5} +{6} ({7})",
-            seqID, requestTime, rootID, resourceType.ToString(), 
+            seqID, requestTime, rootID, resourceType != null ? resourceType.ToString() : null, 
             requestType == ResourceRequestType.Async ? "(a)" : "", resourcePath, srcFile, srcLineNum);
     }
 
@@ -229,7 +229,7 @@ public class ResourceTracker : IDisposable
 
     public void TrackAsyncDone(System.Object handle, UnityEngine.Object target)
     {
-        if (!_enableTracking)
+        if (!_enableTracking || target == null)
             return;
 
         ResourceRequestInfo request;
@@ -480,6 +480,9 @@ public class ResourceTracker : IDisposable
 
     private void TrackRequestWithObject(ResourceRequestInfo req, UnityEngine.Object obj)
     {
+        if (obj == null)
+            return;
+
         try
         {
             req.RecordObject(obj);
@@ -492,7 +495,7 @@ public class ResourceTracker : IDisposable
         }
         catch (Exception ex)
         {
-            UnityEngine.Debug.LogErrorFormat("[ResourceTracker.TrackAsyncDone] error: {0} \n {1} \n {2}",
+            UnityEngine.Debug.LogErrorFormat("[ResourceTracker.TrackRequestWithObject] error: {0} \n {1} \n {2}",
                 ex.Message, req != null ? req.ToString() : "", ex.StackTrace);
         }
     }

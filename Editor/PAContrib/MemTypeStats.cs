@@ -99,12 +99,34 @@ public class MemStats
         UnityEngine.Debug.LogFormat("path: {0}, winPath: {1}", pathCount, winPathCount);
         UnityEngine.Debug.LogFormat("all win paths: \n{0}", sb.ToString());
 
+        int logAddCount = 0;
+        int logRemoveCount = 0;
+        long logAddSize = 0;
+        long logRemoveSize = 0;
+
         List<KeyValuePair<int, string>> lines = new List<KeyValuePair<int, string>>();
         foreach (var p in counter)
         {
             if (p.Value >= 2)
             {
                 lines.Add(new KeyValuePair<int, string>(p.Value, p.Key));
+            }
+
+            string strKey = "DataType";
+            //string strKey = "System.Int32";
+            if (p.Key.ToString().Contains(strKey))
+            {
+                if (p.Key.ToString().Contains("{added}"))
+                {
+                    logAddCount++;
+                    logAddSize += p.Key.ToString().Length;
+                }
+                else
+                {
+                    logRemoveCount++;
+                    logRemoveSize += p.Key.ToString().Length;
+                }
+                    
             }
         }
         lines.Sort((x, y) => x.Key.CompareTo(y.Key) * -1); // would sort all results from the largest to the smallest
@@ -125,5 +147,7 @@ public class MemStats
                 UnityEngine.Debug.LogFormat(" {0, 5} {1}: {2}\n", line.Key, "<invalid string>", ex.Message);
             }
         }
+
+        UnityEngine.Debug.LogFormat("------------ add count:{0} size:{1} , remove count:{2} size:{3}  dif:{4}---------------\n", logAddCount, logAddSize,logRemoveCount, logRemoveSize,logAddSize - logRemoveSize);
     }
 }
