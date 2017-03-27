@@ -52,6 +52,7 @@ public class MeshLut {
 		md._triCount = mf.mesh.triangles.Length / 3;
 		md._materialCount = go.GetComponent<Renderer>().sharedMaterials.Length;
 		md._boundSize = go.GetComponent<Renderer>().bounds.size.magnitude;
+        md._camDist = Vector3.Distance(go.transform.position, Camera.current.transform.position);
 		_lut.Add (md._instID, md);
 		return true;
 	}

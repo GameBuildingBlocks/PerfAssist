@@ -30,6 +30,11 @@ using System.Collections.Generic;
 
 using System;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
+
 namespace usmooth
 {
     public class DataCollector
@@ -71,18 +76,21 @@ namespace usmooth
 
                             if (mat != null)
                             {
-                                //if (Application.isEditor)
-                                //{
-                                //    List<Texture> textures = UsEditorQuery.GetAllTexturesOfMaterial(mat);
-                                //    if (textures != null)
-                                //    {
-                                //        foreach (var texture in textures)
-                                //        {
-                                //            AddVisibleTexture(texture, mat);
-                                //        }
-                                //    }
-                                //}
-                                //else
+#if UNITY_EDITOR
+                                if (Application.isEditor)
+                                {
+                                    int cnt = ShaderUtil.GetPropertyCount(mat.shader);
+                                    for (int i = 0; i < cnt; i++)
+                                    {
+                                        if (ShaderUtil.GetPropertyType(mat.shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                                        {
+                                            string propName = ShaderUtil.GetPropertyName(mat.shader, i);
+                                            AddVisibleTexture(mat.GetTexture(propName), mat);
+                                        }
+                                    }
+                                }
+                                else
+#endif
                                 {
                                     AddVisibleTexture(mat.mainTexture, mat);
                                 }

@@ -66,8 +66,6 @@ public enum eNetCmd
 
     SV_App_Logging,
 
-    SV_Editor_SelectionChanged,
-
     SV_QuerySwitchesResponse,
     SV_QuerySlidersResponse,
     SV_QueryStacksResponse,

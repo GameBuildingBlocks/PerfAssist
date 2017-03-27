@@ -61,6 +61,7 @@ public class MeshData {
 	public int _triCount;
 	public int _materialCount;
 	public float _boundSize;
+    public float _camDist;
 	
 	public void Write(UsCmd cmd) {
 		cmd.WriteInt32 (_instID);
@@ -68,6 +69,7 @@ public class MeshData {
 		cmd.WriteInt32 (_triCount);
 		cmd.WriteInt32 (_materialCount);
 		cmd.WriteFloat (_boundSize);
+        cmd.WriteFloat(_camDist);
 	}
 }
 

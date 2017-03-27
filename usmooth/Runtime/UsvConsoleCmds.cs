@@ -28,6 +28,9 @@ SOFTWARE.
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public class ConsoleHandler : Attribute
@@ -127,12 +130,29 @@ public class UsvConsoleCmds
         return true;
     }
 
+
     [ConsoleHandler("flyto")]
     public bool FlyTo(string[] args)
     {
         try
         {
-		    UsEditorNotifer.Instance.PostMessage_FlyToObject(int.Parse(args[1]));
+#if UNITY_EDITOR
+            int instID = int.Parse(args[1]);
+            MeshRenderer[] meshRenderers = UnityEngine.Object.FindObjectsOfType(typeof(MeshRenderer)) as MeshRenderer[];
+            foreach (MeshRenderer mr in meshRenderers)
+            {
+                if (mr.isVisible && mr.gameObject.GetInstanceID() == instID)
+                {
+                    if (SceneView.currentDrawingSceneView != null)
+                    {
+                        SceneView.currentDrawingSceneView.LookAt(mr.gameObject.transform.position);
+                    }
+
+                    Selection.activeGameObject = mr.gameObject;
+                    break;
+                }
+            }
+#endif
         }
         catch (Exception ex)
         {
