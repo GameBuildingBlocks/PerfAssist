@@ -41,6 +41,7 @@ public class MemSnapshotInfo
         {
             Debug.LogException(ex);
             _unpacked = null;
+            return false;
         }
 
         return true;

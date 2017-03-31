@@ -120,20 +120,38 @@ public class TrackerModeManager : TrackerModeOwner
 
     public void AddSnapshot(PackedMemorySnapshot packed)
     {
-        TrackerMode_Base curMode = GetCurrentMode();
-        if (curMode == null)
-            return;
-
-        var snapshotInfo = new MemSnapshotInfo();
-        if (!snapshotInfo.AcceptSnapshot(packed))
-            return;
-
-        curMode.AddSnapshot(snapshotInfo);
-
-        if (AutoSaveOnSnapshot)
+        try
         {
-            if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
-                Debug.LogErrorFormat("Save Session Info Failed!");
+            TrackerMode_Base curMode = GetCurrentMode();
+            if (curMode == null)
+            {
+                Debug.LogErrorFormat("AddSnapshot() failed. (invalid mode: {0})", curMode);
+                return;
+            }
+
+            Debug.Log("accepting snapshot...");
+            var snapshotInfo = new MemSnapshotInfo();
+            if (!snapshotInfo.AcceptSnapshot(packed))
+            {
+                Debug.LogError("AcceptSnapshot() failed.");
+                return;
+            }
+
+            Debug.Log("appending snapshot...");
+            curMode.AddSnapshot(snapshotInfo);
+
+            //Debug.Log("saving snapshot...");
+            //if (AutoSaveOnSnapshot)
+            //{
+            //    if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
+            //        Debug.LogErrorFormat("Save Session Info Failed!");
+            //}
+
+            Debug.Log("appending snapshot. (done)");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
         }
     }
 
