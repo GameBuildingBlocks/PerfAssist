@@ -11,16 +11,20 @@ public class TrackerMode_Remote : TrackerMode_Base
 {
     public TrackerMode_Remote()
     {
+    }
+
+    string _IPField = MemConst.RemoteIPDefaultText;
+
+    bool _connectPressed = false;
+
+    public override void OnEnter()
+    {
         string saved = EditorPrefs.GetString(MemPrefs.LastConnectedIP);
         if (!string.IsNullOrEmpty(saved))
         {
             _IPField = saved;
         }
     }
-
-    string _IPField = MemConst.RemoteIPDefaultText;
-
-    bool _connectPressed = false;
 
     public override void Update()
     {

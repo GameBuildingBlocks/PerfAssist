@@ -15,6 +15,10 @@ public class MemConfigPopup : PopupWindowContent
 
     public MemConfigPopup()
     {
+    }
+
+    public override void OnOpen()
+    {
         _autoSaveOnSnapshot = EditorPrefs.GetBool(MemPrefs.AutoSaveOnSnapshot);
         _diffHideIdentical = EditorPrefs.GetBool(MemPrefs.Diff_HideIdentical);
         _diffHideRemoved = EditorPrefs.GetBool(MemPrefs.Diff_HideRemoved);
