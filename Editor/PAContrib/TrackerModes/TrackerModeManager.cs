@@ -141,11 +141,11 @@ public class TrackerModeManager : TrackerModeOwner
             curMode.AddSnapshot(snapshotInfo);
 
             //Debug.Log("saving snapshot...");
-            //if (AutoSaveOnSnapshot)
-            //{
-            //    if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
-            //        Debug.LogErrorFormat("Save Session Info Failed!");
-            //}
+            if (AutoSaveOnSnapshot)
+            {
+                if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
+                    Debug.LogErrorFormat("Save Session Info Failed!");
+            }
 
             Debug.Log("appending snapshot. (done)");
         }
