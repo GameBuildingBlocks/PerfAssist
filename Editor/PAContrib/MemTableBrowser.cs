@@ -60,13 +60,14 @@ public class MemObject
                 catch (System.Exception ex)
                 {
                     //UnityEngine.Debug.LogErrorFormat("StringTools.ReadString happens error .things caption = {0} ,ex ={1} ", thing.caption, ex.ToString());
-                    var bo =unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation);
+                    var bo = unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation);
                     if (bo.bytes == null)
                     {
-                        InstanceName = string.Format("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption,mo.address, ex.ToString());
+                        InstanceName = string.Format("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
                         UnityEngine.Debug.LogErrorFormat("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
                     }
-                    else {
+                    else
+                    {
                         var lengthPointer = bo.Add(unpacked.virtualMachineInformation.objectHeaderSize);
                         var length = lengthPointer.ReadInt32();
                         var firstChar = lengthPointer.Add(4);
@@ -91,14 +92,13 @@ public class MemObject
 public class MemTableBrowser
 {
     CrawledMemorySnapshot _unpacked;
-    CrawledMemorySnapshot _preUnpacked;
 
     TableView _typeTable;
     TableView _objectTable;
     EditorWindow _hostWindow;
-    
+
     Dictionary<string, MemType> _types = new Dictionary<string, MemType>();
-    
+
     private string[] _categoryLiterals = new string[MemConst.MemTypeCategories.Length];
 
     private int _memTypeCategory = 0;
@@ -173,8 +173,9 @@ public class MemTableBrowser
         RefreshTables();
     }
 
-    private Dictionary<object, Color> getSpecialColorDict(List<object> objs){
-        Dictionary<object, Color> resultDict=  new Dictionary<object, Color>();
+    private Dictionary<object, Color> getSpecialColorDict(List<object> objs)
+    {
+        Dictionary<object, Color> resultDict = new Dictionary<object, Color>();
         foreach (object obj in objs)
         {
             var memType = obj as MemType;
@@ -189,14 +190,14 @@ public class MemTableBrowser
             }
             else
                 if (typeName.Contains(sDiffType.NegativeType))
-                {
-                    resultDict.Add(obj, Color.red);
-                }
-                else
+            {
+                resultDict.Add(obj, Color.red);
+            }
+            else
                     if (typeName.Contains(sDiffType.ModificationType))
-                    {
-                        resultDict.Add(obj, Color.blue);
-                    }
+            {
+                resultDict.Add(obj, Color.blue);
+            }
         }
         return resultDict;
     }
@@ -380,7 +381,7 @@ public class MemTableBrowser
         {
             string typeName = MemUtil.GetGroupName(thing);
 
-            MemType mt=null;
+            MemType mt = null;
             if (!_types.TryGetValue(typeName, out mt))
                 return;
 

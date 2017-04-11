@@ -90,7 +90,6 @@ namespace MemoryProfilerWindow
 
         void OnSnapshotReceived(PackedMemorySnapshot packed)
         {
-            Debug.LogFormat("snapshot received. {0}", Time.time);
             _modeMgr.AddSnapshot(packed);
         }
 
