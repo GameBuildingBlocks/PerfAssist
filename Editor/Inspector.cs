@@ -24,8 +24,6 @@ namespace MemoryProfilerWindow
         private float _textureSize = 128.0f;
 
         MemObjHistory Instance = new MemObjHistory();
-        //public event SysPost.StdMulticastDelegation RefreshCallStack;
-
 
         static class Styles
         {
@@ -210,7 +208,7 @@ namespace MemoryProfilerWindow
             if (_textureObject != null)
             {
                 EditorGUILayout.LabelField("textureInfo: " + _textureObject.width + "x" + _textureObject.height + " " + _textureObject.format);
-                EditorGUILayout.ObjectField(_textureObject, typeof(Texture2D));
+                EditorGUILayout.ObjectField(_textureObject, typeof(Texture2D), false);
                 _textureSize = EditorGUILayout.Slider(_textureSize, 100.0f, 1024.0f);
                 GUILayout.Label(_textureObject, GUILayout.Width(_textureSize), GUILayout.Height(_textureSize * _textureObject.height / _textureObject.width));
             }
@@ -250,7 +248,6 @@ namespace MemoryProfilerWindow
         private void DrawFields(TypeDescription typeDescription, BytesAndOffset bytesAndOffset, bool useStatics = false)
         {
             int counter = 0;
-        
             foreach (var field in TypeTools.AllFieldsOf(typeDescription, _unpackedCrawl.typeDescriptions, useStatics ? TypeTools.FieldFindOptions.OnlyStatic : TypeTools.FieldFindOptions.OnlyInstance))
             {
                 counter++;
