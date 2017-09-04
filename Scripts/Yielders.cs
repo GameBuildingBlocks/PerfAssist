@@ -11,17 +11,16 @@ using UnityEngine.Assertions.Comparers;
 
 public static class Yielders
 {
-    public static bool Enabled = true;  
+    public static bool Enabled = true;
 
     public static int _internalCounter = 0; // counts how many times the app yields
 
-    // WARNING: 
-    //      (Gu Lu) The comments below are incorrect in Unity 5.5.0
-    //          - float DOES NOT needs customized IEqualityComparer (but enums and structs does)
-    //      however all these lines are kept to help later reader to share this knowledge (for education purpose only). 
+    // #gulu WARNING: 
+    //      Code commented below are incorrect in Unity 5.5.0
+    //          - float DOES NOT needs customized IEqualityComparer (but enums and structs do)
+    //      however all these lines are kept to help later reader to share this knowledge 
     //------------------------------------------------------------------
     ///////////////////// obsoleted code begins \\\\\\\\\\\\\\\\\\\\\\\\
-    //
     //// dictionary with a key of ValueType will box the value to perform comparison / hash code calculation while scanning the hashtable.
     //// here we implement IEqualityComparer<float> and pass it to your dictionary to avoid that GC
     //class FloatComparer : IEqualityComparer<float>
@@ -52,7 +51,7 @@ public static class Yielders
 
     public static WaitForSeconds GetWaitForSeconds(float seconds)
     {
-        _internalCounter++; 
+        _internalCounter++;
 
         if (!Enabled)
             return new WaitForSeconds(seconds);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using UnityEditor;
 
-public partial class TableView 
+public partial class TableView
 {
     private void DrawTitle(float width)
     {
@@ -123,7 +123,14 @@ public partial class TableView
 
     int _sortSlot = 0;
     bool _descending = true;
-
+    public bool Descending
+    {
+        get { return _descending; }
+        set
+        {
+            _descending = value;
+        }
+    }
     Type m_itemType = null;
     EditorWindow m_hostWindow = null;
     List<object> m_lines = new List<object>();

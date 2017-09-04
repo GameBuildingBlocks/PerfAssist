@@ -1,4 +1,4 @@
-#region Header
+﻿#region Header
 /**
  * ParserToken.cs
  *   Internal representation of the tokens used by the lexer and the parser.

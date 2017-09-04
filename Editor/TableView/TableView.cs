@@ -7,7 +7,7 @@ using System.Reflection;
 
 public delegate void SelectionHandler(object selected, int col);
 
-public partial class TableView : IDisposable 
+public partial class TableView : IDisposable
 {
     public event SelectionHandler OnSelected;
 
@@ -69,7 +69,7 @@ public partial class TableView : IDisposable
         //Debug.LogFormat("scroll pos: {0:0.00}, {1:0.00}", _scrollPos.x, _scrollPos.y);
         {
             GUIStyle s = new GUIStyle();
-            s.fixedHeight = _appearance.LineHeight * m_lines.Count;
+            s.fixedHeight = _appearance.LineHeight * (m_lines.Count + 1);
             s.stretchWidth = true;
             Rect r = EditorGUILayout.BeginVertical(s);
             {

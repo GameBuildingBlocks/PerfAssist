@@ -2,12 +2,12 @@
 using System.Collections;
 using UnityEditor;
 
-public class TableViewAppr 
+public class TableViewAppr
 {
-    public float LineHeight 
-    { 
-        get { return _lineHeight; } 
-        set { _lineHeight = value; } 
+    public float LineHeight
+    {
+        get { return _lineHeight; }
+        set { _lineHeight = value; }
     }
     float _lineHeight = 25;
 
@@ -18,12 +18,12 @@ public class TableViewAppr
 
     public GUIStyle GetTitleStyle(bool selected)
     {
-        if (_styleTitle == null || _titleOrdinary == null || _titleSelected ==null)
+        if (_styleTitle == null || _titleOrdinary == null || _titleSelected == null)
         {
             _styleTitle = new GUIStyle(EditorStyles.whiteBoldLabel);
             _styleTitle.alignment = TextAnchor.MiddleCenter;
             _titleOrdinary = PAEditorUtil.getColorTexture(PAEditorConst.TitleColor);
-            _titleSelected = PAEditorUtil.getColorTexture(PAEditorConst.TitleColorSelected); 
+            _titleSelected = PAEditorUtil.getColorTexture(PAEditorConst.TitleColorSelected);
         }
 
         _styleTitle.normal.background = selected ? _titleSelected : _titleOrdinary;

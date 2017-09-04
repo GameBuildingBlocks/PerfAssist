@@ -24,45 +24,56 @@ SOFTWARE.
 
 */
 
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
 
-public class MeshLut {
-	public bool AddMesh(GameObject go) {
-		if (_lut.ContainsKey(go.GetInstanceID())) {
-			return true;
-		}
+public class MeshLut
+{
+    public bool AddMesh(GameObject go)
+    {
+        if (_lut.ContainsKey(go.GetInstanceID()))
+        {
+            return true;
+        }
 
-		// returns false if renderer is not available
-		if (go.GetComponent<Renderer>() == null) {
-			return false;
-		}
-		
-		// returns false if not a mesh
-		MeshFilter mf = (MeshFilter)go.GetComponent (typeof(MeshFilter));
-		if (mf == null) {
-			return false;
-		}
+        // returns false if renderer is not available
+        if (go.GetComponent<Renderer>() == null)
+        {
+            return false;
+        }
 
-		MeshData md = new MeshData ();
-		md._instID = go.GetInstanceID ();
-		md._vertCount = mf.mesh.vertexCount;
-		md._triCount = mf.mesh.triangles.Length / 3;
-		md._materialCount = go.GetComponent<Renderer>().sharedMaterials.Length;
-		md._boundSize = go.GetComponent<Renderer>().bounds.size.magnitude;
-        md._camDist = Vector3.Distance(go.transform.position, Camera.current.transform.position);
-		_lut.Add (md._instID, md);
-		return true;
-	}
+        // returns false if not a mesh
+        MeshFilter mf = (MeshFilter)go.GetComponent(typeof(MeshFilter));
+        if (mf == null)
+        {
+            return false;
+        }
 
-	public void WriteMesh(int instID, UsCmd cmd) {
-		MeshData data;
-		if (_lut.TryGetValue(instID, out data)) {
-			data.Write(cmd);
-		}
-	}
+        MeshData md = new MeshData();
+        md._instID = go.GetInstanceID();
+        md._vertCount = mf.mesh.vertexCount;
+        md._materialCount = go.GetComponent<Renderer>().sharedMaterials.Length;
+        md._boundSize = go.GetComponent<Renderer>().bounds.size.magnitude;
+        md._camDist = usmooth.DataCollector.MainCamera != null ? Vector3.Distance(go.transform.position, usmooth.DataCollector.MainCamera.transform.position) : 0.0f;
+        _lut.Add(md._instID, md);
+        return true;
+    }
 
-	Dictionary<int, MeshData> _lut = new Dictionary<int, MeshData>();
+    public void WriteMesh(int instID, UsCmd cmd)
+    {
+        MeshData data;
+        if (_lut.TryGetValue(instID, out data))
+        {
+            data.Write(cmd);
+        }
+    }
+
+    public void ClearLut()
+    {
+        _lut.Clear();
+    }
+
+    Dictionary<int, MeshData> _lut = new Dictionary<int, MeshData>();
 }

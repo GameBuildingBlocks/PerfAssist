@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -34,9 +34,9 @@ public delegate bool UsClientCmdHandler(string clientID, eNetCmd cmd, UsCmd c);
 
 public enum UsCmdExecResult
 {
-	Succ,
-	Failed,
-	HandlerNotFound,
+    Succ,
+    Failed,
+    HandlerNotFound,
 }
 
 public class UsCmdParsing
@@ -49,7 +49,7 @@ public class UsCmdParsing
     public void RegisterClientHandler(eNetCmd cmd, UsClientCmdHandler handler)
     {
         m_clientHandlers[cmd] = handler;
-    } 
+    }
 
     public UsCmdExecResult Execute(UsCmd c)
     {
@@ -108,4 +108,3 @@ public class UsCmdParsing
     Dictionary<eNetCmd, UsCmdHandler> m_handlers = new Dictionary<eNetCmd, UsCmdHandler>();
     Dictionary<eNetCmd, UsClientCmdHandler> m_clientHandlers = new Dictionary<eNetCmd, UsClientCmdHandler>();
 }
-

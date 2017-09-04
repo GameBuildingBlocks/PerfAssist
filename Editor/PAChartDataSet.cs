@@ -26,7 +26,7 @@ public class PAChartDataSet : IEnumerable
     {
         m_dataSet.Enqueue(pt);
 
-        if (m_autoShrinkMaxSize > 0 && 
+        if (m_autoShrinkMaxSize > 0 &&
             m_autoShrinkMaxSize < m_dataSet.Count)
         {
             ShrinkTo(m_autoShrinkMaxSize);

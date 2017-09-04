@@ -5,17 +5,17 @@ public class UsMain : IDisposable
 {
     public const int MAX_CONTENT_LEN = 1024;
 
-	private long _currentTimeInMilliseconds = 0;
-	private long _tickNetLast = 0;
-	private long _tickNetInterval = 200;
+    private long _currentTimeInMilliseconds = 0;
+    private long _tickNetLast = 0;
+    private long _tickNetInterval = 200;
     private LogService _logServ;
     private utest _test;
 
     private bool _inGameGui = false;
 
-    public UsMain(bool LogRemotely, bool LogIntoFile, bool InGameGui) 
+    public UsMain(bool LogRemotely, bool LogIntoFile, bool InGameGui)
     {
-		Application.runInBackground = true;
+        Application.runInBackground = true;
 
         _logServ = new LogService(LogIntoFile, -1, true);
 
@@ -26,7 +26,7 @@ public class UsMain : IDisposable
             _logServ.LogTargets += LogTarget_Remotely;
         }
 
-		UsNet.Instance = new UsNet();
+        UsNet.Instance = new UsNet();
         UsMain_NetHandlers.Instance = new UsMain_NetHandlers(UsNet.Instance.CmdExecutor);
         UsvConsole.Instance = new UsvConsole();
 
@@ -34,7 +34,7 @@ public class UsMain : IDisposable
         GameInterface.Instance.Init();
 
         _inGameGui = InGameGui;
-	}
+    }
 
     void LogTarget_Remotely(object sender, LogEventArgs args)
     {
@@ -52,17 +52,18 @@ public class UsMain : IDisposable
 
     public void Update()
     {
-		_currentTimeInMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+        _currentTimeInMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
 
-		if (_currentTimeInMilliseconds - _tickNetLast > _tickNetInterval)
-		{
-			if (UsNet.Instance != null) {
-				UsNet.Instance.Update ();
-			}
+        if (_currentTimeInMilliseconds - _tickNetLast > _tickNetInterval)
+        {
+            if (UsNet.Instance != null)
+            {
+                UsNet.Instance.Update();
+            }
 
-			_tickNetLast = _currentTimeInMilliseconds;
-		}
-	}
+            _tickNetLast = _currentTimeInMilliseconds;
+        }
+    }
 
     public void Dispose()
     {

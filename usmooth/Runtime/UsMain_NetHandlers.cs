@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -24,112 +24,125 @@ SOFTWARE.
 
 */
 
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System;
 
 using System.Collections.Generic;
 
-public class UsMain_NetHandlers {
-	public static UsMain_NetHandlers Instance;
+public class UsMain_NetHandlers
+{
+    public static UsMain_NetHandlers Instance;
 
     public UsMain_NetHandlers(UsCmdParsing exec)
     {
-		exec.RegisterHandler (eNetCmd.CL_Handshake, NetHandle_Handshake); 
-		exec.RegisterHandler (eNetCmd.CL_KeepAlive, NetHandle_KeepAlive); 
-		exec.RegisterHandler (eNetCmd.CL_ExecCommand, NetHandle_ExecCommand); 
-		exec.RegisterHandler (eNetCmd.CL_RequestFrameData, NetHandle_RequestFrameData); 
-		exec.RegisterHandler (eNetCmd.CL_FrameV2_RequestMeshes, NetHandle_FrameV2_RequestMeshes);
+        exec.RegisterHandler(eNetCmd.CL_Handshake, NetHandle_Handshake);
+        exec.RegisterHandler(eNetCmd.CL_KeepAlive, NetHandle_KeepAlive);
+        exec.RegisterHandler(eNetCmd.CL_ExecCommand, NetHandle_ExecCommand);
+        exec.RegisterHandler(eNetCmd.CL_RequestFrameData, NetHandle_RequestFrameData);
+        exec.RegisterHandler(eNetCmd.CL_FrameV2_RequestMeshes, NetHandle_FrameV2_RequestMeshes);
         exec.RegisterHandler(eNetCmd.CL_FrameV2_RequestNames, NetHandle_FrameV2_RequestNames);
         exec.RegisterHandler(eNetCmd.CL_QuerySwitches, NetHandle_QuerySwitches);
         exec.RegisterHandler(eNetCmd.CL_QuerySliders, NetHandle_QuerySliders);
-	}
-	
-	private bool NetHandle_Handshake(eNetCmd cmd, UsCmd c) {
+    }
+
+    private bool NetHandle_Handshake(eNetCmd cmd, UsCmd c)
+    {
         Debug.Log("executing handshake.");
         if (!string.IsNullOrEmpty(LogService.LastLogFile))
         {
             Debug.Log("Log Path: " + LogService.LastLogFile);
         }
 
-		UsCmd reply = new UsCmd();
-		reply.WriteNetCmd(eNetCmd.SV_HandshakeResponse);
-		UsNet.Instance.SendCommand(reply);
-		return true;
-	}
-	
-	private bool NetHandle_KeepAlive(eNetCmd cmd, UsCmd c) {
-		UsCmd reply = new UsCmd();
-		reply.WriteNetCmd(eNetCmd.SV_KeepAliveResponse);
-		UsNet.Instance.SendCommand(reply);
-		return true;
-	}
+        UsCmd reply = new UsCmd();
+        reply.WriteNetCmd(eNetCmd.SV_HandshakeResponse);
+        UsNet.Instance.SendCommand(reply);
+        return true;
+    }
 
-	private bool NetHandle_ExecCommand(eNetCmd cmd, UsCmd c) {
-		string read = c.ReadString();
+    private bool NetHandle_KeepAlive(eNetCmd cmd, UsCmd c)
+    {
+        UsCmd reply = new UsCmd();
+        reply.WriteNetCmd(eNetCmd.SV_KeepAliveResponse);
+        UsNet.Instance.SendCommand(reply);
+        return true;
+    }
+
+    private bool NetHandle_ExecCommand(eNetCmd cmd, UsCmd c)
+    {
+        string read = c.ReadString();
         bool ret = UsvConsole.Instance.ExecuteCommand(read);
 
-		UsCmd reply = new UsCmd();
-		reply.WriteNetCmd(eNetCmd.SV_ExecCommandResponse);
-		reply.WriteInt32 (ret ? 1 : 0);
-		UsNet.Instance.SendCommand(reply);
-		return true;
-	}
+        UsCmd reply = new UsCmd();
+        reply.WriteNetCmd(eNetCmd.SV_ExecCommandResponse);
+        reply.WriteInt32(ret ? 1 : 0);
+        UsNet.Instance.SendCommand(reply);
+        return true;
+    }
 
-	private int SLICE_COUNT = 50;
-	private bool NetHandle_RequestFrameData(eNetCmd cmd, UsCmd c) {
-		if (usmooth.DataCollector.Instance == null) 
-			return true;
+    private int SLICE_COUNT = 50;
+    private bool NetHandle_RequestFrameData(eNetCmd cmd, UsCmd c)
+    {
+        if (usmooth.DataCollector.Instance == null)
+            return true;
 
-		FrameData data = usmooth.DataCollector.Instance.CollectFrameData();
-		
-		UsNet.Instance.SendCommand(data.CreatePacket());
-		UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateMaterialCmd());
-		UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateTextureCmd());
+        FrameData data = usmooth.DataCollector.Instance.CollectFrameData();
 
-		UsCmd end = new UsCmd();
-		end.WriteNetCmd(eNetCmd.SV_FrameDataEnd);
-		UsNet.Instance.SendCommand (end);
+        UsNet.Instance.SendCommand(data.CreatePacket());
+        UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateMaterialCmd());
+        UsNet.Instance.SendCommand(usmooth.DataCollector.Instance.CreateTextureCmd());
 
-		//Debug.Log(string.Format("creating frame packet: id {0} mesh count {1}", eNetCmd.SV_FrameDataV2, data._frameMeshes.Count));
+        UsCmd end = new UsCmd();
+        end.WriteNetCmd(eNetCmd.SV_FrameDataEnd);
+        UsNet.Instance.SendCommand(end);
 
-		return true;
-	}
-	
-	private bool NetHandle_FrameV2_RequestMeshes(eNetCmd cmd, UsCmd c) {
-		if (usmooth.DataCollector.Instance != null) {
-			List<int> meshIDs = UsCmdUtil.ReadIntList(c);
-			//Debug.Log(string.Format("requesting meshes - count ({0})", meshIDs.Count));
-			foreach (var slice in UsGeneric.Slice(meshIDs, SLICE_COUNT)) {
-				UsCmd fragment = new UsCmd();
-				fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Meshes);
-				fragment.WriteInt32 (slice.Count);
-				foreach (int meshID in slice) {
-					usmooth.DataCollector.Instance.MeshTable.WriteMesh(meshID, fragment);
-				}
-				UsNet.Instance.SendCommand (fragment);
-			}
-		}
+        //Debug.Log(string.Format("creating frame packet: id {0} mesh count {1}", eNetCmd.SV_FrameDataV2, data._frameMeshes.Count));
 
-		return true;
-	}
-	
-	private bool NetHandle_FrameV2_RequestNames(eNetCmd cmd, UsCmd c) {
-		if (usmooth.DataCollector.Instance != null) {
-			List<int> instIDs = UsCmdUtil.ReadIntList(c);
-			foreach (var slice in UsGeneric.Slice(instIDs, SLICE_COUNT)) {
-				UsCmd fragment = new UsCmd();
-				fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Names);
-				fragment.WriteInt32 (slice.Count);
-				foreach (int instID in slice) {
-					usmooth.DataCollector.Instance.WriteName(instID, fragment);
-				}
-				UsNet.Instance.SendCommand (fragment);
-			}
-		}
+        return true;
+    }
 
-		return true;
-	}
+    private bool NetHandle_FrameV2_RequestMeshes(eNetCmd cmd, UsCmd c)
+    {
+        if (usmooth.DataCollector.Instance != null)
+        {
+            List<int> meshIDs = UsCmdUtil.ReadIntList(c);
+            //Debug.Log(string.Format("requesting meshes - count ({0})", meshIDs.Count));
+            foreach (var slice in UsGeneric.Slice(meshIDs, SLICE_COUNT))
+            {
+                UsCmd fragment = new UsCmd();
+                fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Meshes);
+                fragment.WriteInt32(slice.Count);
+                foreach (int meshID in slice)
+                {
+                    usmooth.DataCollector.Instance.MeshTable.WriteMesh(meshID, fragment);
+                }
+                UsNet.Instance.SendCommand(fragment);
+            }
+        }
+
+        return true;
+    }
+
+    private bool NetHandle_FrameV2_RequestNames(eNetCmd cmd, UsCmd c)
+    {
+        if (usmooth.DataCollector.Instance != null)
+        {
+            List<int> instIDs = UsCmdUtil.ReadIntList(c);
+            foreach (var slice in UsGeneric.Slice(instIDs, SLICE_COUNT))
+            {
+                UsCmd fragment = new UsCmd();
+                fragment.WriteNetCmd(eNetCmd.SV_FrameDataV2_Names);
+                fragment.WriteInt32(slice.Count);
+                foreach (int instID in slice)
+                {
+                    usmooth.DataCollector.Instance.WriteName(instID, fragment);
+                }
+                UsNet.Instance.SendCommand(fragment);
+            }
+        }
+
+        return true;
+    }
 
     private bool NetHandle_QuerySwitches(eNetCmd cmd, UsCmd c)
     {

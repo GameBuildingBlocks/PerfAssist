@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -24,12 +24,12 @@ SOFTWARE.
 
 */
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 
 // This is copied from UnityEngine.dll to keep compatible with it 
-public enum UsLogType 
+public enum UsLogType
 {
     Error = 0,
     Assert = 1,
@@ -56,7 +56,7 @@ public class UsLogPacket
     // debugging info
     public string Callstack;
 
-    public UsLogPacket() 
+    public UsLogPacket()
     {
         SeqID = ushort.MaxValue;
     }

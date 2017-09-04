@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -91,4 +91,3 @@ public enum eSubCmd_TransmitStage
     DataSlice,
     DataEnd,
 }
-

@@ -35,4 +35,3 @@ public class TableViewColDesc
         return fc1.CompareTo(fc2);
     }
 }
-

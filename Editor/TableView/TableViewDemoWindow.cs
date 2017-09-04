@@ -45,7 +45,7 @@ public class TableViewDemoWindow : EditorWindow
     {
         // create the table with a specified object type
         _table = new TableView(this, typeof(FooItem));
-        
+
         // setup the description for content
         _table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
         _table.AddColumn("Count_A", "Count_A", 0.1f);

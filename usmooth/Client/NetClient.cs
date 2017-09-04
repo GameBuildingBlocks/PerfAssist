@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -111,14 +111,14 @@ public class NetClient : IDisposable
                     UsCmdExecResult result = _cmdParser.Execute(cmd);
                     switch (result)
                     {
-                        case UsCmdExecResult.Succ:
-                            break;
-                        case UsCmdExecResult.Failed:
-                            NetUtil.Log("net cmd execution failed: {0}.", new UsCmd(buffer).ReadNetCmd());
-                            break;
-                        case UsCmdExecResult.HandlerNotFound:
-                            NetUtil.Log("net unknown cmd: {0}.", new UsCmd(buffer).ReadNetCmd());
-                            break;
+                    case UsCmdExecResult.Succ:
+                        break;
+                    case UsCmdExecResult.Failed:
+                        NetUtil.Log("net cmd execution failed: {0}.", new UsCmd(buffer).ReadNetCmd());
+                        break;
+                    case UsCmdExecResult.HandlerNotFound:
+                        NetUtil.Log("net unknown cmd: {0}.", new UsCmd(buffer).ReadNetCmd());
+                        break;
                     }
 
                     len++; // warning CS0219: The variable `len' is assigned but its value is never used

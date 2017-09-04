@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -41,11 +41,21 @@ namespace usmooth
     {
         public static DataCollector Instance = new DataCollector();
 
+        public static GameObject MainCamera = null;
+
         public FrameData CollectFrameData()
         {
-
             _visibleMaterials.Clear();
             _visibleTextures.Clear();
+
+            if (MainCamera == null)
+            {
+                var cam = GameObject.Find("MainCamera");
+                if (cam != null)
+                {
+                    MainCamera = cam;
+                }
+            }
 
             //Debug.Log(string.Format("creating frame data. {0}", Time.frameCount));
             _currentFrame = new FrameData();
@@ -54,6 +64,7 @@ namespace usmooth
             _currentFrame._frameRealTime = Time.realtimeSinceStartup;
             _currentFrame._frameStartTime = Time.time;
 
+            _meshLut.ClearLut();
             MeshRenderer[] meshRenderers = UnityEngine.Object.FindObjectsOfType(typeof(MeshRenderer)) as MeshRenderer[];
             foreach (MeshRenderer mr in meshRenderers)
             {
@@ -65,10 +76,10 @@ namespace usmooth
                         _currentFrame._frameMeshes.Add(go.GetInstanceID());
                         _nameLut[go.GetInstanceID()] = go.name;
 
-                        //					Debug.Log(string.Format("CollectFrameData(): adding game object. {0}, name {1}, name count {2}", 
-                        //					                        go.GetInstanceID(),
-                        //					                        go.name,
-                        //					                        _nameLut.Count));
+                        //Debug.Log(string.Format("CollectFrameData(): adding game object. {0}, name {1}, name count {2}",
+                        //                        go.GetInstanceID(),
+                        //                        go.name,
+                        //                        _nameLut.Count));
 
                         foreach (var mat in mr.sharedMaterials)
                         {

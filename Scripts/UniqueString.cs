@@ -5,7 +5,7 @@ public class UniqueString
 {
     // 'removable = false' means the string would be added to the global string pool
     //  which would stay in memory in the rest of the whole execution period.
-    public static string Intern(string str, bool removable = true)  
+    public static string Intern(string str, bool removable = true)
     {
         if (str == null)
             return null;
@@ -28,7 +28,7 @@ public class UniqueString
 
     // Why return a ref rather than a bool?
     //  return-val is the ref to the unique interned one, which should be tested against `null`
-    public static string IsInterned(string str)      
+    public static string IsInterned(string str)
     {
         if (str == null)
             return null;
@@ -51,5 +51,5 @@ public class UniqueString
 
     // Why use Dictionary? 
     //  http://stackoverflow.com/questions/7760364/how-to-retrieve-actual-item-from-hashsett
-    private static Dictionary<string, string> m_strings = new Dictionary<string, string>();    
+    private static Dictionary<string, string> m_strings = new Dictionary<string, string>();
 }

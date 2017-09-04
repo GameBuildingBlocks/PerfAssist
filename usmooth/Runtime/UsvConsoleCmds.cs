@@ -24,7 +24,7 @@ SOFTWARE.
 
 */
 
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,9 +43,9 @@ public class ConsoleHandler : Attribute
     public string Command;
 }
 
-public class UsvConsoleCmds 
+public class UsvConsoleCmds
 {
-	public static UsvConsoleCmds Instance;
+    public static UsvConsoleCmds Instance;
 
     [ConsoleHandler("showmesh")]
     public bool ShowMesh(string[] args)
@@ -186,14 +186,14 @@ public class UsvConsoleCmds
             {
                 string args2 = args[1];
                 if (args2 == "refresh")
-                { 
+                {
                     bRefresh = true;
                 }
             }
 
             SysPost.InvokeMulticast(this, StartAnalyzePixel, new AnalysePixelsArgs(bRefresh));
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Log.Exception(ex);
             throw;

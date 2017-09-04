@@ -17,4 +17,3 @@ public static class NetUtil
             LogErrorHandler(fmt, args);
     }
 }
-

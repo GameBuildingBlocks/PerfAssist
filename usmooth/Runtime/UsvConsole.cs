@@ -1,4 +1,4 @@
-/*!lic_info
+﻿/*!lic_info
 
 The MIT License (MIT)
 
@@ -77,13 +77,13 @@ public class UsvConsole
         if (!_handlers.TryGetValue(fragments[0].ToLower(), out handler))
         {
             Log.Info("unknown command ('{0}') received, ignored.", fullcmd);
-            return false;            
+            return false;
         }
 
         if (!handler(fragments))
         {
             Log.Info("executing command ('{0}') failed.", fullcmd);
-            return false;            
+            return false;
         }
 
         return true;

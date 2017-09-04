@@ -43,7 +43,7 @@ public class PAEditorUtil
     {
         Texture2D tex = null;
         s_colorTextures.TryGetValue(c, out tex);
-        if(tex ==null) //Texture2D对象在游戏结束时为null
+        if (tex == null) //Texture2D对象在游戏结束时为null
         {
             tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             tex.SetPixel(0, 0, c);

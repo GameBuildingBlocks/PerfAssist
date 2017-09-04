@@ -149,14 +149,14 @@ public class LogService : IDisposable
         {
             switch (type)
             {
-                case LogType.Error:
-                    LogUtil.PushInMemoryError(content);
-                    break;
-                case LogType.Exception:
-                    LogUtil.PushInMemoryException(content);
-                    break;
-                default:
-                    break;
+            case LogType.Error:
+                LogUtil.PushInMemoryError(content);
+                break;
+            case LogType.Exception:
+                LogUtil.PushInMemoryException(content);
+                break;
+            default:
+                break;
             }
         }
 
@@ -244,20 +244,20 @@ public class LogService : IDisposable
 
         switch (type)
         {
-            case LogType.Assert:
-                _assertCount++;
-                break;
-            case LogType.Error:
-                _errorCount++;
-                break;
-            case LogType.Exception:
-                _exceptionCount++;
-                break;
+        case LogType.Assert:
+            _assertCount++;
+            break;
+        case LogType.Error:
+            _errorCount++;
+            break;
+        case LogType.Exception:
+            _exceptionCount++;
+            break;
 
-            case LogType.Warning:
-            case LogType.Log:
-            default:
-                break;
+        case LogType.Warning:
+        case LogType.Log:
+        default:
+            break;
         }
 
         try
@@ -272,7 +272,7 @@ public class LogService : IDisposable
             {
                 _foldedCount++;
             }
-            else 
+            else
             {
                 FlushFoldedMessage();
 
@@ -298,7 +298,7 @@ public class LogService : IDisposable
         }
         catch (System.Exception ex)
         {
-            Log.Exception(ex); // this should at least print to Unity Editor (but may skip the file writing due to earlier writing failure)            	
+            Log.Exception(ex); // this should at least print to Unity Editor (but may skip the file writing due to earlier writing failure)             
         }
         finally
         {

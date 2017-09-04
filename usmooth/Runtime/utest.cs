@@ -29,16 +29,16 @@ public class GameInterface
     public static string EnvironmentRootName = "Environment";
 
     public static Dictionary<string, string> ObjectNames = new Dictionary<string, string>
-    { 
-        { "Scene_Objects", "Environment/Models" }, 
-        { "Scene_Objects_(Lv1)", "Environment/Models/level_1" }, 
-        { "Scene_Objects_(Lv2)", "Environment/Models/level_2" }, 
-        { "Scene_Objects_(Lv3)", "Environment/Models/level_3" }, 
-        { "Scene_Effects", "Environment/SceneEffect" }, 
-        { "Scene_Terrain", "Environment/Terrain" }, 
-        { "UI", "Main/UIMgr" }, 
-        { "Players", "Main/_Players" }, 
-        { "Effects", "Main/AnimationEffects" }, 
+    {
+        { "Scene_Objects", "Environment/Models" },
+        { "Scene_Objects_(Lv1)", "Environment/Models/level_1" },
+        { "Scene_Objects_(Lv2)", "Environment/Models/level_2" },
+        { "Scene_Objects_(Lv3)", "Environment/Models/level_3" },
+        { "Scene_Effects", "Environment/SceneEffect" },
+        { "Scene_Terrain", "Environment/Terrain" },
+        { "UI", "Main/UIMgr" },
+        { "Players", "Main/_Players" },
+        { "Effects", "Main/AnimationEffects" },
     };
 
     public static Dictionary<string, double> VisiblePercentages = new Dictionary<string, double>
@@ -122,7 +122,7 @@ public class GameInterface
                 if (r is ParticleSystemRenderer)
                 {
                     VisiblePSysRenderers.Add((ParticleSystemRenderer)r);
-                } 
+                }
                 else
                 {
                     VisibleRenderers.Add(r);
@@ -140,7 +140,7 @@ public class GameInterface
     public List<ParticleSystemRenderer> DisabledParticleSystems = new List<ParticleSystemRenderer>();
 }
 
-public class utest : IDisposable  
+public class utest : IDisposable
 {
     public class FontSetter : IDisposable
     {
@@ -175,7 +175,7 @@ public class utest : IDisposable
         GameInterface.Instance.Init();
     }
 
-    public void OnGUI() 
+    public void OnGUI()
     {
         using (FontSetter fs = new FontSetter())
         {
