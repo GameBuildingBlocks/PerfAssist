@@ -30,7 +30,7 @@ public class ResourceRequestInfo
     public override string ToString()
     {
         return string.Format("#{0} ({1:0.000}) {2} {3} {4} +{5} +{6} ({7})",
-            seqID, requestTime, rootID, resourceType != null ? resourceType.ToString() : null, 
+            seqID, requestTime, rootID, resourceType != null ? resourceType.ToString() : null,
             requestType == ResourceRequestType.Async ? "(a)" : "", resourcePath, srcFile, srcLineNum);
     }
 
@@ -47,7 +47,7 @@ public class ResourceTracker : IDisposable
 
     // this boolean is *read-only* after the instance is created
     public bool EnableTracking { get { return _enableTracking; } }
-    private bool _enableTracking = false;    
+    private bool _enableTracking = false;
 
     private StreamWriter _logWriter = null;
     //private string _logPath = "";
@@ -55,7 +55,7 @@ public class ResourceTracker : IDisposable
 
     public Dictionary<string, string> ShaderPropertyDict
     {
-        get { return _shaderPropertyDict;}
+        get { return _shaderPropertyDict; }
     }
     private Dictionary<string, string> _shaderPropertyDict = null;
 
@@ -107,7 +107,8 @@ public class ResourceTracker : IDisposable
                 StreamReader sr = new StreamReader(new FileStream(ResourceTrackerConst.shaderPropertyNameJsonPath, FileMode.Open));
                 string jsonStr = sr.ReadToEnd();
                 sr.Close();
-                _shaderPropertyDict = JsonUtility.FromJson<Serialization<string, string>>(jsonStr).ToDictionary();            }
+                _shaderPropertyDict = JsonUtility.FromJson<Serialization<string, string>>(jsonStr).ToDictionary();
+            }
             catch (System.Exception)
             {
                 UnityEngine.Debug.Log("no ShaderPropertyNameRecord.json");
@@ -275,7 +276,7 @@ public class ResourceTracker : IDisposable
 
         if (!TrackedGameObjects.TryGetValue(instID, out allocSeqID) && !TrackedMemObjects.TryGetValue(instID, out allocSeqID))
             return null;
-        
+
         ResourceRequestInfo requestInfo = null;
         if (!TrackedAllocInfo.TryGetValue(allocSeqID, out requestInfo))
             return null;
@@ -361,13 +362,13 @@ public class ResourceTracker : IDisposable
         if (string.IsNullOrEmpty(flag))
             return false;
 
-        if(flag.Equals("begin"))
+        if (flag.Equals("begin"))
         {
             _stackUnavailableDict.Clear();
             return true;
         }
-        
-        if(flag.Equals("end"))
+
+        if (flag.Equals("end"))
         {
             UnityEngine.Debug.Log("Stack Category Statistical Information:");
             //NetUtil.Log("堆栈类型统计信息:");
@@ -376,7 +377,7 @@ public class ResourceTracker : IDisposable
             int totalSize = 0;
             int unavailableTotalSize = 0;
             int categoryCount = c.ReadInt32();
-            for (int i = 0; i < categoryCount;i++)
+            for (int i = 0; i < categoryCount; i++)
             {
                 string category = c.ReadString();
                 List<stackParamater> unavailableList;
@@ -384,11 +385,11 @@ public class ResourceTracker : IDisposable
                 if (unavailableList != null)
                 {
                     int CategoryCount = c.ReadInt32();
-                    int CategorySize =  c.ReadInt32();
+                    int CategorySize = c.ReadInt32();
                     totalCount += CategoryCount;
                     totalSize += CategorySize;
                     unavailableTotalCount += unavailableList.Count;
-                    int categoryTotalSize=0;
+                    int categoryTotalSize = 0;
                     foreach (var info in unavailableList)
                     {
                         categoryTotalSize += info.Size;
@@ -407,17 +408,17 @@ public class ResourceTracker : IDisposable
         int count = c.ReadInt32();
         for (int i = 0; i < count; i++)
         {
-            int instanceID =c.ReadInt32();
+            int instanceID = c.ReadInt32();
             int size = c.ReadInt32();
             ResourceRequestInfo requestInfo = ResourceTracker.Instance.GetAllocInfo(instanceID);
             if (requestInfo == null)
             {
-                if(!_stackUnavailableDict.ContainsKey(className))
+                if (!_stackUnavailableDict.ContainsKey(className))
                 {
-                    _stackUnavailableDict.Add(className,new List<stackParamater>());
+                    _stackUnavailableDict.Add(className, new List<stackParamater>());
                 }
                 List<stackParamater> stackUnavailableList;
-                _stackUnavailableDict.TryGetValue(className ,out stackUnavailableList);
+                _stackUnavailableDict.TryGetValue(className, out stackUnavailableList);
                 stackParamater info = new stackParamater();
                 info.InstanceID = instanceID;
                 info.Size = size;
@@ -451,7 +452,7 @@ public class ResourceTracker : IDisposable
             }
 
             var mainTexture2D = mat.mainTexture as Texture2D;
-            if (mainTexture2D!=null && !result.Contains(mainTexture2D))
+            if (mainTexture2D != null && !result.Contains(mainTexture2D))
             {
                 result.Add(mainTexture2D);
                 //UnityEngine.Debug.Log(string.Format("catch UIWidget shader texture2D ,textureName = {0}", mat.mainTexture.name));

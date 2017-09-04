@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.MemoryProfiler;
@@ -31,9 +31,9 @@ namespace MemoryProfilerWindow
             for (int i = 0; i != input.gcHandles.Length; i++)
             {
                 CrawlPointer(input, result.startIndices, input.gcHandles[i].target, result.startIndices.OfFirstGCHandle + i, connections, managedObjects);
-                
+
                 if (i % 5 == 0)
-                    MemUtil.LoadSnapshotProgress(0.2f + 0.2f * ((float)i / (float)input.gcHandles.Length), 
+                    MemUtil.LoadSnapshotProgress(0.2f + 0.2f * ((float)i / (float)input.gcHandles.Length),
                         string.Format("CrawlPointer({0}/{1})", i, input.gcHandles.Length));
             }
 
@@ -41,7 +41,7 @@ namespace MemoryProfilerWindow
             for (int i = 0; i < result.typesWithStaticFields.Length; i++)
             {
                 var typeDescription = result.typesWithStaticFields[i];
-                CrawlRawObjectData(input, result.startIndices, new BytesAndOffset {bytes = typeDescription.staticFieldBytes, offset = 0, pointerSize = _virtualMachineInformation.pointerSize}, typeDescription, true, result.startIndices.OfFirstStaticFields + i, connections, managedObjects);
+                CrawlRawObjectData(input, result.startIndices, new BytesAndOffset { bytes = typeDescription.staticFieldBytes, offset = 0, pointerSize = _virtualMachineInformation.pointerSize }, typeDescription, true, result.startIndices.OfFirstStaticFields + i, connections, managedObjects);
 
                 if (i % 5 == 0)
                     MemUtil.LoadSnapshotProgress(0.4f + 0.2f * ((float)i / (float)result.typesWithStaticFields.Length),
@@ -129,7 +129,7 @@ namespace MemoryProfilerWindow
             return typeInfoAddress;
         }
 
-        private void CrawlRawObjectData(PackedMemorySnapshot packedMemorySnapshot, StartIndices startIndices, BytesAndOffset bytesAndOffset, TypeDescription typeDescription, bool useStaticFields, int indexOfFrom, List<Connection>  out_connections, List<PackedManagedObject> out_managedObjects)
+        private void CrawlRawObjectData(PackedMemorySnapshot packedMemorySnapshot, StartIndices startIndices, BytesAndOffset bytesAndOffset, TypeDescription typeDescription, bool useStaticFields, int indexOfFrom, List<Connection> out_connections, List<PackedManagedObject> out_managedObjects)
         {
             foreach (var field in TypeTools.AllFieldsOf(typeDescription, _typeDescriptions, useStaticFields ? TypeTools.FieldFindOptions.OnlyStatic : TypeTools.FieldFindOptions.OnlyInstance))
             {
@@ -194,7 +194,7 @@ namespace MemoryProfilerWindow
                 return;
             }
 
-            out_connections.Add(new Connection() {from = indexOfFrom, to = indexOfObject});
+            out_connections.Add(new Connection() { from = indexOfFrom, to = indexOfObject });
 
             if (wasAlreadyCrawled)
                 return;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,11 +10,11 @@ namespace Assets.Editor.Treemap
     {
         public static Rect[] GetTreemapRects(float[] values, Rect targetRect)
         {
-			if (values.Length == 0)
-				throw new ArgumentException ("You need to at least pass in one valid value", "values");
-				
+            if (values.Length == 0)
+                throw new ArgumentException("You need to at least pass in one valid value", "values");
+
             Rect[] result = new Rect[values.Length];
-           
+
             float totalInputArea = 0f;
             for (int i = 0; i < values.Length; i++)
                 totalInputArea += values[i];
@@ -30,8 +30,8 @@ namespace Assets.Editor.Treemap
 
                 float currentInputValue = values[index];
 
-				if (currentInputValue <= 0f)
-					throw new ArgumentException ("only positive float values are supported. found: " + currentInputValue);
+                if (currentInputValue <= 0f)
+                    throw new ArgumentException("only positive float values are supported. found: " + currentInputValue);
 
                 float currentOutputArea = currentInputValue * totalOutputArea / totalInputArea;
                 unfinishedRects = AddRect(unfinishedRects, currentOutputArea, targetRect, vertical);

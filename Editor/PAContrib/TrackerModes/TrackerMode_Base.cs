@@ -12,13 +12,13 @@ public class TrackerMode_Base
     public CrawledMemorySnapshot Diff_1st { get { return _1st != PAEditorConst.BAD_ID ? GetAt(_1st) : null; } }
     public CrawledMemorySnapshot Diff_2nd { get { return _2nd != PAEditorConst.BAD_ID ? GetAt(_2nd) : null; } }
 
-    public bool IsDiffing { get { return _isDiffing; }  }
+    public bool IsDiffing { get { return _isDiffing; } }
 
     public void AddSnapshot(MemSnapshotInfo snapshot)
     {
         _snapshots.Add(snapshot);
         _selected = _snapshots.Count - 1;
-                
+
         RefreshIndices();
 
         // automatically compare the last two, when new snapshot comes
@@ -96,7 +96,7 @@ public class TrackerMode_Base
 
     protected virtual void Do_GUI() { }
 
-    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false;}
+    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false; }
 
     protected CrawledMemorySnapshot GetAt(int i)
     {

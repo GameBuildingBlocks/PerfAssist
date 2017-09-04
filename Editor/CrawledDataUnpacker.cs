@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.MemoryProfiler;
 using System;
@@ -56,11 +56,11 @@ namespace MemoryProfilerWindow
         static StaticFields UnpackStaticFields(TypeDescription typeDescription)
         {
             return new StaticFields()
-                   {
-                       typeDescription = typeDescription,
-                       caption = "static fields of " + typeDescription.name,
-                       size = typeDescription.staticFieldBytes.Length
-                   };
+            {
+                typeDescription = typeDescription,
+                caption = "static fields of " + typeDescription.name,
+                size = typeDescription.staticFieldBytes.Length
+            };
         }
 
         static GCHandle UnpackGCHandle(PackedMemorySnapshot packedSnapshot)
@@ -79,18 +79,18 @@ namespace MemoryProfilerWindow
             var className = packedSnapshot.nativeTypes[packedNativeUnityEngineObject.classId].name;
 
             return new NativeUnityEngineObject()
-                   {
-                       instanceID = packedNativeUnityEngineObject.instanceId,
-                       classID = packedNativeUnityEngineObject.classId,
-                       className = className,
-                       name = packedNativeUnityEngineObject.name,
-                       caption = packedNativeUnityEngineObject.name + "(" + className + ")",
-                       size = packedNativeUnityEngineObject.size,
-                       isPersistent = packedNativeUnityEngineObject.isPersistent,
-                       isDontDestroyOnLoad = packedNativeUnityEngineObject.isDontDestroyOnLoad,
-                       isManager = packedNativeUnityEngineObject.isManager,
-                       hideFlags = packedNativeUnityEngineObject.hideFlags
-                   };
+            {
+                instanceID = packedNativeUnityEngineObject.instanceId,
+                classID = packedNativeUnityEngineObject.classId,
+                className = className,
+                name = packedNativeUnityEngineObject.name,
+                caption = packedNativeUnityEngineObject.name + "(" + className + ")",
+                size = packedNativeUnityEngineObject.size,
+                isPersistent = packedNativeUnityEngineObject.isPersistent,
+                isDontDestroyOnLoad = packedNativeUnityEngineObject.isDontDestroyOnLoad,
+                isManager = packedNativeUnityEngineObject.isManager,
+                hideFlags = packedNativeUnityEngineObject.hideFlags
+            };
         }
     }
 

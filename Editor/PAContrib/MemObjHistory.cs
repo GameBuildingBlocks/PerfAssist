@@ -3,7 +3,7 @@ using System.Collections;
 using MemoryProfilerWindow;
 using System.Collections.Generic;
 
-public class MemObjHistory 
+public class MemObjHistory
 {
     public void Clear()
     {

@@ -13,8 +13,8 @@ public class ResourceTrackerConst
     {
         if (bytes < 0)
             return "error bytes";
-        
-        if (bytes<1024)
+
+        if (bytes < 1024)
         {
             return bytes + "b";
         }
@@ -22,8 +22,9 @@ public class ResourceTrackerConst
         {
             return bytes / 1024 + "kb";
         }
-        else {
-            return bytes / 1024 /1024 + "mb";
+        else
+        {
+            return bytes / 1024 / 1024 + "mb";
         }
     }
 }

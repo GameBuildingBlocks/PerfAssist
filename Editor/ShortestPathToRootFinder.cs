@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +21,7 @@ namespace MemoryProfilerWindow
         {
             var seen = new HashSet<ThingInMemory>();
             var queue = new Queue<List<ThingInMemory>>();
-            queue.Enqueue(new List<ThingInMemory> { thing});
+            queue.Enqueue(new List<ThingInMemory> { thing });
 
             while (queue.Any())
             {
@@ -37,7 +37,7 @@ namespace MemoryProfilerWindow
                     if (seen.Contains(next))
                         continue;
                     seen.Add(next);
-                    var dupe = new List<ThingInMemory>(pop) {next};
+                    var dupe = new List<ThingInMemory>(pop) { next };
                     queue.Enqueue(dupe);
                 }
             }

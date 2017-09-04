@@ -126,7 +126,7 @@ public class MemStats
                     logRemoveCount++;
                     logRemoveSize += p.Key.ToString().Length;
                 }
-                    
+
             }
         }
         lines.Sort((x, y) => x.Key.CompareTo(y.Key) * -1); // would sort all results from the largest to the smallest
@@ -148,6 +148,6 @@ public class MemStats
             }
         }
 
-        UnityEngine.Debug.LogFormat("------------ add count:{0} size:{1} , remove count:{2} size:{3}  dif:{4}---------------\n", logAddCount, logAddSize,logRemoveCount, logRemoveSize,logAddSize - logRemoveSize);
+        UnityEngine.Debug.LogFormat("------------ add count:{0} size:{1} , remove count:{2} size:{3}  dif:{4}---------------\n", logAddCount, logAddSize, logRemoveCount, logRemoveSize, logAddSize - logRemoveSize);
     }
 }

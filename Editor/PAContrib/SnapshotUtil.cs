@@ -3,6 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using MemoryProfilerWindow;
 using UnityEditor;
+using UnityEditor.MemoryProfiler;
+using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 public class SnapshotUtil
 {
@@ -58,7 +62,7 @@ public class SnapshotUtil
             // add the dummy one if not exists in either 1st or 2nd
             if (!types1st.ContainsKey(p.Key))
             {
-                types1st.Add(p.Key, dummyType);   
+                types1st.Add(p.Key, dummyType);
             }
             if (!types2nd.ContainsKey(p.Key))
             {
@@ -176,5 +180,52 @@ public class SnapshotUtil
                 EditorUtility.FormatBytes(sizes[i]));
         }
         return categoryLiterals;
+    }
+
+    public static void ConvertMemorySnapshotIntoTab(string filepath, string targetTab = "")
+    {
+        try
+        {
+            // this block is copied from MemUtil.Load
+            if (string.IsNullOrEmpty(filepath))
+                throw new Exception("bad_load: filename is empty.");
+
+            if (!File.Exists(filepath))
+                throw new Exception(string.Format("bad_load: file not found. ({0})", filepath));
+
+            PackedMemorySnapshot packed;
+            using (Stream stream = File.Open(filepath, FileMode.Open))
+            {
+                packed = new BinaryFormatter().Deserialize(stream) as PackedMemorySnapshot;
+            }
+            Debug.LogFormat("file '{0}' loaded.", filepath);
+
+            MemUtil.LoadSnapshotProgress(0.01f, "crawling");
+            var crawled = new Crawler().Crawl(packed);
+            Debug.LogFormat("Crawler created.");
+
+            MemUtil.LoadSnapshotProgress(0.7f, "unpacking");
+            CrawledMemorySnapshot _unpacked = CrawlDataUnpacker.Unpack(crawled);
+            Debug.LogFormat("Snapshot unpacked.");
+
+            MemUtil.LoadSnapshotProgress(0.9f, "populating");
+            string targetPath = string.IsNullOrEmpty(targetTab) ? filepath + ".tab" : targetTab; 
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(targetPath))
+            {
+                file.Write("caption\tsize\ttype\tcategory\n");
+                foreach (var thing in _unpacked.allObjects)
+                {
+                    file.Write("{0}\t{1}\t{2}\t{3}\n", thing.caption, thing.size, MemUtil.GetGroupName(thing), MemUtil.GetCategoryLiteral(thing));
+                }
+            }
+            Debug.LogFormat("ConvertMemorySnapshotIntoTab() done. ({0})", targetPath);
+            MemUtil.LoadSnapshotProgress(1.0f, "done");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+            Debug.LogFormat("ConvertMemorySnapshotIntoTab() interrupted.");
+            MemUtil.LoadSnapshotProgress(1.0f, "done");
+        }
     }
 }

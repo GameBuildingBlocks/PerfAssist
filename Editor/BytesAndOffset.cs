@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace MemoryProfilerWindow
         public byte[] bytes;
         public int offset;
         public int pointerSize;
-        public bool IsValid { get { return bytes != null; }}
+        public bool IsValid { get { return bytes != null; } }
 
         public UInt64 ReadPointer()
         {
@@ -32,7 +32,7 @@ namespace MemoryProfilerWindow
 
         public BytesAndOffset Add(int add)
         {
-            return new BytesAndOffset() {bytes = bytes, offset = offset + add, pointerSize = pointerSize};
+            return new BytesAndOffset() { bytes = bytes, offset = offset + add, pointerSize = pointerSize };
         }
 
         public void WritePointer(UInt64 value)

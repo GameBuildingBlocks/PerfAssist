@@ -76,9 +76,9 @@ public class RequestStackInfosSummary
                     cmd.WriteInt16((short)eNetCmd.CL_RequestStackSummary);
                     cmd.WriteString(categoryPair.Key);
                     cmd.WriteInt32(passCountPerCmd);
-                    for (int j = i * passCountPerCmd; j < (i + 1) * passCountPerCmd;j++)
+                    for (int j = i * passCountPerCmd; j < (i + 1) * passCountPerCmd; j++)
                     {
-                        var info =categoryPair.Value[j];
+                        var info = categoryPair.Value[j];
                         cmd.WriteInt32(info.InstanceID);
                         cmd.WriteInt32(info.Size);
                     }
@@ -91,7 +91,7 @@ public class RequestStackInfosSummary
                     cmd.WriteInt16((short)eNetCmd.CL_RequestStackSummary);
                     cmd.WriteString(categoryPair.Key);
                     cmd.WriteInt32(residue);
-                    for (int i = 0; i <residue;i++)
+                    for (int i = 0; i < residue; i++)
                     {
                         var info = categoryPair.Value[times * passCountPerCmd + i];
                         cmd.WriteInt32(info.InstanceID);
@@ -109,7 +109,7 @@ public class RequestStackInfosSummary
             {
                 cmd.WriteString(categoryPair.Key);
                 cmd.WriteInt32(categoryPair.Value.Count);
-                int categoryTotalSize=0;
+                int categoryTotalSize = 0;
                 foreach (var info in categoryPair.Value)
                 {
                     categoryTotalSize += info.Size;

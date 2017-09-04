@@ -20,7 +20,7 @@ public class TrackerModeManager : TrackerModeOwner
     TrackerMode _currentMode = TrackerMode.Editor;
 
     public CrawledMemorySnapshot Selected { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Selected : null; } }
-    public CrawledMemorySnapshot Diff_1st { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_1st : null ; } }
+    public CrawledMemorySnapshot Diff_1st { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_1st : null; } }
     public CrawledMemorySnapshot Diff_2nd { get { var curMode = GetCurrentMode(); return curMode != null ? curMode.Diff_2nd : null; } }
 
     public TrackerModeManager()

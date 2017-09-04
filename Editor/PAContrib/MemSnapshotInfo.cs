@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditor.MemoryProfiler;
 
-public class MemSnapshotInfo 
+public class MemSnapshotInfo
 {
     public CrawledMemorySnapshot Unpacked { get { return _unpacked; } }
     private CrawledMemorySnapshot _unpacked = null;
@@ -48,4 +48,3 @@ public class MemSnapshotInfo
     }
 
 }
-

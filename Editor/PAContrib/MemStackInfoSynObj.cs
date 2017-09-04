@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Threading;
-public  class StackInfoSynObj
+public class StackInfoSynObj
 {
     private bool readerNewMsgArrived = false;
     public bool ReaderNewMsgArrived
@@ -37,7 +37,7 @@ public  class StackInfoSynObj
             Monitor.Pulse(this);
         }
         return m_stackInfo;
- 	}
+    }
 
     public void writeStackInfo(string stackInfo)
     {

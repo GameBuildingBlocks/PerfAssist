@@ -8,7 +8,7 @@ using UnityEditor.MemoryProfiler;
 using UnityEngine;
 using UnityEditorInternal;
 
-public class MemUtil 
+public class MemUtil
 {
     private static Regex _ipReg = new Regex(@"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$");
     public static bool ValidateIPString(string ip)
@@ -155,20 +155,20 @@ public class MemUtil
 
         switch (curLimitIndex)
         {
-            case 0:
-                return true;
+        case 0:
+            return true;
 
-            case 1:
-                return size >= MemConst._1MB;
+        case 1:
+            return size >= MemConst._1MB;
 
-            case 2:
-                return size >= MemConst._1KB && size < MemConst._1MB;
+        case 2:
+            return size >= MemConst._1KB && size < MemConst._1MB;
 
-            case 3:
-                return size < MemConst._1KB;
+        case 3:
+            return size < MemConst._1KB;
 
-            default:
-                return false;
+        default:
+            return false;
         }
     }
 

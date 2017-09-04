@@ -4,7 +4,7 @@ using System;
 using MemoryProfilerWindow;
 using System.Collections.Generic;
 
-public class MemCompareTarget 
+public class MemCompareTarget
 {
     public static MemCompareTarget Instance = new MemCompareTarget();
 

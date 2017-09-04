@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
@@ -90,27 +90,27 @@ namespace MemoryProfilerWindow
                     {
                         switch (Event.current.type)
                         {
-                            case EventType.MouseDown:
-                                _mouseDownItem = item;
-                                break;
+                        case EventType.MouseDown:
+                            _mouseDownItem = item;
+                            break;
 
-                            case EventType.MouseUp:
-                                if (_mouseDownItem == item)
-                                {
-                                    _hostWindow.SelectThing(item._thingInMemory);
-                                    Event.current.Use();
-                                }
-                                break;
+                        case EventType.MouseUp:
+                            if (_mouseDownItem == item)
+                            {
+                                _hostWindow.SelectThing(item._thingInMemory);
+                                Event.current.Use();
+                            }
+                            break;
                         }
                     }
                     else if (group != null)
                     {
                         switch (Event.current.type)
                         {
-                            case EventType.MouseUp:
-                                _hostWindow.SelectGroup(group);
-                                Event.current.Use();
-                                break;
+                        case EventType.MouseUp:
+                            _hostWindow.SelectGroup(group);
+                            Event.current.Use();
+                            break;
                         }
                     }
                 }
@@ -209,23 +209,26 @@ namespace MemoryProfilerWindow
             RefreshMesh();
         }
 
-        public void CleanupMeshes ()
+        public void CleanupMeshes()
         {
-            if (_cachedMeshes == null) {
-                _cachedMeshes = new List<Mesh> ();
+            if (_cachedMeshes == null)
+            {
+                _cachedMeshes = new List<Mesh>();
             }
-            else {
-                for (int i = 0; i < _cachedMeshes.Count; i++) {
-                    UnityEngine.Object.DestroyImmediate (_cachedMeshes [i]);
+            else
+            {
+                for (int i = 0; i < _cachedMeshes.Count; i++)
+                {
+                    UnityEngine.Object.DestroyImmediate(_cachedMeshes[i]);
                 }
-               
-                _cachedMeshes.Clear ();
+
+                _cachedMeshes.Clear();
             }
         }
 
         private void RefreshMesh()
         {
-            CleanupMeshes ();
+            CleanupMeshes();
 
             const int maxVerts = 32000;
             Vector3[] vertices = new Vector3[maxVerts];
@@ -376,8 +379,8 @@ namespace MemoryProfilerWindow
 
         public string GetGroupName(ThingInMemory thing)
         {
-			if (thing is NativeUnityEngineObject)
-				return (thing as NativeUnityEngineObject).className ?? "MissingName";
+            if (thing is NativeUnityEngineObject)
+                return (thing as NativeUnityEngineObject).className ?? "MissingName";
             if (thing is ManagedObject)
                 return (thing as ManagedObject).typeDescription.name;
             return thing.GetType().Name;

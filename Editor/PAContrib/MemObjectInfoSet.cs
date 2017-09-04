@@ -99,7 +99,7 @@ public class MemObjectInfoSet
                 MarkStatus(mo, eDiffStatus.Decreased);
                 ret.Add(mo);
             }
-            else 
+            else
             {
                 MarkStatus(mo, eDiffStatus.Increased);
                 ret.Add(mo);

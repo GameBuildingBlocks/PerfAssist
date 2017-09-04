@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections;
 
@@ -363,8 +363,8 @@ public class ZoomArea
     {
         return (
             (Event.current.button == 1 && Event.current.alt) // right+alt drag
-            //|| (Event.current.button == 0 && Event.current.command) // left+commend drag
-            //|| (Event.current.button == 2 && Event.current.command) // middle+command drag
+                                                             //|| (Event.current.button == 0 && Event.current.command) // left+commend drag
+                                                             //|| (Event.current.button == 2 && Event.current.command) // middle+command drag
 
             );
     }
@@ -409,60 +409,60 @@ public class ZoomArea
 
         switch (Event.current.GetTypeForControl(id))
         {
-            case EventType.mouseDown:
-                if (area.Contains(Event.current.mousePosition))
+        case EventType.mouseDown:
+            if (area.Contains(Event.current.mousePosition))
+            {
+                // Catch keyboard control when clicked inside zoomable area
+                // (used to restrict scrollwheel)
+                GUIUtility.keyboardControl = id;
+
+                if (IsZoomEvent() || IsPanEvent())
                 {
-                    // Catch keyboard control when clicked inside zoomable area
-                    // (used to restrict scrollwheel)
-                    GUIUtility.keyboardControl = id;
+                    GUIUtility.hotControl = id;
+                    m_MouseDownPosition = mousePositionInDrawing;
 
-                    if (IsZoomEvent() || IsPanEvent())
-                    {
-                        GUIUtility.hotControl = id;
-                        m_MouseDownPosition = mousePositionInDrawing;
-
-                        Event.current.Use();
-                    }
-                }
-                break;
-            case EventType.mouseUp:
-                //Debug.Log("mouse-up!");
-                if (GUIUtility.hotControl == id)
-                {
-                    GUIUtility.hotControl = 0;
-
-                    // If we got the mousedown, the mouseup is ours as well
-                    // (no matter if the click was in the area or not)
-                    m_MouseDownPosition = new Vector2(-1000000, -1000000);
-                    //Event.current.Use();
-                }
-                break;
-            case EventType.mouseDrag:
-                if (GUIUtility.hotControl != id) break;
-
-                if (IsZoomEvent())
-                {
-                    // Zoom in around mouse down position
-                    Zoom(m_MouseDownPosition, false);
                     Event.current.Use();
                 }
-                else if (IsPanEvent())
-                {
-                    // Pan view
-                    Pan();
-                    Event.current.Use();
-                }
-                break;
-            case EventType.scrollWheel:
-                if (!area.Contains(Event.current.mousePosition))
-                    break;
-                if (m_IgnoreScrollWheelUntilClicked && GUIUtility.keyboardControl != id)
-                    break;
+            }
+            break;
+        case EventType.mouseUp:
+            //Debug.Log("mouse-up!");
+            if (GUIUtility.hotControl == id)
+            {
+                GUIUtility.hotControl = 0;
 
-                // Zoom in around cursor position
-                Zoom(mousePositionInDrawing, true);
+                // If we got the mousedown, the mouseup is ours as well
+                // (no matter if the click was in the area or not)
+                m_MouseDownPosition = new Vector2(-1000000, -1000000);
+                //Event.current.Use();
+            }
+            break;
+        case EventType.mouseDrag:
+            if (GUIUtility.hotControl != id) break;
+
+            if (IsZoomEvent())
+            {
+                // Zoom in around mouse down position
+                Zoom(m_MouseDownPosition, false);
                 Event.current.Use();
+            }
+            else if (IsPanEvent())
+            {
+                // Pan view
+                Pan();
+                Event.current.Use();
+            }
+            break;
+        case EventType.scrollWheel:
+            if (!area.Contains(Event.current.mousePosition))
                 break;
+            if (m_IgnoreScrollWheelUntilClicked && GUIUtility.keyboardControl != id)
+                break;
+
+            // Zoom in around cursor position
+            Zoom(mousePositionInDrawing, true);
+            Event.current.Use();
+            break;
         }
     }
 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -6,7 +6,6 @@ using UnityEditor.MemoryProfiler;
 using UnityEditorInternal;
 using UnityEngine;
 using Group = Assets.Editor.Treemap.Group;
-
 
 enum eShowType
 {
@@ -107,16 +106,16 @@ namespace MemoryProfilerWindow
                 {
                     switch (m_selectedView)
                     {
-                        case eShowType.InTable:
-                            if (_tableBrowser != null)
-                                _tableBrowser.SelectThing(_selectedThing);
-                            break;
-                        case eShowType.InTreemap:
-                            if (_treeMapView != null)
-                                _treeMapView.SelectThing(_selectedThing);
-                            break;
-                        default:
-                            break;
+                    case eShowType.InTable:
+                        if (_tableBrowser != null)
+                            _tableBrowser.SelectThing(_selectedThing);
+                        break;
+                    case eShowType.InTreemap:
+                        if (_treeMapView != null)
+                            _treeMapView.SelectThing(_selectedThing);
+                        break;
+                    default:
+                        break;
                     }
                     if (_inspector != null)
                         _inspector.SelectThing(_selectedThing);
@@ -162,18 +161,18 @@ namespace MemoryProfilerWindow
                 Rect view = new Rect(0f, yoffset, position.width - MemConst.InspectorWidth, position.height - yoffset);
                 switch (m_selectedView)
                 {
-                    case eShowType.InTable:
-                        if (_tableBrowser != null)
-                            _tableBrowser.Draw(view);
-                        break;
+                case eShowType.InTable:
+                    if (_tableBrowser != null)
+                        _tableBrowser.Draw(view);
+                    break;
 
-                    case eShowType.InTreemap:
-                        if (_treeMapView != null)
-                            _treeMapView.Draw(view);
-                        break;
+                case eShowType.InTreemap:
+                    if (_treeMapView != null)
+                        _treeMapView.Draw(view);
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
 
                 if (_inspector != null)
@@ -194,14 +193,14 @@ namespace MemoryProfilerWindow
         {
             switch (m_selectedView)
             {
-                case eShowType.InTable:
-                    break;
-                case eShowType.InTreemap:
-                    if (_treeMapView != null)
-                        _treeMapView.SelectGroup(group);
-                    break;
-                default:
-                    break;
+            case eShowType.InTable:
+                break;
+            case eShowType.InTreemap:
+                if (_treeMapView != null)
+                    _treeMapView.SelectGroup(group);
+                break;
+            default:
+                break;
             }
         }
 
@@ -227,29 +226,35 @@ namespace MemoryProfilerWindow
 
             switch (m_selectedView)
             {
-                case eShowType.InTable:
-                    if (_tableBrowser != null)
+            case eShowType.InTable:
+                if (_tableBrowser != null)
+                {
+                    if (mode.IsDiffing)
                     {
-                        if (mode.IsDiffing)
-                        {
-                            _tableBrowser.ShowDiffedSnapshots(_modeMgr.Diff_1st, _unpackedCrawl);
-                        }
-                        else
-                        {
-                            _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
-                        }
-
+                        _tableBrowser.ShowDiffedSnapshots(_modeMgr.Diff_1st, _unpackedCrawl);
                     }
-                    break;
-                case eShowType.InTreemap:
-                    if (_treeMapView != null)
-                        _treeMapView.Setup(this, _unpackedCrawl);
-                    break;
-                default:
-                    break;
+                    else
+                    {
+                        _tableBrowser.ShowSingleSnapshot(_unpackedCrawl);
+                    }
+
+                }
+                break;
+            case eShowType.InTreemap:
+                if (_treeMapView != null)
+                    _treeMapView.Setup(this, _unpackedCrawl);
+                break;
+            default:
+                break;
             }
 
             Repaint();
+        }
+
+        [MenuItem(PAEditorConst.DevCommandPath + "/Test ConvertMemorySnapshotIntoTab")]
+        public static void TestConvertMemorySnapshotIntoTab()
+        {
+            SnapshotUtil.ConvertMemorySnapshotIntoTab("C:/Users/ADMIN/AppData/LocalLow/Kingsoft/ABJX3Pocket/mem_snapshots/2017-06-29-15-58-45-Editor/0.memsnap");
         }
     }
 }

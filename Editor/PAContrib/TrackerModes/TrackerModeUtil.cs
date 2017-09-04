@@ -37,16 +37,16 @@ public static class TrackerModeUtil
         string logTypeStr = "";
         switch (pkt.LogType)
         {
-            case UsLogType.Error:
-            case UsLogType.Exception:
-            case UsLogType.Assert:
-            case UsLogType.Warning:
-                logTypeStr = string.Format("{1}", pkt.LogType);
-                break;
+        case UsLogType.Error:
+        case UsLogType.Exception:
+        case UsLogType.Assert:
+        case UsLogType.Warning:
+            logTypeStr = string.Format("{1}", pkt.LogType);
+            break;
 
-            case UsLogType.Log:
-            default:
-                break;
+        case UsLogType.Log:
+        default:
+            break;
         }
 
         string timeStr = string.Format("{0:0.00}({1})", pkt.RealtimeSinceStartup, pkt.SeqID);
@@ -78,7 +78,7 @@ public static class TrackerModeUtil
         return true;
     }
 
-    public static bool SaveSnapshotBin(string binFilePath, string binFileName,PackedMemorySnapshot packed)
+    public static bool SaveSnapshotBin(string binFilePath, string binFileName, PackedMemorySnapshot packed)
     {
         try
         {
