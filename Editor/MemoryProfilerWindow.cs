@@ -5,7 +5,6 @@ using UnityEditor;
 using UnityEditor.MemoryProfiler;
 using UnityEditorInternal;
 using UnityEngine;
-using Group = Assets.Editor.Treemap.Group;
 
 enum eShowType
 {
@@ -15,6 +14,8 @@ enum eShowType
 
 namespace MemoryProfilerWindow
 {
+    using Group = Assets.Editor.Treemap.Group;
+
     public class MemoryProfilerWindow : EditorWindow
     {
         public CrawledMemorySnapshot UnpackedCrawl { get { return _unpackedCrawl; } }
