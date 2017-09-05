@@ -1,8 +1,8 @@
-﻿using SceneTerminator;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 public enum TextureCategory
 {
@@ -30,14 +30,14 @@ public class TextureCategorizing
         s_cachedRootObjects[TextureCategory.Scene] = GameObject.Find("Scene");
         s_cachedRootObjects[TextureCategory.UI] = GameObject.Find("UI Root(Clone)");
 
-        if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path == SceneDefine.LoginScenePath)
-        {
-            s_cachedRootObjects[TextureCategory.Character] = GameObject.Find("xrjm_logic");
-        }
-        else
-        {
-            s_cachedRootObjects[TextureCategory.Character] = GameObject.Find(LogicEditorRoot.RootNodeName);
-        }
+        //if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().path == SceneDefine.LoginScenePath)
+        //{
+        //    s_cachedRootObjects[TextureCategory.Character] = GameObject.Find("xrjm_logic");
+        //}
+        //else
+        //{
+        //    s_cachedRootObjects[TextureCategory.Character] = GameObject.Find(LogicEditorRoot.RootNodeName);
+        //}
     }
 
     public static int GetTextureCategory(GameObject ownerObj)
@@ -185,6 +185,7 @@ public class TextureInfoViewer : EditorWindow
             }
         }
 
+#if NGUI
         HashSet<Texture> textures = new HashSet<Texture>();
         UISprite[] sprites = UnityEngine.Object.FindObjectsOfType(typeof(UISprite)) as UISprite[];
         foreach (UISprite s in sprites)
@@ -200,6 +201,7 @@ public class TextureInfoViewer : EditorWindow
         //{
         //    AddVisibleTexture(a.texture, a.spriteMaterial, a.gameObject);
         //}
+#endif
 
         Debug.Log(string.Format("{0} visible materials ({1}), visible textures ({2})",
                           DateTime.Now.ToLongTimeString(),
@@ -296,7 +298,7 @@ public class TextureInfoViewer : EditorWindow
             if (!_textureSizeLut.ContainsKey(texture))
             {
                 //_textureSizeLut[texture] = UsTextureUtil.CalculateTextureSizeBytes(texture);
-                _textureSizeLut[texture] = KProfiler.GetRuntimeMemorySize(texture);
+                _textureSizeLut[texture] = Profiler.GetRuntimeMemorySize(texture);
             }
 
             // refresh the category
@@ -478,7 +480,7 @@ public class TextureInfoViewer : EditorWindow
     TableView _textureCatTable;
     TableView _matList;
 
-    #region Gathered Meshes/Materials/Textures
+#region Gathered Meshes/Materials/Textures
 
     //public MeshLut MeshTable { get { return _meshLut; } }
     //private MeshLut _meshLut = new MeshLut();
@@ -495,7 +497,7 @@ public class TextureInfoViewer : EditorWindow
     private Dictionary<Texture, int> _textureSizeLut = new Dictionary<Texture, int>();
     private Dictionary<Texture, int> _textureCatLut = new Dictionary<Texture, int>();
 
-    #endregion Gathered Meshes/Materials/Textures
+#endregion Gathered Meshes/Materials/Textures
 
     private bool _realtimeRefreshing = true;
     private bool _highlightSelection = true;
