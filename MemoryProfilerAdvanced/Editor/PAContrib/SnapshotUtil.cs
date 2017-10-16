@@ -212,10 +212,11 @@ public class SnapshotUtil
             string targetPath = string.IsNullOrEmpty(targetTab) ? filepath + ".tab" : targetTab; 
             using (System.IO.StreamWriter file = new System.IO.StreamWriter(targetPath))
             {
-                file.Write("caption\tsize\ttype\tcategory\n");
+                file.Write("caption\tsize\ttype\tcategory\tcontent\n");
                 foreach (var thing in _unpacked.allObjects)
                 {
-                    file.Write("{0}\t{1}\t{2}\t{3}\n", thing.caption, thing.size, MemUtil.GetGroupName(thing), MemUtil.GetCategoryLiteral(thing));
+                    file.Write("{0}\t{1}\t{2}\t{3}\t{4}\n", thing.caption, thing.size, 
+                        MemUtil.GetGroupName(thing), MemUtil.GetCategoryLiteral(thing), MemUtil.GetThingContent(thing, _unpacked));
                 }
             }
             Debug.LogFormat("ConvertMemorySnapshotIntoTab() done. ({0})", targetPath);

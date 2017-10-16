@@ -182,4 +182,44 @@ public class MemUtil
 
     public static string IntStrWithSign(int val) { return val.ToString("+#;-#;0"); }
     public static string GetSign(int val) { return val >= 0 ? "+" : "-"; }
+
+    public static string GetThingContent(ThingInMemory thing, CrawledMemorySnapshot unpacked)
+    {
+        var mo = thing as ManagedObject;
+
+        if (mo != null)
+        {
+            switch (mo.typeDescription.name)
+            {
+                case "System.String":
+                    try
+                    {
+                        return StringTools.ReadString(unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation), unpacked.virtualMachineInformation);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        //UnityEngine.Debug.LogErrorFormat("StringTools.ReadString happens error .things caption = {0} ,ex ={1} ", thing.caption, ex.ToString());
+                        var bo = unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation);
+                        if (bo.bytes == null)
+                        {
+                            UnityEngine.Debug.LogErrorFormat("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
+                            return string.Format("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
+                        }
+                        else
+                        {
+                            var lengthPointer = bo.Add(unpacked.virtualMachineInformation.objectHeaderSize);
+                            var length = lengthPointer.ReadInt32();
+                            var firstChar = lengthPointer.Add(4);
+                            UnityEngine.Debug.LogErrorFormat("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
+                            return string.Format("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
+                        }
+                    }
+
+                default:
+                    break;
+            }
+        }
+
+        return thing.caption;
+    }
 }

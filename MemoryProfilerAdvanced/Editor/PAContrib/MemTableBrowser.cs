@@ -49,38 +49,7 @@ public class MemObject
 
         if (_thing != null)
         {
-            var mo = thing as ManagedObject;
-
-            if (mo != null && mo.typeDescription.name == "System.String")
-            {
-                try
-                {
-                    InstanceName = StringTools.ReadString(unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation), unpacked.virtualMachineInformation);
-                }
-                catch (System.Exception ex)
-                {
-                    //UnityEngine.Debug.LogErrorFormat("StringTools.ReadString happens error .things caption = {0} ,ex ={1} ", thing.caption, ex.ToString());
-                    var bo = unpacked.managedHeap.Find(mo.address, unpacked.virtualMachineInformation);
-                    if (bo.bytes == null)
-                    {
-                        InstanceName = string.Format("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
-                        UnityEngine.Debug.LogErrorFormat("error string,find address bytes is null ,caption = {0},address = {1},exception ={2}", thing.caption, mo.address, ex.ToString());
-                    }
-                    else
-                    {
-                        var lengthPointer = bo.Add(unpacked.virtualMachineInformation.objectHeaderSize);
-                        var length = lengthPointer.ReadInt32();
-                        var firstChar = lengthPointer.Add(4);
-                        InstanceName = string.Format("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
-                        UnityEngine.Debug.LogErrorFormat("error string,expect caption = {0} ,length = {1},firstChar ={2},address = {3},exception ={4}", thing.caption, length, firstChar, mo.address, ex.ToString());
-                    }
-                }
-            }
-            else
-            {
-                InstanceName = _thing.caption;
-            }
-
+            InstanceName = MemUtil.GetThingContent(thing, unpacked);
             Size = _thing.size;
             RefCount = _thing.referencedBy.Length;
         }

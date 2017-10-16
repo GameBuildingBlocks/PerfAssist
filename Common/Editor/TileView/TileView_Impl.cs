@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 public partial class TileView
 {
@@ -53,7 +51,7 @@ public partial class TileView
         var rect = new Rect(cellWidth * col, startY, cellWidth, lineHeight);
 
         if (rect.Contains(Event.current.mousePosition))
-        {            
+        {
             if (Event.current.type == EventType.MouseDown && m_selectedIndex != objIndex)
             {
                 m_selectedIndex = objIndex;
@@ -78,7 +76,7 @@ public partial class TileView
             textRect.height = 20;
             style.alignment = TextAnchor.LowerLeft;
 
-            string text = string.Format("{0}. {1} ({2}x{3})", 
+            string text = string.Format("{0}. {1} ({2}x{3})",
                 objIndex, item.TextureName, item.TextureWidth, item.TextureHeight);
 
             GUI.Label(textRect, new GUIContent(text, text), style);
@@ -115,5 +113,5 @@ public partial class TileView
     object m_selected = null;
     int m_selectedIndex = -1;
 
-    Dictionary<object, Color> m_specialTextColors;
+    //Dictionary<object, Color> m_specialTextColors;
 }
