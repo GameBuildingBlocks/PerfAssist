@@ -9,6 +9,7 @@ public enum TrackerMode
 {
     Editor,
     Remote,
+    RemoteEx,
     File,
 }
 
@@ -182,6 +183,7 @@ public class TrackerModeManager : TrackerModeOwner
     {
         { TrackerMode.Editor, new TrackerMode_Editor() },
         { TrackerMode.Remote, new TrackerMode_Remote() },
+        { TrackerMode.RemoteEx, new TrackerMode_RemoteEx() },
         { TrackerMode.File, new TrackerMode_File() },
     };
 }

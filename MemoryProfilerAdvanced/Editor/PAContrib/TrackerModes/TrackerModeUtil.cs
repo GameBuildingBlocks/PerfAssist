@@ -13,11 +13,12 @@ using System.Text;
 
 public static class TrackerModeConsts
 {
-    public static string[] Modes = new string[] { "Editor", "Remote", "File" };
+    public static string[] Modes = new string[] { "Editor", "Remote", "RemoteEx", "File" };
     public static string[] ModesDesc = new string[]
     {
         "'Editor': connects to the local in-editor game (Native types only).",
         "'Remote': connects to the remote device (C# types if il2cpp is enabled).",
+        "'RemoteEx': (experimental) connects to the remote device using customized connection (should be more stable).",
         "'File': opens a saved session from local file system."
     };
 

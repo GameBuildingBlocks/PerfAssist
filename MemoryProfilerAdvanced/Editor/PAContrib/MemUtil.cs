@@ -66,18 +66,18 @@ public class MemUtil
 
     }
 
-    public static PackedMemorySnapshot Load(string filename)
+    public static PackedMemorySnapshot Load(string filename, bool needsFullpath = false)
     {
         try
         {
             if (string.IsNullOrEmpty(filename))
                 throw new Exception("bad_load: filename is empty.");
 
-            string fullpath = GetFullpath(filename);
-            if (!File.Exists(fullpath))
-                throw new Exception(string.Format("bad_load: file not found. ({0})", fullpath));
+            string filepath = needsFullpath ? GetFullpath(filename) : filename;
+            if (!File.Exists(filepath))
+                throw new Exception(string.Format("bad_load: file not found. ({0})", filepath));
 
-            using (Stream stream = File.Open(fullpath, FileMode.Open))
+            using (Stream stream = File.Open(filepath, FileMode.Open))
             {
                 return new BinaryFormatter().Deserialize(stream) as PackedMemorySnapshot;
             }
