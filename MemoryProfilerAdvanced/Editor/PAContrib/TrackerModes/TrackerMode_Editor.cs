@@ -29,9 +29,15 @@ public class TrackerMode_Editor : TrackerMode_Base
         GUILayout.Space(DrawIndicesGrid(_last.xMax + 20, _last.y));
     }
 
-    public override bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked)
+    public override bool SaveSessionInfo(PackedMemorySnapshot packed)
     {
         string sessionName = _sessionTimeStr + TrackerModeConsts.EditorTag;
-        return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed, unpacked);
+        return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed);
+    }
+
+    public override bool SaveSessionJson(CrawledMemorySnapshot Unpacked)
+    {
+        string sessionName = _sessionTimeStr + TrackerModeConsts.EditorTag;
+        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString(), Unpacked);
     }
 }

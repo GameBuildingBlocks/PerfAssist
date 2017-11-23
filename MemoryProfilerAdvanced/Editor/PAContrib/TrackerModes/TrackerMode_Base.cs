@@ -96,7 +96,8 @@ public class TrackerMode_Base
 
     protected virtual void Do_GUI() { }
 
-    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked) { return false; }
+    public virtual bool SaveSessionInfo(PackedMemorySnapshot packed) { return false; }
+    public virtual bool SaveSessionJson(CrawledMemorySnapshot Unpacked) { return false; }
 
     protected CrawledMemorySnapshot GetAt(int i)
     {

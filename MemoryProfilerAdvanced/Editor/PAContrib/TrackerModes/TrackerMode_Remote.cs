@@ -68,9 +68,16 @@ public class TrackerMode_Remote : TrackerMode_Base
         GUILayout.Space(DrawIndicesGrid(300, 20));
     }
 
-    public override bool SaveSessionInfo(PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked)
+    public override bool SaveSessionInfo(PackedMemorySnapshot packed)
     {
         string sessionName = _sessionTimeStr + TrackerModeConsts.RemoteTag + _IPField;
-        return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed, unpacked);
+        return TrackerModeUtil.SaveSnapshotFiles(sessionName, _selected.ToString(), packed);
+    }
+
+
+    public override bool SaveSessionJson(CrawledMemorySnapshot Unpacked)
+    {
+        string sessionName = _sessionTimeStr + TrackerModeConsts.RemoteTag + _IPField;
+        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString(), Unpacked);
     }
 }

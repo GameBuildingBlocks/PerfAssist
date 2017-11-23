@@ -130,6 +130,13 @@ public class TrackerModeManager : TrackerModeOwner
                 return;
             }
 
+            Debug.Log("saving snapshot...");
+            if (AutoSaveOnSnapshot)
+            {
+                if (!curMode.SaveSessionInfo(packed))
+                    Debug.LogErrorFormat("Save Session Info Failed!");
+            }
+
             Debug.Log("accepting snapshot...");
             var snapshotInfo = new MemSnapshotInfo();
             if (!snapshotInfo.AcceptSnapshot(packed))
@@ -144,8 +151,8 @@ public class TrackerModeManager : TrackerModeOwner
             //Debug.Log("saving snapshot...");
             if (AutoSaveOnSnapshot)
             {
-                if (!curMode.SaveSessionInfo(packed, snapshotInfo.Unpacked))
-                    Debug.LogErrorFormat("Save Session Info Failed!");
+                if (!curMode.SaveSessionJson(snapshotInfo.Unpacked))
+                    Debug.LogErrorFormat("Save Session Json Failed!");
             }
 
             Debug.Log("appending snapshot. (done)");

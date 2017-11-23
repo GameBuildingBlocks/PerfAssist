@@ -64,7 +64,7 @@ public static class TrackerModeUtil
         return true;
     }
 
-    public static bool SaveSnapshotFiles(string targetSession, string targetName, PackedMemorySnapshot packed, CrawledMemorySnapshot unpacked)
+    public static bool SaveSnapshotFiles(string targetSession, string targetName, PackedMemorySnapshot packed/*, CrawledMemorySnapshot unpacked*/)
     {
         string targetDir = Path.Combine(MemUtil.SnapshotsDir, targetSession);
         if (!Directory.Exists(targetDir))
@@ -72,8 +72,8 @@ public static class TrackerModeUtil
 
         if (!TrackerModeUtil.SaveSnapshotBin(targetDir, targetName + TrackerModeConsts.SnapshotBinPostfix, packed))
             return false;
-        if (!TrackerModeUtil.SaveSnapshotJson(targetDir, targetName + TrackerModeConsts.SnapshotJsonPostfix, unpacked))
-            return false;
+        //if (!TrackerModeUtil.SaveSnapshotJson(targetDir, targetName + TrackerModeConsts.SnapshotJsonPostfix, unpacked))
+        //    return false;
 
         Debug.LogFormat("Snapshot saved successfully. (dir: {0}, name: {1})", targetDir, targetName);
         return true;
