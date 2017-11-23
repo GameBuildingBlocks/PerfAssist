@@ -7,6 +7,8 @@ using UnityEditor;
 using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
+#if JX3M
+
 public class TrackerMode_RemoteEx : TrackerMode_Base
 {
     public TrackerMode_RemoteEx()
@@ -90,3 +92,5 @@ public class TrackerMode_RemoteEx : TrackerMode_Base
         }
     }
 }
+
+#endif
