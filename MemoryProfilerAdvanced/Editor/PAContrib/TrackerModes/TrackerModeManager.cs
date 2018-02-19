@@ -67,6 +67,15 @@ public class TrackerModeManager : TrackerModeOwner
 
             if (_currentMode == TrackerMode.File)
             {
+                if (GUILayout.Button("Load File", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
+                {
+                    TrackerMode_File mode = GetCurrentMode() as TrackerMode_File;
+                    if (mode != null)
+                    {
+                        mode.LoadFile();
+                        ChangeSnapshotSelection();
+                    }
+                }
                 if (GUILayout.Button("Load Session", MemStyles.ToolbarButton, GUILayout.MaxWidth(100)))
                 {
                     TrackerMode_File mode = GetCurrentMode() as TrackerMode_File;

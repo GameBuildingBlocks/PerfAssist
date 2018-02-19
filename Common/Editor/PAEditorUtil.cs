@@ -7,18 +7,31 @@ using System.IO;
 
 public class PAEditorUtil
 {
-    public static object FieldValue(object obj, FieldInfo fieldInfo)
+    public static object MemberValue(object obj, MemberInfo memInfo)
     {
         if (obj == null)
             return "";
-        if (fieldInfo == null)
+        if (memInfo == null)
             return "";
 
-        return fieldInfo.GetValue(obj);
+        var pi = memInfo as PropertyInfo;
+        if (pi != null)
+        {
+            return pi.GetValue(obj, null);
+        }
+
+        var fi = memInfo as FieldInfo;
+        if (fi != null)
+        {
+            return fi.GetValue(obj);
+        }
+
+        return "";
     }
-    public static string FieldToString(object obj, FieldInfo fieldInfo, string fmt)
+
+    public static string MemberToString(object obj, MemberInfo memInfo, string fmt)
     {
-        object val = FieldValue(obj, fieldInfo);
+        object val = MemberValue(obj, memInfo);
         if (val == null)
             return "";
 

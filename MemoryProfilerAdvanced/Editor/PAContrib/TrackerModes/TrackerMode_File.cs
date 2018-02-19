@@ -14,6 +14,44 @@ public class TrackerMode_File : TrackerMode_Base
         GUILayout.Space(DrawIndicesGrid(0, 20));
     }
 
+    public void LoadFile()
+    {
+        string pathName = EditorUtility.OpenFilePanel("Load Snapshot File", MemUtil.SnapshotsDir, "");
+        if (string.IsNullOrEmpty(pathName))
+            return;
+
+        object packed = null;
+        try
+        {
+            System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+            var fileName = pathName;
+            if (fileName.EndsWith(".memsnap"))
+            {
+                using (Stream stream = File.Open(fileName, FileMode.Open))
+                {
+                    packed = bf.Deserialize(stream);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError(string.Format("load snapshot error ! msg ={0}", ex.Message));
+            return;
+        }
+
+        if (packed != null)
+        {
+            Clear();
+
+            MemSnapshotInfo memInfo = new MemSnapshotInfo();
+            if (memInfo.AcceptSnapshot(packed as PackedMemorySnapshot))
+                _snapshots.Add(memInfo);
+
+            RefreshIndices();
+            _selected = _snapshots.Count - 1;
+        }
+    }
+
     public void LoadSession()
     {
         string pathName = EditorUtility.OpenFolderPanel("Load Snapshot Folder", MemUtil.SnapshotsDir, "");

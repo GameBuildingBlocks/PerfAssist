@@ -14,6 +14,8 @@ public class FooItem
     public int Count_B = 0;
     public float Time_B = 0.0f;
 
+    float Prop { get { return 1.0f; } }
+
     public static FooItem MakeRandom()
     {
         return new FooItem()
@@ -49,9 +51,10 @@ public class TableViewDemoWindow : EditorWindow
         // setup the description for content
         _table.AddColumn("Name", "Name", 0.5f, TextAnchor.MiddleLeft);
         _table.AddColumn("Count_A", "Count_A", 0.1f);
-        _table.AddColumn("Time_A", "Time_A", 0.15f, TextAnchor.MiddleCenter, "0.000");
+        _table.AddColumn("Time_A", "Time_A", 0.1f, TextAnchor.MiddleCenter, "0.000");
         _table.AddColumn("Count_B", "Count_B", 0.1f);
-        _table.AddColumn("Time_B", "Time_B", 0.15f, TextAnchor.MiddleCenter, "0.0");
+        _table.AddColumn("Time_B", "Time_B", 0.1f, TextAnchor.MiddleCenter, "0.0");
+        _table.AddColumn("Prop", "PrivateProp", 0.1f, TextAnchor.MiddleCenter, "0.0");
 
         // add test data
         List<object> entries = new List<object>();

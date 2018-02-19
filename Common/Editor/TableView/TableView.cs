@@ -9,6 +9,9 @@ public delegate void SelectionHandler(object selected, int col);
 
 public partial class TableView : IDisposable
 {
+    // show internal sequential ID in the first column
+    public bool ShowInternalSeqID = false;
+
     public event SelectionHandler OnSelected;
 
     public TableViewAppr Appearance { get { return _appearance; } }
@@ -37,11 +40,15 @@ public partial class TableView : IDisposable
         desc.Alignment = alignment;
         desc.WidthInPercent = widthByPercent;
         desc.Format = string.IsNullOrEmpty(fmt) ? null : fmt;
-        desc.FieldInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
-        if (desc.FieldInfo == null)
+        desc.MemInfo = m_itemType.GetField(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
+        if (desc.MemInfo == null)
         {
-            Debug.LogWarningFormat("Field '{0}' accessing failed.", desc.PropertyName);
-            return false;
+            desc.MemInfo = m_itemType.GetProperty(desc.PropertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+            if (desc.MemInfo == null)
+            {
+                Debug.LogWarningFormat("Field '{0}' accessing failed.", desc.PropertyName);
+                return false;
+            }
         }
 
         m_descArray.Add(desc);

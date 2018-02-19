@@ -67,21 +67,22 @@ public partial class TableView
     {
         var rect = LabelRect(width, col, pos);
 
+        var desc = m_descArray[col];
+        string text = desc.FormatObject(obj);
+
         if (selectionHappens && rect.Contains(Event.current.mousePosition))
         {
             m_selectedCol = col;
             if (OnSelected != null)
                 OnSelected(obj, col);
+
+            EditorGUIUtility.systemCopyBuffer = text;
             m_hostWindow.Repaint();
         }
 
-        var desc = m_descArray[col];
-        string strPos = pos.ToString();
-        string text;
-        if (col == 0)
-            text = strPos + ". " + desc.FormatObject(obj);
-        else
-            text = desc.FormatObject(obj);
+        // internal sequential id
+        if (ShowInternalSeqID && col == 0)
+            text = pos.ToString() + ". " + text;
 
         // note that the 'selected-style' assignment below should be isolated from the if-conditional statement above
         // since the above if is a one-time event, on the contrary, the 'selected-style' assignment below should be done every time in the drawing process
