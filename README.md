@@ -1,4 +1,5 @@
-# PerfAssist.Source
-The source code of PerfAssist.
+# PerfAssist
 
-Clone this repository directly into your `'Assets'` directory (or any sub-directory of it), and that's it.  
+Various performance-related components for Unity development.
+
+

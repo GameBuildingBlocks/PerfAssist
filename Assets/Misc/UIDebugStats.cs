@@ -1,7 +1,4 @@
-﻿#if !TENCENT_CHANNEL
-using CodeStage.AdvancedFPSCounter;
-#endif
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,9 +61,7 @@ public class UITimingDict
         StringBuilder builder = new StringBuilder();
         foreach (var p in l)
         {
-#if !TENCENT_CHANNEL
-            builder.AppendFormat("{0}{1,-40} \t{2:0.00} \t{3:0.00}\n", Indent, p.Key, p.Value, p.Value / (double)AFPSCounter.Instance.fpsCounter.newValue);
-#endif
+            builder.AppendFormat("{0}{1,-40} \t{2:0.00} \t{3:0.00}\n", Indent, p.Key, p.Value, p.Value / (double)(1.0f / Time.deltaTime));
             string concatName = string.Format("{0}:{1}", m_name, p.Key);
             if (accumulated.ContainsKey(concatName))
             {
@@ -114,9 +109,9 @@ public class UIDebugStats : MonoBehaviour
         StringBuilder builder = new StringBuilder();
         foreach (var p in l)
         {
-#if !TENCENT_CHANNEL
-            builder.AppendFormat("{0, -25} \t{1:0.00} \t{2:0.00} \t{3}/{4} \t{5}\n", p.Key, p.Value.mElapsedTicks, p.Value.mElapsedTicks / (double)AFPSCounter.Instance.fpsCounter.newValue, p.Value.mRebuildCount, p.Value.mCalls, p.Value.mDrawCallNum / p.Value.mCalls);
-#endif
+            builder.AppendFormat("{0, -25} \t{1:0.00} \t{2:0.00} \t{3}/{4} \t{5}\n", 
+                p.Key, p.Value.mElapsedTicks, p.Value.mElapsedTicks / (double)(1.0f / Time.deltaTime), p.Value.mRebuildCount, p.Value.mCalls, p.Value.mDrawCallNum / p.Value.mCalls);
+
             if (m_accumulated.ContainsKey(p.Key))
             {
                 m_accumulated[p.Key] += p.Value.mElapsedTicks;
@@ -140,9 +135,6 @@ public class UIDebugStats : MonoBehaviour
     float m_lastUpdateTime = 0.0f;
 	void Update ()
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
-            return;
-
         if (Time.time - m_lastUpdateTime >= 1.0f)
 		{
             m_debugInfo = PrintDictDouble();
@@ -157,9 +149,6 @@ public class UIDebugStats : MonoBehaviour
 
     void OnGUI()
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
-            return;
-
         if (!string.IsNullOrEmpty(m_debugInfo))
         {
             Rect r = new Rect(250, 60, Screen.width - 640, Screen.height - 120.0f);
@@ -176,6 +165,10 @@ public class UIDebugStats : MonoBehaviour
     int m_startFrame = -1;
     public void StartStats()
     {
+        if (enabled)
+            return;
+
+        enabled = true;
         m_accumulated.Clear();
         m_lastUpdateTime = Time.time;
         m_startFrame = Time.frameCount;
@@ -183,6 +176,11 @@ public class UIDebugStats : MonoBehaviour
 
     public void StopStats()
     {
+        if (!enabled)
+            return;
+
+        enabled = false;
+
         List<KeyValuePair<string, double>> sortBuf = m_accumulated.ToList();
         sortBuf.Sort(
             delegate (KeyValuePair<string, double> pair1,
@@ -205,7 +203,7 @@ public class UIDebugStats : MonoBehaviour
 
     public void StartPanelUpdate()
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
+        if (!enabled)
             return;
 
         m_panelSW.Reset();
@@ -214,7 +212,7 @@ public class UIDebugStats : MonoBehaviour
 
     public void StopPanelUpdate(string panelName, bool bRebuild, int drawCallNum)
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
+        if (!enabled)
             return;
 
         m_panelSW.Stop();
@@ -241,7 +239,7 @@ public class UIDebugStats : MonoBehaviour
 
     public void StartPanelWidget(string panelName)
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
+        if (!enabled)
             return;
 
         UITimingDict td = null;
@@ -256,7 +254,7 @@ public class UIDebugStats : MonoBehaviour
 
     public void StopPanelWidget(string panelName, string widgetName)
     {
-        if (!GlobalSwitches.UIDebuggingPanels)
+        if (!enabled)
             return;
 
         UITimingDict td = null;
