@@ -23,7 +23,7 @@ public class UIDebugDraw : MonoBehaviour
 
     public void HighlightWidget(string widgetName, Vector3[] widgetScreenPos)
     {
-        if (!GlobalSwitches.UIDebuggingDrawBlocks)
+        if (!enabled)
             return;
 
         UIHighlightWidget widget = new UIHighlightWidget();
@@ -44,11 +44,19 @@ public class UIDebugDraw : MonoBehaviour
 
     public void StartStats()
     {
+        if (enabled)
+            return;
+
+        enabled = true;
         m_widgetHighlightCount.Clear();
     }
 
     public void StopStats()
     {
+        if (!enabled)
+            return;
+
+        enabled = false;
         List<KeyValuePair<string, int>> sortBuf = m_widgetHighlightCount.ToList();
         sortBuf.Sort(
             delegate (KeyValuePair<string, int> pair1,
@@ -88,7 +96,7 @@ public class UIDebugDraw : MonoBehaviour
 
     void OnGUI()
     {
-        if (!GlobalSwitches.UIDebuggingDrawBlocks)
+        if (!enabled)
             return;
 
         var savedColor = GUI.color;
