@@ -85,15 +85,20 @@ public class PA_UIStats
         string wtbMax = string.Format("max: <cnt: {0} u1: {1} norm: {2}, vert:{3}>",
             _max._wtbCnt, _max._wtbU1Cnt, _max._wtbNormCnt, _max._totalVertCount);
 
-        string infoDrawCall = string.Format("Draw: <active: {0} inactive: {1} inactive_proxy: {2}>",
+        string infoDrawCall = "";
+        string infoBetterList = "";
+
+#if JX3M
+        infoDrawCall = string.Format("Draw: <active: {0} inactive: {1} inactive_proxy: {2}>",
             UIDrawCall.activeList.size,
             UIDrawCall.inactiveList.size,
             UIDrawCall.inactiveList_Proxy.size);
 
-        string infoBetterList = string.Format("BList: <active: {0} count: {1} accum: {2}>",
+        infoBetterList = string.Format("BList: <active: {0} count: {1} accum: {2}>",
             0,//BetterListStats._activeTotalBytes,
             BetterListStats._allocMoreCount,
             BetterListStats._accumAllocBytes);
+#endif
 
         return string.Format("{0} {1} -- {2} {3}", wtbAccum, wtbMax, infoDrawCall, infoBetterList);
     }

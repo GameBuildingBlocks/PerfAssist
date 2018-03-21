@@ -127,8 +127,16 @@ public class AssetUsageStats : IDisposable
         try
         {
             string baseInfo = Application.isEditor ? "editor" : Network.player.ipAddress.ToString();
-            string svnVersion = Application.isEditor ? "000" : Lua2CS.GetVersion();
-            string buildInfoID = Application.isEditor ? "000" : Lua2CS.BuildInfoID();
+            string svnVersion = "000";
+            string buildInfoID = "000";
+
+#if JX3M
+            if (!Application.isEditor)
+                svnVersion = Lua2CS.GetVersion();
+            if (!Application.isEditor)
+                buildInfoID = Lua2CS.BuildInfoID();
+#endif
+
             string logFile = string.Format("{0}_{1}-{2}_{3}_{4}.txt", baseInfo, 
                 SysUtil.FormatDateAsFileNameString(dt), 
                 SysUtil.FormatTimeAsFileNameString(dt), svnVersion,buildInfoID);
@@ -381,6 +389,8 @@ public class AssetUsageStats : IDisposable
         AssetUsageStats aus = obj as AssetUsageStats;
         if (aus == null)
             return;
+
+#if JX3M
 #if TENCENT_CHANNEL
 #else
         try
@@ -405,6 +415,7 @@ public class AssetUsageStats : IDisposable
         {
             aus.LogError("Uploading failed: " + ex.Message);
         }
+#endif
 #endif
     }
 
