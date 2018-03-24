@@ -2,7 +2,7 @@
 using System.Collections;
 
 public delegate Coroutine CoroutineStartHandler_IEnumerator(MonoBehaviour initiator, IEnumerator routine);
-public delegate Coroutine CoroutineStartHandler_String(MonoBehaviour initiator, string methodName, object arg = null);
+public delegate Coroutine CoroutineStartHandler_String(MonoBehaviour initiator, string methodName, params object[] args);
 
 public class CoroutinePluginForwarder
 {
@@ -21,15 +21,15 @@ public class CoroutinePluginForwarder
         }
     }
 
-    public static Coroutine InvokeStart(MonoBehaviour initiator, string methodName, object arg = null)
+    public static Coroutine InvokeStart(MonoBehaviour initiator, string methodName, params object[] args)
     {
         if (InvokeStart_String != null)
         {
-            return InvokeStart_String(initiator, methodName, arg);
+            return InvokeStart_String(initiator, methodName, args);
         }
         else
         {
-            return initiator.StartCoroutine(methodName, arg);
+            return initiator.StartCoroutine(methodName, args);
         }
     }
 }
