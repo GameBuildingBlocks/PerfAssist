@@ -196,15 +196,37 @@ public class AssetUsageStats : IDisposable
     }
 
     private GameObject _luaAsset = new GameObject("LuaAsset");
-    public void TrackLuaRequest(string path)
+    public void TrackLuaRequest(string path, int bytes, bool loadFromCache)
     {
         if (!_enableTracking)
             return;
 
-        //var sf = new System.Diagnostics.StackFrame(2, true);
+        LoadingStats.Instance.LogLua(path, bytes, loadFromCache);
+
         var request = NewRequest(path/*, sf*/);
         request.requestType = ResourceRequestType.Ordinary;
         TrackRequestWithObject(request, _luaAsset);
+    }
+
+    Stopwatch m_syncTimer = new Stopwatch();
+
+    public void TrackSyncStartTiming()
+    {
+        if (!_enableTracking)
+            return;
+
+        m_syncTimer.Reset();
+        m_syncTimer.Start();
+    }
+
+    public void TrackSyncStopTiming(string path)
+    {
+        if (!_enableTracking)
+            return;
+
+        m_syncTimer.Stop();
+        double ms = (double)m_syncTimer.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond;
+        LoadingStats.Instance.LogSync(path, ms);
     }
 
     public void TrackSyncRequest(UnityEngine.Object spawned, string path)
@@ -212,7 +234,8 @@ public class AssetUsageStats : IDisposable
         if (!_enableTracking)
             return;
 
-        //var sf = new System.Diagnostics.StackFrame(2, true);
+        TrackSyncStopTiming(path);
+
         var request = NewRequest(path/*, sf*/);
         request.requestType = ResourceRequestType.Ordinary;
         TrackRequestWithObject(request, spawned);
@@ -223,7 +246,8 @@ public class AssetUsageStats : IDisposable
         if (!_enableTracking)
             return;
 
-        //var sf = new System.Diagnostics.StackFrame(1, true);
+        TrackSyncStopTiming(path);
+
         var request = NewRequest(path/*, sf*/);
         request.requestType = ResourceRequestType.Ordinary;
         TrackRequestWithObject(request, loaded);
@@ -233,12 +257,6 @@ public class AssetUsageStats : IDisposable
     {
         if (!_enableTracking)
             return;
-
-        //var sf = new System.Diagnostics.StackFrame(2, true);
-        //if (sf.GetMethod().Name.Contains("SpawnAsyncOldVer"))
-        //{
-        //    sf = new System.Diagnostics.StackFrame(3, true);
-        //}
 
         InProgressAsyncObjects[handle] = NewRequest(path/*, sf*/);
     }
@@ -255,6 +273,16 @@ public class AssetUsageStats : IDisposable
         request.requestType = ResourceRequestType.Async;
         TrackRequestWithObject(request, target);
         InProgressAsyncObjects.Remove(handle);
+
+#if JX3M
+        ResourceHandle h = handle as ResourceHandle;
+        if (h != null)
+        {
+            LoadingStats.Instance.LogAsync(request.resourcePath, (Time.time - h.StartTime) * 1000.0f);
+        }
+#else
+        LoadingStats.Instance.LogAsync(request.resourcePath, 0.0f);
+#endif
     }
 
     public void TrackSceneLoaded(string sceneName)
@@ -270,94 +298,12 @@ public class AssetUsageStats : IDisposable
         }
     }
 
-    //public AssetRequestInfo GetAllocInfo(int instID)
-    //{
-    //    if (!_enableTracking)
-    //        return null;
-
-    //    int allocSeqID = -1;
-
-    //    //if (!TrackedGameObjects.TryGetValue(instID, out allocSeqID) && !TrackedMemObjects.TryGetValue(instID, out allocSeqID))
-    //    //    return null;
-
-    //    AssetRequestInfo requestInfo = null;
-    //    if (!TrackedAllocInfo.TryGetValue(allocSeqID, out requestInfo))
-    //        return null;
-
-    //    return requestInfo;
-    //}
-
-    //public string GetStackTrace(AssetRequestInfo req)
-    //{
-    //    string stacktrace;
-    //    if (!Stacktraces.TryGetValue(req.stacktraceHash, out stacktrace))
-    //        return "";
-
-    //    return stacktrace;
-    //}
-
     private AssetRequestInfo NewRequest(string path/*, StackFrame sf*/)
     {
         AssetRequestInfo reqInfo = new AssetRequestInfo();
         reqInfo.resourcePath = path;
-        //reqInfo.srcFile = sf.GetFileName();
-        //reqInfo.srcLineNum = sf.GetFileLineNumber();
-        //reqInfo.seqID = _reqSeq++;
-
-        //string stacktrace = UnityEngine.StackTraceUtility.ExtractStackTrace();
-
-        //int _tryCount = 10;
-        //while (_tryCount > 0)
-        //{
-        //    string stacktraceStored;
-        //    if (!Stacktraces.TryGetValue(stacktrace.GetHashCode(), out stacktraceStored))
-        //    {
-        //        Stacktraces[stacktrace.GetHashCode()] = stacktrace;
-        //        break;
-        //    }
-        //    else
-        //    {
-        //        if (stacktrace == stacktraceStored)
-        //        {
-        //            break;
-        //        }
-        //        else
-        //        {
-        //            // collision happens!
-        //            stacktrace += ((int)(UnityEngine.Random.value * 100)).ToString();
-        //        }
-        //    }
-
-        //    _tryCount--;
-        //}
-
-        //reqInfo.stacktraceHash = stacktrace.GetHashCode();
         return reqInfo;
     }
-
-    //private void ExtractObjectResources(UnityEngine.Object obj, int reqSeqID)
-    //{
-    //    SceneGraphExtractor sge = new SceneGraphExtractor(obj);
-
-    //    for (int i = 0; i < sge.GameObjectIDs.Count; i++)
-    //    {
-    //        if (!TrackedGameObjects.ContainsKey(sge.GameObjectIDs[i]))
-    //        {
-    //            TrackedGameObjects[sge.GameObjectIDs[i]] = reqSeqID;
-    //        }
-    //    }
-
-    //    foreach (var p in sge.MemObjectIDs)
-    //    {
-    //        foreach (var item in p.Value)
-    //        {
-    //            if (!TrackedMemObjects.ContainsKey(item))
-    //            {
-    //                TrackedMemObjects[item] = reqSeqID;
-    //            }
-    //        }
-    //    }
-    //}
 
     private void TrackRequestWithObject(AssetRequestInfo req, UnityEngine.Object obj)
     {
@@ -367,9 +313,6 @@ public class AssetUsageStats : IDisposable
         try
         {
             req.RecordObject(obj);
-
-            //TrackedAllocInfo[req.seqID] = req;
-            //ExtractObjectResources(obj, req.seqID);
 
             string info = req.ToString();
             if (_logWriter != null && !string.IsNullOrEmpty(info))
@@ -427,10 +370,4 @@ public class AssetUsageStats : IDisposable
     }
 
     Dictionary<System.Object, AssetRequestInfo> InProgressAsyncObjects = new Dictionary<System.Object, AssetRequestInfo>();
-    //Dictionary<int, AssetRequestInfo> TrackedAllocInfo = new Dictionary<int, AssetRequestInfo>();
-
-    //Dictionary<int, int> TrackedGameObjects = new Dictionary<int, int>();
-    //Dictionary<int, int> TrackedMemObjects = new Dictionary<int, int>();
-
-    //Dictionary<int, string> Stacktraces = new Dictionary<int, string>();
 }
