@@ -20,6 +20,10 @@ public class LoadingStats : MonoBehaviour
     {
         ScreenLogger.Instance.enabled = true;
         ScreenLogger.Instance.Clear();
+
+#if JX3M && UNITY_EDITOR
+        LuaLoader.Instance.UseCache = true;
+#endif
     }
 
     void OnDisable()
@@ -31,6 +35,10 @@ public class LoadingStats : MonoBehaviour
             ScreenLogger.Instance.enabled = false;
             ScreenLogger.Instance.Clear();
         }
+
+#if JX3M && UNITY_EDITOR
+        LuaLoader.Instance.UseCache = false;
+#endif
     }
 
     StringBuilder m_strBuilder = new StringBuilder(256);

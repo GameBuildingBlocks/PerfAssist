@@ -5,31 +5,46 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+public enum UIHighlightType
+{
+    HType_UpdateGeometry,
+    HType_Invalidate,
+}
+
 public class UIHighlightWidget
 {
     public string name;
     public Vector3[] screenPos;
     public float timeChanged;
+    public UIHighlightType type;
 }
 
 public class UIDebugDraw : MonoBehaviour
 {
     public static UIDebugDraw Instance = null;
 
-    Texture m_debugTexture;
+    Texture m_texUpdateGeometry;
+    Texture m_texUpdateAlpha;
     List<UIHighlightWidget> m_highlightedWidgets = new List<UIHighlightWidget>();
 
     Dictionary<string, int> m_widgetHighlightCount = new Dictionary<string, int>(100);
 
-    public void HighlightWidget(string widgetName, Vector3[] widgetScreenPos)
+    // #gulu UITool.UIWorldToScreen() is a NGUI function
+#if JX3M 
+    public void HighlightWidget(string widgetName, Vector3[] widgetWorldCorners, UIHighlightType type)
     {
         if (!enabled)
             return;
+
+        Vector3[] widgetScreenPos = new Vector3[widgetWorldCorners.Length];
+        for (int k = 0; k < widgetWorldCorners.Length; ++k)
+            widgetScreenPos[k] = UITool.UIWorldToScreen(widgetWorldCorners[k]);
 
         UIHighlightWidget widget = new UIHighlightWidget();
         widget.name = widgetName;
         widget.screenPos = widgetScreenPos;
         widget.timeChanged = Time.time;
+        widget.type = type;
         m_highlightedWidgets.Add(widget);
 
         if (m_widgetHighlightCount.ContainsKey(widgetName))
@@ -41,6 +56,7 @@ public class UIDebugDraw : MonoBehaviour
             m_widgetHighlightCount.Add(widgetName, 1);
         }
     }
+#endif
 
     public void StartStats()
     {
@@ -83,7 +99,14 @@ public class UIDebugDraw : MonoBehaviour
         c.a = 0.2f;
         texture.SetPixel(0, 0, c);
         texture.Apply();
-        m_debugTexture = texture;
+        m_texUpdateGeometry = texture;
+
+        texture = new Texture2D(1, 1);
+        c = Color.green;
+        c.a = 0.2f;
+        texture.SetPixel(0, 0, c);
+        texture.Apply();
+        m_texUpdateAlpha = texture;
     }
 
     // Update is called once per frame
@@ -114,7 +137,15 @@ public class UIDebugDraw : MonoBehaviour
                 widgetScreenPos[2].x - widgetScreenPos[0].x,
                 height);
 
-            GUI.DrawTexture(r, m_debugTexture, ScaleMode.StretchToFill);
+            switch (m_highlightedWidgets[k].type)
+            {
+                case UIHighlightType.HType_UpdateGeometry:
+                    GUI.DrawTexture(r, m_texUpdateGeometry, ScaleMode.StretchToFill);
+                    break;
+                case UIHighlightType.HType_Invalidate:
+                    GUI.DrawTexture(r, m_texUpdateAlpha, ScaleMode.StretchToFill);
+                    break;
+            }
 
             r.width = Math.Max(r.width, 200); // make sure the space is enough for text dispalaying
             r.height = Math.Max(r.height, 50);
