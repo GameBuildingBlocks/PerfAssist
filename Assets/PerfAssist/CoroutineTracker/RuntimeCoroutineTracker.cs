@@ -119,7 +119,7 @@ public class RuntimeCoroutineTracker
     public static Coroutine InvokeStart(MonoBehaviour initiator, string methodName, object arg = null)
     {
         if (!CoroutineRuntimeTrackingConfig.EnableTracking)
-            return initiator.StartCoroutine(methodName);
+            return initiator.StartCoroutine(methodName, arg);
 
         try
         {
