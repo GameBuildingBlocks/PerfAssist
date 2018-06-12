@@ -409,7 +409,11 @@ public class ZoomArea
 
         switch (Event.current.GetTypeForControl(id))
         {
+#if UNITY_2017_4_OR_NEWER
+        case EventType.MouseDown:
+#else
         case EventType.mouseDown:
+#endif
             if (area.Contains(Event.current.mousePosition))
             {
                 // Catch keyboard control when clicked inside zoomable area
@@ -425,7 +429,11 @@ public class ZoomArea
                 }
             }
             break;
+#if UNITY_2017_4_OR_NEWER
+        case EventType.MouseUp:
+#else
         case EventType.mouseUp:
+#endif
             //Debug.Log("mouse-up!");
             if (GUIUtility.hotControl == id)
             {
@@ -437,7 +445,11 @@ public class ZoomArea
                 //Event.current.Use();
             }
             break;
+#if UNITY_2017_4_OR_NEWER
+        case EventType.MouseDrag:
+#else
         case EventType.mouseDrag:
+#endif
             if (GUIUtility.hotControl != id) break;
 
             if (IsZoomEvent())
@@ -453,7 +465,11 @@ public class ZoomArea
                 Event.current.Use();
             }
             break;
+#if UNITY_2017_4_OR_NEWER
+        case EventType.ScrollWheel:
+#else
         case EventType.scrollWheel:
+#endif
             if (!area.Contains(Event.current.mousePosition))
                 break;
             if (m_IgnoreScrollWheelUntilClicked && GUIUtility.keyboardControl != id)

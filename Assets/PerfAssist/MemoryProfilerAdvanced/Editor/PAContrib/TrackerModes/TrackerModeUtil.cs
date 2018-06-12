@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using UnityEditorInternal;
 using System;
@@ -117,6 +117,9 @@ public static class TrackerModeUtil
             string jsonContent = TrackerModeUtil.ResolvePackedForJson(unpacked);
             if (string.IsNullOrEmpty(jsonContent))
                 throw new Exception("resolve failed.");
+
+            if (!Directory.Exists(jsonFilePath))
+                Directory.CreateDirectory(jsonFilePath);
 
             string jsonFile = Path.Combine(jsonFilePath, jsonFileName);
             FileInfo fileInfo = new FileInfo(jsonFile);

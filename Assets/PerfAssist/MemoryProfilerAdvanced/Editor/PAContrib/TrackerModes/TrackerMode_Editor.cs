@@ -1,4 +1,4 @@
-﻿using MemoryProfilerWindow;
+﻿ using MemoryProfilerWindow;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,6 +38,6 @@ public class TrackerMode_Editor : TrackerMode_Base
     public override bool SaveSessionJson(CrawledMemorySnapshot Unpacked)
     {
         string sessionName = _sessionTimeStr + TrackerModeConsts.EditorTag;
-        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString(), Unpacked);
+        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString() + ".json", Unpacked);
     }
 }

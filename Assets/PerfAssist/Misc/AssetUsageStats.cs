@@ -1,4 +1,4 @@
-﻿using System;
+﻿ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,14 +28,19 @@ public class AssetRequestInfo
 
     public int stacktraceHash = 0;
 
+	public double duration = 0.0;
+	public bool isAsync = false;
+
     public override string ToString()
     {
         UnityEngine.SceneManagement.Scene scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
-        return string.Format("#{0} {1} {2} {3}",
-            seqID,
+        return string.Format("{0:0.00} {1} {2} {3} {4:0.00}ms {5}",
+            requestTime,
             resourceType != null ? resourceType.ToString() : "<null_type>",
             resourcePath,
-            scene.name);
+            scene.name,
+			duration,
+			requestType == ResourceRequestType.Async ? "async": "sync");
     }
 
     class LuaAsset : UnityEngine.Object { public static LuaAsset Instance = new LuaAsset(); }
@@ -100,7 +105,7 @@ public class AssetUsageStats : IDisposable
                 LogError("Failed to prepare the stats dir, aborted.");
             }
 
-            UploadFiles();
+            // UploadFiles();
         }
     }
 
@@ -181,7 +186,7 @@ public class AssetUsageStats : IDisposable
                 _logWriter = null;
                 LogInfo("Writer closed.");
 
-                UploadFiles();
+                // UploadFiles();	don't upload anymore
             }
         }
     }
@@ -219,14 +224,16 @@ public class AssetUsageStats : IDisposable
         m_syncTimer.Start();
     }
 
-    public void TrackSyncStopTiming(string path)
+    public double TrackSyncStopTiming(string path)
     {
         if (!_enableTracking)
-            return;
+            return 0.0f;
 
         m_syncTimer.Stop();
         double ms = (double)m_syncTimer.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond;
         LoadingStats.Instance.LogSync(path, ms);
+
+		return ms;
     }
 
     public void TrackSyncRequest(UnityEngine.Object spawned, string path)
@@ -234,11 +241,20 @@ public class AssetUsageStats : IDisposable
         if (!_enableTracking)
             return;
 
-        TrackSyncStopTiming(path);
+        double ms = TrackSyncStopTiming(path);
 
         var request = NewRequest(path/*, sf*/);
+		request.duration = ms;
         request.requestType = ResourceRequestType.Ordinary;
         TrackRequestWithObject(request, spawned);
+    }
+
+    public void TrackSyncRequest(UnityEngine.Object spawned, ulong hashPath)
+    {
+        if (!_enableTracking)
+            return;
+
+        TrackSyncRequest(spawned, GameResource.ResourceMainfest.GetHashPath(hashPath));
     }
 
     public void TrackResourcesDotLoad(UnityEngine.Object loaded, string path)
@@ -246,9 +262,10 @@ public class AssetUsageStats : IDisposable
         if (!_enableTracking)
             return;
 
-        TrackSyncStopTiming(path);
+        double ms = TrackSyncStopTiming(path);
 
         var request = NewRequest(path/*, sf*/);
+		request.duration = ms;
         request.requestType = ResourceRequestType.Ordinary;
         TrackRequestWithObject(request, loaded);
     }
@@ -261,6 +278,14 @@ public class AssetUsageStats : IDisposable
         InProgressAsyncObjects[handle] = NewRequest(path/*, sf*/);
     }
 
+    public void TrackAsyncRequest(System.Object handle, ulong hashPath)
+    {
+        if (!_enableTracking)
+            return;
+
+        InProgressAsyncObjects[handle] = NewRequest(GameResource.ResourceMainfest.GetHashPath(hashPath)/*, sf*/);
+    }
+
     public void TrackAsyncDone(System.Object handle, UnityEngine.Object target)
     {
         if (!_enableTracking || target == null)
@@ -271,18 +296,21 @@ public class AssetUsageStats : IDisposable
             return;
 
         request.requestType = ResourceRequestType.Async;
-        TrackRequestWithObject(request, target);
-        InProgressAsyncObjects.Remove(handle);
+		request.duration = 0.0f;
 
 #if JX3M
         ResourceHandle h = handle as ResourceHandle;
         if (h != null)
         {
-            LoadingStats.Instance.LogAsync(request.resourcePath, (Time.time - h.StartTime) * 1000.0f);
+			request.duration = (Time.time - h.StartTime) * 1000.0f;
+            LoadingStats.Instance.LogAsync(request.resourcePath, request.duration);
         }
 #else
         LoadingStats.Instance.LogAsync(request.resourcePath, 0.0f);
 #endif
+
+        TrackRequestWithObject(request, target);
+        InProgressAsyncObjects.Remove(handle);
     }
 
     public void TrackSceneLoaded(string sceneName)
@@ -310,12 +338,15 @@ public class AssetUsageStats : IDisposable
         if (obj == null || !_enableTracking || !PrepareWriter())
             return;
 
+		if (!LoadingStats.Instance.enabled)
+			return;
+
         try
         {
             req.RecordObject(obj);
 
             string info = req.ToString();
-            if (_logWriter != null && !string.IsNullOrEmpty(info))
+            if (_logWriter != null && !string.IsNullOrEmpty(info) && req.duration >= 1.0f)
                 _logWriter.WriteLine(info);
 
             _lastWriteTime = DateTime.Now;

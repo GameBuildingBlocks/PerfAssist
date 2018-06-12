@@ -78,6 +78,6 @@ public class TrackerMode_Remote : TrackerMode_Base
     public override bool SaveSessionJson(CrawledMemorySnapshot Unpacked)
     {
         string sessionName = _sessionTimeStr + TrackerModeConsts.RemoteTag + _IPField;
-        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString(), Unpacked);
+        return TrackerModeUtil.SaveSnapshotJson(sessionName, _selected.ToString() + ".json", Unpacked);
     }
 }
