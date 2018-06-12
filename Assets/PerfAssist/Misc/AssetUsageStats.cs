@@ -249,6 +249,7 @@ public class AssetUsageStats : IDisposable
         TrackRequestWithObject(request, spawned);
     }
 
+#if JX3M
     public void TrackSyncRequest(UnityEngine.Object spawned, ulong hashPath)
     {
         if (!_enableTracking)
@@ -256,6 +257,7 @@ public class AssetUsageStats : IDisposable
 
         TrackSyncRequest(spawned, GameResource.ResourceMainfest.GetHashPath(hashPath));
     }
+#endif
 
     public void TrackResourcesDotLoad(UnityEngine.Object loaded, string path)
     {
@@ -278,6 +280,7 @@ public class AssetUsageStats : IDisposable
         InProgressAsyncObjects[handle] = NewRequest(path/*, sf*/);
     }
 
+#if JX3M
     public void TrackAsyncRequest(System.Object handle, ulong hashPath)
     {
         if (!_enableTracking)
@@ -285,6 +288,7 @@ public class AssetUsageStats : IDisposable
 
         InProgressAsyncObjects[handle] = NewRequest(GameResource.ResourceMainfest.GetHashPath(hashPath)/*, sf*/);
     }
+#endif
 
     public void TrackAsyncDone(System.Object handle, UnityEngine.Object target)
     {
