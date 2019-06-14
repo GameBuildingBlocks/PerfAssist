@@ -131,7 +131,7 @@ public class AssetUsageStats : IDisposable
         // create a new text to write
         try
         {
-            string baseInfo = Application.isEditor ? "editor" : Network.player.ipAddress.ToString();
+            string baseInfo = Application.isEditor ? "editor" : "-";
             string svnVersion = "000";
             string buildInfoID = "000";
 
